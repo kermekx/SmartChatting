@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="primary">#3D82BC</color>
+    <color name="primaryDark">#3377B2</color>
+
+    <color name="grayDarker">#222222</color>
+    <color name="grayDark">#333333</color>
+    <color name="gray">#555555</color>
+    <color name="grayLight">#777777</color>
+    <color name="grayLighter">#EEEEEE</color>
+
+    <color name="info">#5bc0de</color>
+</resources>
