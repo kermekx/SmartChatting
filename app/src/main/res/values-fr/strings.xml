@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Smart Chatting</string>
+    <string name="action_sign_in_short">Connexion</string>
+    <string name="action_sign_in">Connexion ou inscription</string>
+    <string name="error_field_required">Ce champs est requis</string>
+    <string name="error_incorrect_password">Ce mot de passe n\'est pas correcte</string>
+    <string name="error_invalid_email">Cette addresse email n\'est pas valide</string>
+    <string name="error_invalid_password">Ce mot de n\'est pas valide</string>
+    <string name="permission_rationale">"Nous avons besoin de la permission d\'acceder aux contactes pour trouver vos amis."</string>
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Mot de passe</string>
+</resources>
