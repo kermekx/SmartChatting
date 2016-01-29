@@ -1,4 +1,4 @@
-package smartmessaging.kermekx.com.smartchatting;
+package com.kermekx.smartchatting;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
