@@ -37,15 +37,19 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import java.security.MessageDigest;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -121,7 +125,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         }
         if (shouldShowRequestPermissionRationale(READ_CONTACTS)) {
             Snackbar.make(mEmailView, R.string.permission_rationale, Snackbar.LENGTH_INDEFINITE)
-                    .setAction(android.R.string.ok, new View.OnClickListener() {
+                    .setAction(android.R.string.ok, new OnClickListener() {
                         @Override
                         @TargetApi(Build.VERSION_CODES.M)
                         public void onClick(View v) {
@@ -199,6 +203,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             mAuthTask.execute((Void) null);
         }
     }
+
     private boolean isEmailValid(String email) {
         return email.contains("@") && email.contains(".") && (email.indexOf("@") < email.lastIndexOf("."));
     }
@@ -253,7 +258,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 // Select only email addresses.
                 ContactsContract.Contacts.Data.MIMETYPE +
                         " = ?", new String[]{ContactsContract.CommonDataKinds.Email
-                                                                     .CONTENT_ITEM_TYPE},
+                .CONTENT_ITEM_TYPE},
 
                 // Show primary email addresses first. Note that there won't be
                 // a primary email address if the user hasn't specified one.
@@ -275,6 +280,16 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     @Override
     public void onLoaderReset(Loader<Cursor> cursorLoader) {
 
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
     }
 
     private interface ProfileQuery {
@@ -318,7 +333,9 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             Map<String, String> values = new HashMap<String, String>();
 
             values.put("email", mEmail);
-            values.put("password", mPassword);
+            values.put("password", sha256(mPassword));
+
+            Logger.getLogger(getClass().getName()).log(Level.INFO, values.get("password"));
 
             String json = JsonManager.getJSON(getString(R.string.url_connection), values);
 
@@ -332,7 +349,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, e);
                 return false;
             }
-
 
 
             // TODO: register the new account here.
@@ -356,6 +372,32 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         protected void onCancelled() {
             mAuthTask = null;
             showProgress(false);
+        }
+    }
+
+    public String sha256(String s) {
+
+        MessageDigest digester = null;
+
+        try {
+            digester  = MessageDigest.getInstance("SHA-256");
+        } catch (NoSuchAlgorithmException e) {
+            Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, e);
+            return null;
+        }
+        digester.reset();
+        try {
+            byte[] bytes = digester.digest(s.getBytes("UTF-8"));
+
+            StringBuilder sb = new StringBuilder();
+            for (byte b : bytes) {
+                sb.append(String.format("%02x", b));
+            }
+
+            return sb.toString();
+        } catch (UnsupportedEncodingException e) {
+            Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, e);
+            return null;
         }
     }
 }
