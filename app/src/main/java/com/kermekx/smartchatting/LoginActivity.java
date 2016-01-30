@@ -29,29 +29,17 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.kermekx.smartchatting.hash.Hasher;
 import com.kermekx.smartchatting.json.JsonManager;
-import com.kermekx.smartchatting.json.LoginMessage;
 
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import java.security.MessageDigest;
-
-import javax.net.ssl.HttpsURLConnection;
 
 import static android.Manifest.permission.READ_CONTACTS;
 
@@ -333,9 +321,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             Map<String, String> values = new HashMap<String, String>();
 
             values.put("email", mEmail);
-            values.put("password", sha256(mPassword));
-
-            Logger.getLogger(getClass().getName()).log(Level.INFO, values.get("password"));
+            values.put("password", Hasher.sha256(mPassword));
 
             String json = JsonManager.getJSON(getString(R.string.url_connection), values);
 
@@ -372,32 +358,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         protected void onCancelled() {
             mAuthTask = null;
             showProgress(false);
-        }
-    }
-
-    public String sha256(String s) {
-
-        MessageDigest digester = null;
-
-        try {
-            digester  = MessageDigest.getInstance("SHA-256");
-        } catch (NoSuchAlgorithmException e) {
-            Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, e);
-            return null;
-        }
-        digester.reset();
-        try {
-            byte[] bytes = digester.digest(s.getBytes("UTF-8"));
-
-            StringBuilder sb = new StringBuilder();
-            for (byte b : bytes) {
-                sb.append(String.format("%02x", b));
-            }
-
-            return sb.toString();
-        } catch (UnsupportedEncodingException e) {
-            Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, e);
-            return null;
         }
     }
 }
