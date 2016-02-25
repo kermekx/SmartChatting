@@ -13,6 +13,8 @@ import com.kermekx.smartchatting.icon.IconManager;
 
 /**
  * Created by kermekx on 23/02/2016.
+ *
+ * This task is used to load the user icon
  */
 public class LoadIconTask extends AsyncTask<Void, Void, Boolean> {
 

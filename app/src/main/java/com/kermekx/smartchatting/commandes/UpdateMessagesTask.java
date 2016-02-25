@@ -20,6 +20,9 @@ import java.util.logging.Logger;
 
 /**
  * Created by kermekx on 23/02/2016.
+ *
+ * Used to sync messages database from the server
+ * Messages are encrypted on the database
  */
 public class UpdateMessagesTask extends AsyncTask<Void, Void, Boolean> {
 

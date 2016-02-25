@@ -4,6 +4,8 @@ import android.graphics.drawable.Drawable;
 
 /**
  * Created by kermekx on 03/02/2016.
+ *
+ * Message data to display item list in the main activity
  */
 public class Message {
 

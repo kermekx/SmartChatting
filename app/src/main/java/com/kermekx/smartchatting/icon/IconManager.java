@@ -20,6 +20,8 @@ import java.util.logging.Logger;
 
 /**
  * Created by kermekx on 08/02/2016.
+ *
+ * Icon manager used to load and cache users icon
  */
 public class IconManager {
 

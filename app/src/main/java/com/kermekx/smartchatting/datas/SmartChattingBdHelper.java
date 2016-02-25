@@ -9,6 +9,8 @@ import java.util.logging.Logger;
 
 /**
  * Created by kermekx on 23/02/2016.
+ *
+ * Database manager
  */
 public class SmartChattingBdHelper extends SQLiteOpenHelper {
     public static final int DATABASE_VERSION = 5;

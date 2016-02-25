@@ -15,6 +15,8 @@ import java.util.Map;
 
 /**
  * Created by kermekx on 23/02/2016.
+ *
+ * This task is used to sync contact database from the server
  */
 public class UpdateContactsTask extends AsyncTask<Void, Void, Boolean> {
 

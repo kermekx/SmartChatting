@@ -15,6 +15,8 @@ import java.util.List;
 
 /**
  * Created by kermekx on 03/02/2016.
+ *
+ * Contact adapter to display contacts list view
  */
 public class ContactAdapter extends ArrayAdapter<Contact> {
 

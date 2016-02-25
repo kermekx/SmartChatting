@@ -17,6 +17,11 @@ import com.kermekx.smartchatting.commandes.ActivationTask;
 import com.kermekx.smartchatting.commandes.LoginTask;
 import com.kermekx.smartchatting.commandes.TaskListener;
 
+/**
+ * Activity launched at start of the application
+ *
+ * The activity try to connect
+ */
 public class SplashActivity extends AppCompatActivity {
 
     private ProgressBar mProgressView;

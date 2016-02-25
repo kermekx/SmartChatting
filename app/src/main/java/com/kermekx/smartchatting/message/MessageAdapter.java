@@ -16,6 +16,8 @@ import java.util.List;
 
 /**
  * Created by kermekx on 03/02/2016.
+ *
+ * Messages adapter to display latest messages list view
  */
 public class MessageAdapter extends ArrayAdapter<Message> {
 

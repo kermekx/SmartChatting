@@ -8,6 +8,8 @@ import android.provider.BaseColumns;
 
 /**
  * Created by kermekx on 23/02/2016.
+ *
+ * Messages data to use in the internal database
  */
 public class MessagesData {
     private static final String TEXT_TYPE = " TEXT";

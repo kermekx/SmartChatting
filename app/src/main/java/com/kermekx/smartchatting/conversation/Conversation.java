@@ -4,6 +4,8 @@ import android.graphics.drawable.Drawable;
 
 /**
  * Created by kermekx on 12/02/2016.
+ *
+ * Message data to display item list in the conversation activity
  */
 public class Conversation {
 

@@ -8,6 +8,8 @@ import android.provider.BaseColumns;
 
 /**
  * Created by kermex on 23/02/2016.
+ *
+ * Contacts data to use in the internal database
  */
 public class ContactsData {
 

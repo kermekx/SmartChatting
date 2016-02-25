@@ -19,6 +19,8 @@ import java.util.logging.Logger;
 
 /**
  * Created by kermekx on 23/02/2016.
+ *
+ * This task is used to get the private key
  */
 public class GetPrivateKeyTask extends AsyncTask<Void, Void, Boolean> {
 

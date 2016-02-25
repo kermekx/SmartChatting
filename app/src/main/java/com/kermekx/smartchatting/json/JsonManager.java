@@ -20,6 +20,8 @@ import javax.net.ssl.HttpsURLConnection;
 
 /**
  * Created by Kermekx on 29/01/2016.
+ *
+ * Json Manager used to parse Json data from server
  */
 public class JsonManager {
 

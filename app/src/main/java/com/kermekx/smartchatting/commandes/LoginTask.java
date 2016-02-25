@@ -15,6 +15,8 @@ import java.util.HashMap;
 import java.util.Map;
 /**
  * Created by kermekx on 22/02/2016.
+ *
+ * This task is used to log into the server
  */
 public class LoginTask extends AsyncTask<Void, Void, Boolean> {
 

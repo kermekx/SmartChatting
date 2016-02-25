@@ -16,6 +16,8 @@ import java.util.Map;
 
 /**
  * Created by kermekx on 22/02/2016.
+ *
+ * This task is used to register into the server
  */
 public class RegisterTask extends AsyncTask<Void, Void, Boolean> {
 

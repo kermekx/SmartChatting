@@ -14,6 +14,8 @@ import java.util.List;
 
 /**
  * Created by kermekx on 12/02/2016.
+ *
+ * Conversation adapter to display messages list view
  */
 public class ConversationAdapter extends ArrayAdapter<Conversation> {
 

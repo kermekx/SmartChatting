@@ -36,6 +36,8 @@ import java.util.logging.Logger;
 
 /**
  * Created by kermekx on 14/02/2016.
+ *
+ * Scheduled task to notify from new message
  */
 public class NewMessage extends BroadcastReceiver {
 
