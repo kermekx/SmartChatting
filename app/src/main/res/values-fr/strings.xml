@@ -10,4 +10,59 @@
     <string name="permission_rationale">"Nous avons besoin de la permission d\'acceder aux contactes pour trouver vos amis."</string>
     <string name="prompt_email">Email</string>
     <string name="prompt_password">Mot de passe</string>
+    <string name="register">Inscription</string>
+    <string name="prompt_username">Nom d\'utilisateur</string>
+    <string name="prompt_repeat_password">Confirmer le mot de passe</string>
+    <string name="app_name_register">Smart Chatting : Inscription</string>
+    <string name="app_name_sign_in">Smart Chatting : Connexion</string>
+    <string name="error_invalid_confirm_password">Les mots de passe ne correspondent pas</string>
+    <string name="error_connection_server">Impossible de se connecter au serveur</string>
+    <string name="error_email_already_used">Cette addresse email est dejà utilisée</string>
+    <string name="error_username_already_used">Ce nom d\'utilisateur est dejà utilisé</string>
+    <string name="action_settings">Paramètres</string>
+    <string name="navigation_drawer_close">Fermer le menu de navigation</string>
+    <string name="title_activity_main">Messages</string>
+    <string name="navigation_drawer_open">Ouvrir le menu de navigation</string>
+    <string name="title_activity_settings">Paramètres</string>
+    <string name="pref_default_display_name">Nom d\'utilisateur</string>
+    <string name="title_activity_main_contact">Contacts</string>
+    <string name="dialog_add_contact">Ajouter un contact</string>
+    <string name="action_cancel">Annuler</string>
+    <string name="action_add">Ajouter</string>
+    <string name="title_activity_main2">Main2Activity</string>
+    <string name="error_already_added">déjà ajouté</string>
+    <string name="error_not_found">introuvable</string>
+    <string name="error_yourself">Vous ne pouvez vous ajouter!</string>
+    <string name="success_added">a été ajouté</string>
+    <string name="error_add_contact_empty">Le contact à ajouter est vide!</string>
+    <string name="nav_disconnect">Déconnexion</string>
+    <string name="nav_other">Autres</string>
+    <string name="dialog_confirm_logout">Se déconnecter?</string>
+    <string name="action_confirm">Comfirmer</string>
+    <string name="error_verify_account">Cet email n\'est pas vérifié</string>
+    <string name="pref_title_vibrate">Vibré</string>
+    <string name="pref_description_social_recommendations">TO DO</string>
+    <string name="pref_header_general">General</string>
+    <string name="pref_header_notifications">Notifications</string>
+    <string name="pref_header_data_sync"><![CDATA[Data & sync]]></string>
+    <string name="pref_ringtone_silent">Silence</string>
+    <string name="pref_title_add_friends_to_messages">TO DO</string>
+    <string name="pref_title_display_name">Nom d\'affichage</string>
+    <string name="pref_title_new_message_notifications">Notification de nouveaux messages</string>
+    <string name="pref_title_ringtone">Sonnerie</string>
+    <string name="pref_title_social_recommendations">TO DO</string>
+    <string name="pref_title_sync_frequency">TO DO</string>
+    <string name="pref_title_system_sync_settings">TO DO</string>
+
+    <string-array name="pref_example_list_titles">
+        <item>Toujours</item>
+        <item>Dès que possible</item>
+        <item>Jamais</item>
+    </string-array>
+    <string name="action_remove">Supprimer le contact</string>
+    <string name="action_send">Envoyer</string>
+    <string name="hint_enter_message">Entrez un message</string>
+    <string name="new_messages">nouveaux messages</string>
+    <string name="nav_support">Nous contacter</string>
+    <string name="success_contact_deleted">à été suprimmé</string>
 </resources>

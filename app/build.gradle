@@ -5,17 +5,20 @@ android {
     buildToolsVersion "23.0.1"
 
     defaultConfig {
-        applicationId "smartmessaging.kermekx.com.smartchatting"
+        applicationId "com.kermekx.smartchatting"
         minSdkVersion 15
         targetSdkVersion 23
-        versionCode 1
-        versionName "1.0"
+        versionCode 3
+        versionName "London"
     }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+    }
+    lintOptions {
+        disable 'MissingTranslation'
     }
 }
 
@@ -24,4 +27,9 @@ dependencies {
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:23.1.1'
     compile 'com.android.support:design:23.1.1'
+    compile 'com.android.support:support-v4:23.1.1'
+
+    compile 'com.google.android.gms:play-services-ads:8.3.0'
 }
+
+apply plugin: 'com.google.gms.google-services'

@@ -16,4 +16,119 @@
 
     <!-- Strings related to URLS -->
     <string name="url_connection" translatable="false">https://www.smart-chatting.com/commandes/SignIn.php</string>
+    <string name="url_register" translatable="false">https://www.smart-chatting.com/commandes/SignUp.php</string>
+
+    <!-- Strings related to Preferences -->
+    <string name="preference_file_session" translatable="false">com.kermekx.smartchatting.session.Session</string>
+    <string name="register">Register</string>
+    <string name="prompt_username">Username</string>
+    <string name="prompt_repeat_password">Confirm password</string>
+    <string name="app_name_register">Smart Chatting : Register</string>
+    <string name="app_name_sign_in">Smart Chatting : Sign In</string>
+    <string name="error_invalid_confirm_password">Passwords don\'t match</string>
+    <string name="error_connection_server">Cannot connect to the server</string>
+    <string name="error_email_already_used">This email is already used</string>
+    <string name="error_username_already_used">This username is already used</string>
+    <string name="title_activity_main">Messages</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_settings">Settings</string>
+
+    <!-- Strings related to Settings -->
+
+    <!-- Example General settings -->
+    <string name="pref_header_general">General</string>
+
+    <string name="pref_title_social_recommendations">Enable social recommendations</string>
+    <string name="pref_description_social_recommendations">Recommendations for people to contact
+        based on your message history
+    </string>
+
+    <string name="pref_title_display_name">Display name</string>
+    <string name="pref_default_display_name">Username</string>
+
+    <string name="pref_title_add_friends_to_messages">Add friends to messages</string>
+    <string-array name="pref_example_list_titles">
+        <item>Always</item>
+        <item>When possible</item>
+        <item>Never</item>
+    </string-array>
+    <string-array name="pref_example_list_values" translatable="false">
+        <item>1</item>
+        <item>0</item>
+        <item>-1</item>
+    </string-array>
+
+    <!-- Example settings for Data & Sync -->
+    <string name="pref_header_data_sync">Data &amp; sync</string>
+
+    <string name="pref_title_sync_frequency">Sync frequency</string>
+    <string-array name="pref_sync_frequency_titles" translatable="false">
+        <item>15 minutes</item>
+        <item>30 minutes</item>
+        <item>1 hour</item>
+        <item>3 hours</item>
+        <item>6 hours</item>
+        <item>Never</item>
+    </string-array>
+    <string-array name="pref_sync_frequency_values" translatable="false">
+        <item>15</item>
+        <item>30</item>
+        <item>60</item>
+        <item>180</item>
+        <item>360</item>
+        <item>-1</item>
+    </string-array>
+
+    <string name="pref_title_system_sync_settings">System sync settings</string>
+
+    <!-- Example settings for Notifications -->
+    <string name="pref_header_notifications">Notifications</string>
+
+    <string name="pref_title_new_message_notifications">New message notifications</string>
+
+    <string name="pref_title_ringtone">Ringtone</string>
+    <string name="pref_ringtone_silent">Silent</string>
+
+    <string name="pref_title_vibrate">Vibrate</string>
+    <string name="title_activity_main_contact">Contacts</string>
+    <string name="url_get_contact" translatable="false">https://www.smart-chatting.com/commandes/GetContacts.php</string>
+    <string name="title_activity_main2">Main2Activity</string>
+    <string name="dialog_add_contact">Add contact</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_add">Add</string>
+    <string name="url_add_contact" translatable="false">https://www.smart-chatting.com/commandes/AddContact.php</string>
+    <string name="error_already_added">already added</string>
+    <string name="error_not_found">not found</string>
+    <string name="error_yourself">Cannot add yourself!</string>
+    <string name="success_added">has been added</string>
+    <string name="error_add_contact_empty">Contact to add is empty!</string>
+    <string name="nav_disconnect">Disconnect</string>
+    <string name="nav_other">Others</string>
+    <string name="dialog_confirm_logout">Confirm logout?</string>
+    <string name="action_confirm">Comfirm</string>
+    <string name="url_icons" translatable="false">https://www.smart-chatting.com/img/users</string>
+    <string name="title_activity_contact" translatable="false">ContactActivity</string>
+    <string name="url_get_contact_info" translatable="false">https://www.smart-chatting.com/commandes/GetContactInfo.php</string>
+    <string name="error_verify_account">This email isn\'t verified</string>
+    <string name="action_remove">Remove contact</string>
+    <string name="url_remove_contact" translatable="false">https://www.smart-chatting.com/commandes/RemoveContact.php</string>
+    <string name="url_set_keys" translatable="false">https://www.smart-chatting.com/commandes/SetKeys.php</string>
+    <string name="action_send">Send</string>
+    <string name="hint_enter_message">Enter a message</string>
+    <string name="url_get_public_key" translatable="false">https://www.smart-chatting.com/commandes/GetPublicKey.php</string>
+    <string name="url_send_message" translatable="false">https://www.smart-chatting.com/commandes/SendMessage.php</string>
+    <string name="url_get_latest_messages" translatable="false">https://www.smart-chatting.com/commandes/GetLatestMessages.php</string>
+    <string name="url_get_private_key" translatable="false">https://www.smart-chatting.com/commandes/GetPrivateKey.php</string>
+    <string name="url_get_new_message" translatable="false">https://www.smart-chatting.com/commandes/GetNewMessage.php</string>
+    <string name="new_messages">new messages</string>
+    <string name="nav_support">Contact us</string>
+    <string name="url_get_messages" translatable="false">https://www.smart-chatting.com/commandes/GetMessages.php</string>
+    <string name="url_get_new_message_conversation" translatable="false">https://www.smart-chatting.com/commandes/GetNewMessagesConversation.php</string>
+    <string name="url_activation" translatable="false">https://www.smart-chatting.com/commandes/Activate.php</string>
+    <string name="url_get_new_messages" translatable="false">https://www.smart-chatting.com/commandes/GetNewMessages.php</string>
+    <string name="success_contact_deleted">has been deleted</string>
 </resources>
