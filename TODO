@@ -1,0 +1,10 @@
+TODO list :
+
+  - Code Pin (le code pin encrypt les données dans les shared preferences (MDP et Secure) et fait entre 4 et 8 chiffres)
+              Il faudra garder dans la ram de lappli le code pin durant toute l'application mais aussi dans les taches
+              afin de pouvoir notifier des nouveaux messages. Il sera mieu d'organiser les chiffres du clavier de manière
+              aléatoire (comme les banques) afin d'éviter les Troyans.
+  - Utilisation des taches individuels (propre classe) dans conversation acivity
+  - Utilisation des taches individuels (propre classe) dans contact acivity
+  - Ajout des swipes (discuter et supprimer) dans la list des derniers messages
+  - Ajout d'une fonction pour changer d'icon
