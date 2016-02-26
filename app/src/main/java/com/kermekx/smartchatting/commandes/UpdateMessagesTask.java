@@ -56,8 +56,8 @@ public class UpdateMessagesTask extends AsyncTask<Void, Void, Boolean> {
             } while (cursor.moveToNext());
 
             cursor.close();
-            values.put("lastMessage", "" + max);
         }
+        values.put("lastMessage", "" + max);
 
         String json = JsonManager.getJSON(mContext.getString(R.string.url_get_new_messages), values);
 

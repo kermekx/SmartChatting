@@ -13,6 +13,8 @@ import org.json.JSONObject;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
+
 /**
  * Created by kermekx on 22/02/2016.
  *
@@ -25,14 +27,6 @@ public class LoginTask extends AsyncTask<Void, Void, Boolean> {
     private final String mEmail;
     private final String mPassword;
     private final boolean mHashed;
-
-    public LoginTask(Context context, String email, String password, boolean hashed) {
-        mContext = context;
-        mListener = null;
-        mEmail = email;
-        mPassword = hashed ? password : Hasher.sha256(password);
-        mHashed = hashed;
-    }
 
     public LoginTask(Activity context, TaskListener listener, String email, String password, boolean hashed) {
         mContext = context;
