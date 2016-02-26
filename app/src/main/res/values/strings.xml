@@ -132,4 +132,5 @@
     <string name="url_get_new_messages" translatable="false">https://www.smart-chatting.com/commandes/GetNewMessages.php</string>
     <string name="success_contact_deleted">has been deleted</string>
     <string name="bottom_main_activity_ad_unit_id" translatable="false">ca-app-pub-9876575404749841/8986575616</string>
+    <string name="warning_load_messages_long">Warning, loading a lot of messages may be long! As securized messages take more data.</string>
 </resources>

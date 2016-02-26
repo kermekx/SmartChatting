@@ -416,6 +416,11 @@ public class MainActivity extends AppCompatActivity
 
     public class UpdateMessagesTaskListener implements TaskListener {
 
+        public UpdateMessagesTaskListener() {
+            Snackbar.make(mListView, getString(R.string.warning_load_messages_long), Snackbar.LENGTH_LONG)
+                    .setAction("Action", null).show();
+        }
+
         @Override
         public void onError(int error) {
 
