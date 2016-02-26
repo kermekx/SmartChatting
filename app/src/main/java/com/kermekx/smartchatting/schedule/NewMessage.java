@@ -43,7 +43,6 @@ public class NewMessage extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        //new GetNewMessageTask(context).execute();
         SharedPreferences settings = context.getSharedPreferences(context.getString(R.string.preference_file_session), 0);
         new GetPrivateKeyTask(context, new GetPrivateKeyTaskListener(context), settings.getString("email", ""), settings.getString("password", "")).execute();
     }

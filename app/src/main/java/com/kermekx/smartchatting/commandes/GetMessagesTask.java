@@ -20,12 +20,10 @@ public class GetMessagesTask extends AsyncTask<Void, Void, Boolean> {
 
     private final Context mContext;
     private final TaskListener mListener;
-    private final Key mKey;
 
-    public GetMessagesTask(Context context, TaskListener listener,  Key key) {
+    public GetMessagesTask(Context context, TaskListener listener) {
         mContext = context;
         mListener = listener;
-        mKey = key;
     }
 
     @Override
@@ -38,7 +36,7 @@ public class GetMessagesTask extends AsyncTask<Void, Void, Boolean> {
                         cursor.getString(0),
                         cursor.getString(1),
                         cursor.getString(2),
-                        RSA.decrypt(cursor.getString(3), mKey)
+                        cursor.getString(3)
                 });
             } while (cursor.moveToNext());
 

@@ -42,6 +42,7 @@ import com.kermekx.smartchatting.dialog.AddContactDialog;
 import com.kermekx.smartchatting.dialog.ConfirmLogoutDialog;
 import com.kermekx.smartchatting.message.Message;
 import com.kermekx.smartchatting.message.MessageAdapter;
+import com.kermekx.smartchatting.rsa.RSA;
 import com.kermekx.smartchatting.schedule.NewMessage;
 import com.wdullaer.swipeactionadapter.SwipeActionAdapter;
 import com.wdullaer.swipeactionadapter.SwipeDirection;
@@ -57,8 +58,6 @@ public class MainActivity extends AppCompatActivity
 
     private PendingIntent pendingIntent;
     private AlarmManager manager;
-
-    Key privateKey;
 
     private SwipeActionAdapter mMessageAdapter;
     private SwipeActionAdapter mContactAdapter;
@@ -305,10 +304,16 @@ public class MainActivity extends AppCompatActivity
 
     private class GetMessagesTaskListener implements TaskListener {
 
+        private final Key mKey;
+
         List<Integer> mId = new ArrayList<>();
         List<String> mContacts = new ArrayList<>();
         List<String> mIsSent = new ArrayList<>();
         List<String> mMessages = new ArrayList<>();
+
+        public GetMessagesTaskListener(Key key) {
+            mKey = key;
+        }
 
         @Override
         public void onError(int error) {
@@ -341,7 +346,7 @@ public class MainActivity extends AppCompatActivity
                 List<Message> messages = new ArrayList<>();
 
                 for(int i = mMessages.size() - 1; i >= 0; i --) {
-                    Message message = new Message(mContacts.get(i), mMessages.get(i));
+                    Message message = new Message(mContacts.get(i), RSA.decrypt(mMessages.get(i), mKey));
                     new LoadIconTask(MainActivity.this, new LoadIconTaskListener(message), mContacts.get(i), 48).execute();
                     messages.add(message);
                 }
@@ -485,7 +490,7 @@ public class MainActivity extends AppCompatActivity
 
         @Override
         public void onData(Object... object) {
-            new GetMessagesTask(MainActivity.this, new GetMessagesTaskListener(), (Key) object[0]).execute();
+            new GetMessagesTask(MainActivity.this, new GetMessagesTaskListener((Key) object[0])).execute();
         }
 
         @Override
