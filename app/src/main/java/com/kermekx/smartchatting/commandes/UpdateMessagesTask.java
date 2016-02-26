@@ -7,12 +7,10 @@ import android.os.AsyncTask;
 import com.kermekx.smartchatting.R;
 import com.kermekx.smartchatting.datas.MessagesData;
 import com.kermekx.smartchatting.json.JsonManager;
-import com.kermekx.smartchatting.rsa.RSA;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.security.Key;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;

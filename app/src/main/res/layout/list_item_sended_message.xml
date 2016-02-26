@@ -21,6 +21,8 @@
         android:textColor="@color/grayDark"
         android:textAlignment="gravity"
         android:text="Message!"
+        android:linksClickable="true"
+        android:autoLink="all"
         android:layout_alignParentTop="true"
         android:layout_toLeftOf="@+id/avatar"
         android:layout_toStartOf="@+id/avatar"
