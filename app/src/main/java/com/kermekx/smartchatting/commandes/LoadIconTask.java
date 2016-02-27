@@ -37,20 +37,20 @@ public class LoadIconTask extends AsyncTask<Void, Void, Boolean> {
 
         mIcon = IconManager.getIcon(mContext, mUsername);
 
-        if (mIcon != null)
+        if (mIcon != null) {
+            float px = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, mSize, mContext.getResources().getDisplayMetrics());
+            Bitmap bitmapResized = Bitmap.createScaledBitmap(mIcon, (int) px, (int) px, false);
+            Drawable drawable = new BitmapDrawable(mContext.getResources(), bitmapResized);
+            mListener.onData(new Drawable[] {drawable});
             return true;
+        }
 
         return false;
     }
 
     @Override
     protected void onPostExecute(final Boolean success) {
-        if (success) {
-            float px = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, mSize, mContext.getResources().getDisplayMetrics());
-            Bitmap bitmapResized = Bitmap.createScaledBitmap(mIcon, (int) px, (int) px, false);
-            Drawable drawable = new BitmapDrawable(mContext.getResources(), bitmapResized);
-            mListener.onData(new Drawable[] {drawable});
-        }
+        mListener.onPostExecute(success);
     }
 
     @Override

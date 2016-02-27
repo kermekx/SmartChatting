@@ -2,6 +2,10 @@ package com.kermekx.smartchatting.conversation;
 
 import android.graphics.drawable.Drawable;
 
+import com.kermekx.smartchatting.rsa.RSA;
+
+import java.security.Key;
+
 /**
  * Created by kermekx on 12/02/2016.
  *
@@ -13,11 +17,13 @@ public class Conversation implements Comparable<Conversation> {
     private boolean sended;
     private Drawable icon;
     private String message;
+    private String cryptedMessage;
 
-    public Conversation(int messageID, boolean sended, Drawable icon, String message) {
+    public Conversation(int messageID, boolean sended, Drawable icon, String message, String cryptedMessage) {
         this.sended = sended;
         this.icon = icon;
         this.message = message;
+        this.cryptedMessage = cryptedMessage;
     }
 
     public boolean isSent() {
@@ -42,6 +48,10 @@ public class Conversation implements Comparable<Conversation> {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    public void decrypt(Key key) {
+        setMessage(RSA.decrypt(cryptedMessage, key));
     }
 
     @Override

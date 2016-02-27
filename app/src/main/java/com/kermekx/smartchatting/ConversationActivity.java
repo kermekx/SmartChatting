@@ -289,9 +289,9 @@ public class ConversationActivity extends AppCompatActivity {
             } else {
                 String[] data = (String[]) object;
                 if (data[1].equals(username)) {
-                    Conversation conversation = new Conversation(Integer.parseInt(data[0]), Boolean.parseBoolean(data[2]), null, RSA.decrypt(data[3], mKey));
+                    Conversation conversation = new Conversation(Integer.parseInt(data[0]), Boolean.parseBoolean(data[2]), null, getString(R.string.decrypting), data[3]);
                     conversations.add(conversation);
-                    tasks.add(new LoadIconTask(ConversationActivity.this, new LoadIconTaskListener(conversation), data[1], 48));
+                    tasks.add(new LoadIconTask(ConversationActivity.this, new LoadIconTaskListener(conversation, mKey), data[1], 48));
                 }
             }
         }
@@ -338,9 +338,9 @@ public class ConversationActivity extends AppCompatActivity {
             } else {
                 String[] data = (String[]) object;
                 if (data[1].equals(username)) {
-                    Conversation conversation = new Conversation(Integer.parseInt(data[0]), Boolean.parseBoolean(data[2]), null, RSA.decrypt(data[3], mKey));
+                    Conversation conversation = new Conversation(Integer.parseInt(data[0]), Boolean.parseBoolean(data[2]), null, getString(R.string.decrypting), data[3]);
                     conversations.add(0, conversation);
-                    tasks.add(new LoadIconTask(ConversationActivity.this, new LoadIconTaskListener(conversation), data[1], 48));
+                    tasks.add(new LoadIconTask(ConversationActivity.this, new LoadIconTaskListener(conversation, mKey), data[1], 48));
                 }
             }
         }
@@ -375,9 +375,11 @@ public class ConversationActivity extends AppCompatActivity {
     private class LoadIconTaskListener implements TaskListener {
 
         private final Object mItem;
+        private final Key mKey;
 
-        public LoadIconTaskListener(Object item) {
+        public LoadIconTaskListener(Object item, Key key) {
             mItem = item;
+            mKey = key;
         }
 
         @Override
@@ -391,14 +393,15 @@ public class ConversationActivity extends AppCompatActivity {
                 Drawable drawable = (Drawable) object[0];
                 if (mItem instanceof Conversation) {
                     ((Conversation) mItem).setIcon(drawable);
-                    conversationAdapter.notifyDataSetChanged();
+                    ((Conversation) mItem).decrypt(mKey);
                 }
             }
         }
 
         @Override
         public void onPostExecute(Boolean success) {
-
+            if (success)
+                conversationAdapter.notifyDataSetChanged();
         }
 
         @Override

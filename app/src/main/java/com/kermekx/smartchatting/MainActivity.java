@@ -21,6 +21,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ImageView;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -523,6 +524,8 @@ public class MainActivity extends AppCompatActivity
 
         private final Object mItem;
 
+        private SwipeActionAdapter adapter;
+
         public LoadIconTaskListener(Object item) {
             mItem = item;
         }
@@ -534,15 +537,14 @@ public class MainActivity extends AppCompatActivity
 
         @Override
         public void onData(Object... object) {
-
             if (object instanceof Drawable[]) {
                 Drawable drawable = (Drawable) object[0];
                 if (mItem instanceof Contact) {
                     ((Contact) mItem).setIcon(drawable);
-                    mContactAdapter.notifyDataSetChanged();
+                    adapter = mContactAdapter;
                 } else if (mItem instanceof Message) {
                     ((Message) mItem).setIcon(drawable);
-                    mMessageAdapter.notifyDataSetChanged();
+                    adapter = mMessageAdapter;
                 } else if (mItem instanceof ImageView) {
                     ((ImageView) mItem).setImageDrawable(drawable);
                 }
@@ -551,7 +553,9 @@ public class MainActivity extends AppCompatActivity
 
         @Override
         public void onPostExecute(Boolean success) {
-
+            if (success && adapter != null) {
+                adapter.notifyDataSetChanged();
+            }
         }
 
         @Override
