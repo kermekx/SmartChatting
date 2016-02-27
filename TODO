@@ -1,6 +1,7 @@
 TODO list :
 
-  - Optimiser la vitesse de chargement des messages
+  - Optimiser la vitesse de chargement des messages (Montrer "Dechiffrement en cours..." a la place des messages et les
+              dechifrés des plus récent au moins récent.
   - Code Pin (le code pin encrypt les données dans les shared preferences (MDP et Secure) et fait entre 4 et 8 chiffres)
               Il faudra garder dans la ram de lappli le code pin durant toute l'application mais aussi dans les taches
               afin de pouvoir notifier des nouveaux messages. Il sera mieu d'organiser les chiffres du clavier de manière
