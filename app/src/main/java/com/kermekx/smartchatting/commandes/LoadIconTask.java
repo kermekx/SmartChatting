@@ -35,6 +35,9 @@ public class LoadIconTask extends AsyncTask<Void, Void, Boolean> {
     @Override
     protected Boolean doInBackground(Void... params) {
 
+        if (isCancelled())
+            return false;
+
         mIcon = IconManager.getIcon(mContext, mUsername);
 
         if (mIcon != null) {
@@ -44,6 +47,8 @@ public class LoadIconTask extends AsyncTask<Void, Void, Boolean> {
             mListener.onData(new Drawable[] {drawable});
             return true;
         }
+
+        mListener.onData();
 
         return false;
     }

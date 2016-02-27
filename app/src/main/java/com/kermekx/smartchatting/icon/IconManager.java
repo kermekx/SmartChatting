@@ -49,6 +49,7 @@ public class IconManager {
             Bitmap tmp;
 
             connection = (HttpURLConnection) new URL(url).openConnection();
+            connection.setConnectTimeout(2000);
             connection.connect();
             InputStream input = connection.getInputStream();
 

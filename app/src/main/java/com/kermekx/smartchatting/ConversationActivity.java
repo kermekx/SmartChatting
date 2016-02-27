@@ -48,6 +48,8 @@ public class ConversationActivity extends AppCompatActivity {
 
     private ConversationAdapter conversationAdapter;
 
+    private List<LoadIconTask> mTasks = new ArrayList<>();
+
     private Timer timer = new Timer();
     private TimerTask updateTask = new TimerTask() {
         @Override
@@ -113,6 +115,14 @@ public class ConversationActivity extends AppCompatActivity {
         SharedPreferences.Editor editor = settings.edit();
         editor.putBoolean("notify_" + username, false);
         editor.commit();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        for (LoadIconTask task : mTasks)
+            task.cancel(true);
     }
 
     @Override
@@ -358,6 +368,8 @@ public class ConversationActivity extends AppCompatActivity {
                 for (LoadIconTask task : tasks)
                     task.execute();
 
+                mTasks = tasks;
+
                 try {
                     timer.schedule(updateTask, 1, 2000);
                 } catch (Exception e) {
@@ -395,13 +407,16 @@ public class ConversationActivity extends AppCompatActivity {
                     ((Conversation) mItem).setIcon(drawable);
                     ((Conversation) mItem).decrypt(mKey);
                 }
+            } else {
+                if (mItem instanceof Conversation) {
+                    ((Conversation) mItem).decrypt(mKey);
+                }
             }
         }
 
         @Override
         public void onPostExecute(Boolean success) {
-            if (success)
-                conversationAdapter.notifyDataSetChanged();
+            conversationAdapter.notifyDataSetChanged();
         }
 
         @Override
