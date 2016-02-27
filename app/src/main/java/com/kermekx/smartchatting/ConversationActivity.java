@@ -57,7 +57,7 @@ public class ConversationActivity extends AppCompatActivity {
             SharedPreferences settings = getSharedPreferences(getString(R.string.preference_file_session), 0);
             TaskListener listener = new UpdateMessagesTaskListener();
             AsyncTask<Void, Void, Boolean> task = new UpdateMessagesTask(ConversationActivity.this, listener, settings.getString("email", ""), settings.getString("password", ""));
-            new GetPrivateKeyTask(ConversationActivity.this, new GetPrivateKeyTaskListener(task, listener), settings.getString("email", ""), settings.getString("password", "")).execute();
+            new GetPrivateKeyTask(ConversationActivity.this, new GetPrivateKeyTaskListener(task, listener), settings.getString("email", ""), settings.getString("password", "")).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         }
     };
 
@@ -217,7 +217,7 @@ public class ConversationActivity extends AppCompatActivity {
         }
 
         if (send) {
-            new SendMessageTask(username, message, senderPublicKey, receiverPublicKey).execute();
+            new SendMessageTask(username, message, senderPublicKey, receiverPublicKey).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
             mMessageView.setText("");
         }
     }
@@ -314,8 +314,10 @@ public class ConversationActivity extends AppCompatActivity {
                 }
 
                 for (LoadIconTask task : tasks) {
-                    task.execute();
+                    task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                 }
+
+                conversationAdapter.notifyDataSetChanged();
 
                 if (mMessagesView.getCount() > 0) {
                     mMessagesView.setSelection(mMessagesView.getCount() - 1);
@@ -450,7 +452,7 @@ public class ConversationActivity extends AppCompatActivity {
         @Override
         public void onData(Object... object) {
             mListener.onData(object);
-            mTask.execute();
+            mTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         }
 
         @Override
