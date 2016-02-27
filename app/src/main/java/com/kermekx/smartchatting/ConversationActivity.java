@@ -28,6 +28,7 @@ import org.json.JSONObject;
 import java.math.BigInteger;
 import java.security.Key;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -287,15 +288,17 @@ public class ConversationActivity extends AppCompatActivity {
                 mKey = (Key) object[0];
             } else {
                 String[] data = (String[]) object;
-                Conversation conversation = new Conversation(Boolean.parseBoolean(data[2]), null, RSA.decrypt(data[3], mKey));
-                conversations.add(conversation);
-                tasks.add(new LoadIconTask(ConversationActivity.this, new LoadIconTaskListener(conversation), data[1], 48));
+                if (data[1].equals(username)) {
+                    Conversation conversation = new Conversation(Integer.parseInt(data[0]), Boolean.parseBoolean(data[2]), null, RSA.decrypt(data[3], mKey));
+                    conversations.add(conversation);
+                    tasks.add(new LoadIconTask(ConversationActivity.this, new LoadIconTaskListener(conversation), data[1], 48));
+                }
             }
         }
 
         @Override
         public void onPostExecute(Boolean success) {
-            if (success) {
+            if (success && conversations.size() > 0) {
                 for (Conversation conversation : conversations) {
                     conversationAdapter.add(conversation);
                 }
@@ -334,9 +337,11 @@ public class ConversationActivity extends AppCompatActivity {
                 mKey = (Key) object[0];
             } else {
                 String[] data = (String[]) object;
-                Conversation conversation = new Conversation(Boolean.parseBoolean(data[2]), null, RSA.decrypt(data[3], mKey));
-                conversations.add(conversation);
-                tasks.add(new LoadIconTask(ConversationActivity.this, new LoadIconTaskListener(conversation), data[1], 48));
+                if (data[1].equals(username)) {
+                    Conversation conversation = new Conversation(Integer.parseInt(data[0]), Boolean.parseBoolean(data[2]), null, RSA.decrypt(data[3], mKey));
+                    conversations.add(0, conversation);
+                    tasks.add(new LoadIconTask(ConversationActivity.this, new LoadIconTaskListener(conversation), data[1], 48));
+                }
             }
         }
 

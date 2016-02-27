@@ -7,13 +7,14 @@ import android.graphics.drawable.Drawable;
  *
  * Message data to display item list in the conversation activity
  */
-public class Conversation {
+public class Conversation implements Comparable<Conversation> {
 
+    private int messageID;
     private boolean sended;
     private Drawable icon;
     private String message;
 
-    public Conversation(boolean sended, Drawable icon, String message) {
+    public Conversation(int messageID, boolean sended, Drawable icon, String message) {
         this.sended = sended;
         this.icon = icon;
         this.message = message;
@@ -41,5 +42,10 @@ public class Conversation {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    @Override
+    public int compareTo(Conversation another) {
+        return Integer.valueOf(messageID).compareTo(Integer.valueOf(another.messageID));
     }
 }
