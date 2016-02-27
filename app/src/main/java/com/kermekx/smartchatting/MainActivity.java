@@ -354,10 +354,18 @@ public class MainActivity extends AppCompatActivity
                 mMessageAdapter = new SwipeActionAdapter(new MessageAdapter(MainActivity.this, messages));
                 mMessageAdapter.setListView(mListView);
 
+                mMessageAdapter.addBackground(SwipeDirection.DIRECTION_NORMAL_LEFT, R.layout.row_bg_delete)
+                        .addBackground(SwipeDirection.DIRECTION_NORMAL_RIGHT, R.layout.row_bg_chat);
+
+                mMessageAdapter.setSwipeActionListener(mContactSwipeActionListener);
+                if (menuId == R.id.nav_contact) {
+                    mListView.setAdapter(mContactAdapter);
+                }
+            }
+
                 if (menuId == R.id.nav_message)
                     mListView.setAdapter(mMessageAdapter);
             }
-        }
 
         @Override
         public void onCancelled() {
