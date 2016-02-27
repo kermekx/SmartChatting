@@ -7,6 +7,7 @@ TODO list :
               aléatoire (comme les banques) afin d'éviter les Troyans.
   - Utilisation des taches individuels (propre classe) dans conversation acivity
   - Utilisation des taches individuels (propre classe) dans contact acivity
-  - Ajout des swipes (discuter et supprimer) dans la list des derniers messages
+  - Ajouter la fonction supprimer les messages (de la base de donnée interne uniquement, il faudra creer un faux message
+              avec sent a null pour l'id la plus haute des message supprimer afin d'eviter que les messages sont retelecharger.
   - Ajout d'une fonction pour changer d'icon
   - pub en haut de la liste dans main activity 
