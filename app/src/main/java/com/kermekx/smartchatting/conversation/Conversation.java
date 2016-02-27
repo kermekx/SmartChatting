@@ -20,6 +20,7 @@ public class Conversation implements Comparable<Conversation> {
     private String cryptedMessage;
 
     public Conversation(int messageID, boolean sended, Drawable icon, String message, String cryptedMessage) {
+        this.messageID = messageID;
         this.sended = sended;
         this.icon = icon;
         this.message = message;

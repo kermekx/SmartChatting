@@ -334,7 +334,6 @@ public class ConversationActivity extends AppCompatActivity {
         private Key mKey;
 
         private List<Conversation> conversations = new ArrayList<>();
-        private List<LoadIconTask> tasks = new ArrayList<>();
 
         @Override
         public void onError(int error) {
@@ -349,8 +348,7 @@ public class ConversationActivity extends AppCompatActivity {
                 String[] data = (String[]) object;
                 if (data[1].equals(username)) {
                     Conversation conversation = new Conversation(Integer.parseInt(data[0]), Boolean.parseBoolean(data[2]), null, getString(R.string.decrypting), data[3]);
-                    conversations.add(0, conversation);
-                    tasks.add(new LoadIconTask(ConversationActivity.this, new LoadIconTaskListener(conversation, mKey), data[1], 48));
+                    conversations.add(conversation);
                 }
             }
         }
@@ -358,12 +356,21 @@ public class ConversationActivity extends AppCompatActivity {
         @Override
         public void onPostExecute(Boolean success) {
             if (success) {
+                List<LoadIconTask> tasks = new ArrayList<>();
+                Collections.sort(conversations);
+
                 conversationAdapter = new ConversationAdapter(ConversationActivity.this, conversations);
                 mMessagesView.setAdapter(conversationAdapter);
 
                 if (mMessagesView.getCount() > 0) {
                     mMessagesView.setSelection(mMessagesView.getCount() - 1);
                 }
+
+                SharedPreferences settings = getSharedPreferences(getString(R.string.preference_file_session), 0);
+                String user = settings.getString("username", "");
+
+                for (Conversation conversation : conversations)
+                    tasks.add(0, new LoadIconTask(ConversationActivity.this, new LoadIconTaskListener(conversation, mKey), conversation.isSent() ? user : username, 48));
 
                 for (LoadIconTask task : tasks)
                     task.execute();
