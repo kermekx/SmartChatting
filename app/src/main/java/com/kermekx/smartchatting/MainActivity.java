@@ -50,8 +50,6 @@ import com.wdullaer.swipeactionadapter.SwipeDirection;
 import java.security.Key;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -357,15 +355,12 @@ public class MainActivity extends AppCompatActivity
                 mMessageAdapter.addBackground(SwipeDirection.DIRECTION_NORMAL_LEFT, R.layout.row_bg_delete)
                         .addBackground(SwipeDirection.DIRECTION_NORMAL_RIGHT, R.layout.row_bg_chat);
 
-                mMessageAdapter.setSwipeActionListener(mContactSwipeActionListener);
-                if (menuId == R.id.nav_contact) {
-                    mListView.setAdapter(mContactAdapter);
+                mMessageAdapter.setSwipeActionListener(mMessageSwipeActionListener);
+                if (menuId == R.id.nav_message) {
+                    mListView.setAdapter(mMessageAdapter);
                 }
             }
-
-                if (menuId == R.id.nav_message)
-                    mListView.setAdapter(mMessageAdapter);
-            }
+        }
 
         @Override
         public void onCancelled() {
@@ -679,6 +674,48 @@ public class MainActivity extends AppCompatActivity
             extra.putString("username", username.getText().toString());
             contactActivity.putExtras(extra);
             MainActivity.this.startActivity(contactActivity);
+        }
+    };
+
+    SwipeActionAdapter.SwipeActionListener mMessageSwipeActionListener = new SwipeActionAdapter.SwipeActionListener() {
+        @Override
+        public boolean hasActions(int i, SwipeDirection swipeDirection) {
+            mRefresh.setEnabled(false);
+            if (swipeDirection.isLeft())
+                return true;
+
+            if (swipeDirection.isRight())
+                return true;
+
+            return false;
+        }
+
+        @Override
+        public boolean shouldDismiss(int i, SwipeDirection swipeDirection) {
+            return swipeDirection == SwipeDirection.DIRECTION_FAR_LEFT;
+        }
+
+        @Override
+        public void onSwipe(int[] positions, SwipeDirection[] swipeDirections) {
+            mRefresh.setEnabled(true);
+
+            for(int i = 0; i < positions.length; i++) {
+                SwipeDirection direction = swipeDirections[i];
+                int position = positions[i];
+
+                String username = ((Message) mMessageAdapter.getItem(position)).getUsername();
+
+                if (direction == SwipeDirection.DIRECTION_FAR_LEFT) {
+                    Snackbar.make(mListView, "Delete message not implemented", Snackbar.LENGTH_LONG)
+                            .setAction("Action", null).show();
+                } else if (direction.isRight()) {
+                    Intent conversationActivity = new Intent(MainActivity.this, ConversationActivity.class);
+                    Bundle extra = new Bundle();
+                    extra.putString("username", username);
+                    conversationActivity.putExtras(extra);
+                    MainActivity.this.startActivity(conversationActivity);
+                }
+            }
         }
     };
 
