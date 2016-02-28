@@ -2,6 +2,7 @@ package com.kermekx.smartchatting.fragment;
 
 import android.app.Fragment;
 import android.os.Bundle;
+import android.os.Parcelable;
 
 import com.kermekx.smartchatting.commandes.LoadIconTask;
 import com.kermekx.smartchatting.conversation.ConversationAdapter;
@@ -14,6 +15,7 @@ import java.util.List;
  */
 public class ConversationFragment extends Fragment {
 
+    private Parcelable state;
     private ConversationAdapter conversationAdapter;
     private List<LoadIconTask> mTasks = new ArrayList<>();
 
@@ -21,6 +23,14 @@ public class ConversationFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
+    }
+
+    public Parcelable getState() {
+        return state;
+    }
+
+    public void setState(Parcelable state) {
+        this.state = state;
     }
 
     public ConversationAdapter getConversationAdapter() {

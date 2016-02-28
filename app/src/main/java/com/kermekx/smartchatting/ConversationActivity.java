@@ -86,11 +86,18 @@ public class ConversationActivity extends AppCompatActivity {
                 sendMessage();
             }
         });
+
+        try {
+            timer.schedule(updateTask, 2000, 2000);
+        } catch (Exception e) {
+
+        }
     }
 
     @Override
     protected void onPause() {
-        timer.cancel();
+
+        fragment.setState(mMessagesView.onSaveInstanceState());
 
         SharedPreferences settings = getSharedPreferences(getString(R.string.preference_file_session), 0);
         SharedPreferences.Editor editor = settings.edit();
@@ -122,15 +129,7 @@ public class ConversationActivity extends AppCompatActivity {
         } else if (fragment.getConversationAdapter() != null) {
             mMessagesView.setAdapter(fragment.getConversationAdapter());
 
-            if (mMessagesView.getCount() > 0) {
-                mMessagesView.setSelection(mMessagesView.getCount() - 1);
-            }
-
-            try {
-                timer.schedule(updateTask, 1, 2000);
-            } catch (Exception e) {
-
-            }
+            mMessagesView.onRestoreInstanceState(fragment.getState());
         }
 
         String user = settings.getString("username", "");
@@ -146,6 +145,8 @@ public class ConversationActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+
+        timer.cancel();
 
         for (LoadIconTask task : mTasks)
             task.cancel(true);
@@ -404,12 +405,6 @@ public class ConversationActivity extends AppCompatActivity {
                     task.execute();
 
                 mTasks = tasks;
-
-                try {
-                    timer.schedule(updateTask, 1, 2000);
-                } catch (Exception e) {
-
-                }
             }
         }
 
