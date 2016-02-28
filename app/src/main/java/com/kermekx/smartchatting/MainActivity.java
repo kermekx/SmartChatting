@@ -20,6 +20,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListAdapter;
@@ -148,12 +149,14 @@ public class MainActivity extends AppCompatActivity
             setTitle(getString(R.string.title_activity_main));
 
             mListView.setAdapter(fragment.getMessageAdapter());
+            setListViewHeightBasedOnChildren(mListView);
 
             mListView.setOnItemClickListener(selectConversation);
         } else if (menuId == R.id.nav_contact && fragment.getContactAdapter() != null) {
             setTitle(getString(R.string.title_activity_main_contact));
 
             mListView.setAdapter(fragment.getContactAdapter());
+            setListViewHeightBasedOnChildren(mListView);
             mListView.setOnItemClickListener(selectContact);
         }
     }
@@ -231,6 +234,7 @@ public class MainActivity extends AppCompatActivity
 
             if (fragment.getMessageAdapter() != null) {
                 mListView.setAdapter(fragment.getMessageAdapter());
+                setListViewHeightBasedOnChildren(mListView);
                 fragment.getMessageAdapter().setSwipeActionListener(mMessageSwipeActionListener);
                 menuId = id;
 
@@ -243,6 +247,7 @@ public class MainActivity extends AppCompatActivity
 
             if (fragment.getContactAdapter() != null) {
                 mListView.setAdapter(fragment.getContactAdapter());
+                setListViewHeightBasedOnChildren(mListView);
                 fragment.getContactAdapter().setSwipeActionListener(mContactSwipeActionListener);
                 menuId = id;
 
@@ -381,6 +386,7 @@ public class MainActivity extends AppCompatActivity
 
                 if (menuId == R.id.nav_message) {
                     mListView.setAdapter(mMessageAdapter);
+                    setListViewHeightBasedOnChildren(mListView);
                     mListView.setOnItemClickListener(selectConversation);
                 }
             }
@@ -425,6 +431,7 @@ public class MainActivity extends AppCompatActivity
 
                 if (menuId == R.id.nav_contact) {
                     mListView.setAdapter(mContactAdapter);
+                    setListViewHeightBasedOnChildren(mListView);
                     mListView.setOnItemClickListener(selectContact);
                 }
 
@@ -792,4 +799,23 @@ public class MainActivity extends AppCompatActivity
             }
         }
     };
+
+    public static void setListViewHeightBasedOnChildren(ListView listView) {
+        ListAdapter listAdapter = listView.getAdapter();
+        if (listAdapter == null) {
+            return;
+        }
+
+        int totalHeight = 0;
+        for (int i = 0; i < listAdapter.getCount(); i++) {
+            View listItem = listAdapter.getView(i, null, listView);
+            listItem.measure(0, 0);
+            totalHeight += listItem.getMeasuredHeight();
+        }
+
+        ViewGroup.LayoutParams params = listView.getLayoutParams();
+        params.height = totalHeight
+                + (listView.getDividerHeight() * (listAdapter.getCount() - 1));
+        listView.setLayoutParams(params);
+    }
 }
