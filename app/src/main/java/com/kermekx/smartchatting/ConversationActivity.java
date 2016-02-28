@@ -125,6 +125,12 @@ public class ConversationActivity extends AppCompatActivity {
             if (mMessagesView.getCount() > 0) {
                 mMessagesView.setSelection(mMessagesView.getCount() - 1);
             }
+
+            try {
+                timer.schedule(updateTask, 1, 2000);
+            } catch (Exception e) {
+
+            }
         }
 
         String user = settings.getString("username", "");
