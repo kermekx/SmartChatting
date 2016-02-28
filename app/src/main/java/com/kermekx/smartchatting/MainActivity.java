@@ -2,6 +2,7 @@ package com.kermekx.smartchatting;
 
 import android.app.AlarmManager;
 import android.app.DialogFragment;
+import android.app.FragmentManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
@@ -41,6 +42,7 @@ import com.kermekx.smartchatting.contact.ContactAdapter;
 import com.kermekx.smartchatting.datas.SmartChattingBdHelper;
 import com.kermekx.smartchatting.dialog.AddContactDialog;
 import com.kermekx.smartchatting.dialog.ConfirmLogoutDialog;
+import com.kermekx.smartchatting.fragment.MainActivityFragment;
 import com.kermekx.smartchatting.message.Message;
 import com.kermekx.smartchatting.message.MessageAdapter;
 import com.kermekx.smartchatting.rsa.RSA;
@@ -55,16 +57,15 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
+    private ListView mListView;
     private PendingIntent pendingIntent;
     private AlarmManager manager;
 
-    private SwipeActionAdapter mMessageAdapter;
-    private SwipeActionAdapter mContactAdapter;
+    private MainActivityFragment fragment;
 
     private int menuId = R.id.nav_message;
 
     private SwipeRefreshLayout mRefresh;
-    private ListView mListView;
 
     private AdView mAdView;
 
@@ -130,19 +131,29 @@ public class MainActivity extends AppCompatActivity
             mAdView.resume();
         }
 
-        SharedPreferences settings = getSharedPreferences(getString(R.string.preference_file_session), 0);
-        new GetPrivateKeyTask(this, new GetPrivateKeyTaskListener(), settings.getString("email", ""), settings.getString("password", "")).execute();
-        new GetContactsTask(this, new GetContactsTaskListener()).execute();
+        FragmentManager fm = getFragmentManager();
+        fragment = (MainActivityFragment) fm.findFragmentByTag("MainActivityFragment");
 
-        if (menuId == R.id.nav_message) {
+        if (fragment == null) {
+            fragment = new MainActivityFragment();
+            fm.beginTransaction().add(fragment, "MainActivityFragment").commit();
+
+            SharedPreferences settings = getSharedPreferences(getString(R.string.preference_file_session), 0);
+
+            new GetPrivateKeyTask(this, new GetPrivateKeyTaskListener(), settings.getString("email", ""), settings.getString("password", "")).execute();
+            new GetContactsTask(this, new GetContactsTaskListener()).execute();
+        }
+
+        if (menuId == R.id.nav_message && fragment.getMessageAdapter() != null) {
             setTitle(getString(R.string.title_activity_main));
-            mListView.setAdapter(mMessageAdapter);
+
+            mListView.setAdapter(fragment.getMessageAdapter());
 
             mListView.setOnItemClickListener(selectConversation);
-        } else if (menuId == R.id.nav_contact) {
+        } else if (menuId == R.id.nav_contact && fragment.getContactAdapter() != null) {
             setTitle(getString(R.string.title_activity_main_contact));
-            mListView.setAdapter(mContactAdapter);
 
+            mListView.setAdapter(fragment.getContactAdapter());
             mListView.setOnItemClickListener(selectContact);
         }
     }
@@ -217,18 +228,26 @@ public class MainActivity extends AppCompatActivity
 
         if (id == R.id.nav_message) {
             setTitle(getString(R.string.title_activity_main));
-            mListView.setAdapter(mMessageAdapter);
-            menuId = id;
 
-            mListView.setOnItemClickListener(selectConversation);
+            if (fragment.getMessageAdapter() != null) {
+                mListView.setAdapter(fragment.getMessageAdapter());
+                fragment.getMessageAdapter().setSwipeActionListener(mMessageSwipeActionListener);
+                menuId = id;
+
+                mListView.setOnItemClickListener(selectConversation);
+            }
 
             updateMessages();
-        } else if (id == R.id.nav_contact) {
+        } else if (id == R.id.nav_contact ) {
             setTitle(getString(R.string.title_activity_main_contact));
-            mListView.setAdapter(mContactAdapter);
-            menuId = id;
 
-            mListView.setOnItemClickListener(selectContact);
+            if (fragment.getContactAdapter() != null) {
+                mListView.setAdapter(fragment.getContactAdapter());
+                fragment.getContactAdapter().setSwipeActionListener(mContactSwipeActionListener);
+                menuId = id;
+
+                mListView.setOnItemClickListener(selectContact);
+            }
 
             updateContacts();
         } else if (id == R.id.nav_support) {
@@ -350,15 +369,19 @@ public class MainActivity extends AppCompatActivity
                     messages.add(message);
                 }
 
-                mMessageAdapter = new SwipeActionAdapter(new MessageAdapter(MainActivity.this, messages));
+                SwipeActionAdapter mMessageAdapter = new SwipeActionAdapter(new MessageAdapter(MainActivity.this, messages));
                 mMessageAdapter.setListView(mListView);
 
                 mMessageAdapter.addBackground(SwipeDirection.DIRECTION_NORMAL_LEFT, R.layout.row_bg_delete)
                         .addBackground(SwipeDirection.DIRECTION_NORMAL_RIGHT, R.layout.row_bg_chat);
 
                 mMessageAdapter.setSwipeActionListener(mMessageSwipeActionListener);
+
+                fragment.setMessageAdapter(mMessageAdapter);
+
                 if (menuId == R.id.nav_message) {
                     mListView.setAdapter(mMessageAdapter);
+                    mListView.setOnItemClickListener(selectConversation);
                 }
             }
         }
@@ -390,15 +413,19 @@ public class MainActivity extends AppCompatActivity
         @Override
         public void onPostExecute(Boolean success) {
             if (success) {
-                mContactAdapter = new SwipeActionAdapter(new ContactAdapter(MainActivity.this, contacts));
+                SwipeActionAdapter mContactAdapter = new SwipeActionAdapter(new ContactAdapter(MainActivity.this, contacts));
                 mContactAdapter.setListView(mListView);
 
                 mContactAdapter.addBackground(SwipeDirection.DIRECTION_NORMAL_LEFT, R.layout.row_bg_delete)
                         .addBackground(SwipeDirection.DIRECTION_NORMAL_RIGHT, R.layout.row_bg_chat);
 
                 mContactAdapter.setSwipeActionListener(mContactSwipeActionListener);
+
+                fragment.setContactAdapter(mContactAdapter);
+
                 if (menuId == R.id.nav_contact) {
                     mListView.setAdapter(mContactAdapter);
+                    mListView.setOnItemClickListener(selectContact);
                 }
 
                 for (LoadIconTask task : tasks)
@@ -541,10 +568,10 @@ public class MainActivity extends AppCompatActivity
                 Drawable drawable = (Drawable) object[0];
                 if (mItem instanceof Contact) {
                     ((Contact) mItem).setIcon(drawable);
-                    adapter = mContactAdapter;
+                    adapter = fragment.getContactAdapter();
                 } else if (mItem instanceof Message) {
                     ((Message) mItem).setIcon(drawable);
-                    adapter = mMessageAdapter;
+                    adapter = fragment.getMessageAdapter();
                 } else if (mItem instanceof ImageView) {
                     ((ImageView) mItem).setImageDrawable(drawable);
                 }
@@ -707,7 +734,7 @@ public class MainActivity extends AppCompatActivity
                 SwipeDirection direction = swipeDirections[i];
                 int position = positions[i];
 
-                String username = ((Message) mMessageAdapter.getItem(position)).getUsername();
+                String username = ((Message) fragment.getMessageAdapter().getItem(position)).getUsername();
 
                 if (direction == SwipeDirection.DIRECTION_FAR_LEFT) {
                     Snackbar.make(mListView, "Delete message not implemented", Snackbar.LENGTH_LONG)
@@ -749,7 +776,7 @@ public class MainActivity extends AppCompatActivity
                 SwipeDirection direction = swipeDirections[i];
                 int position = positions[i];
 
-                String username = ((Contact) mContactAdapter.getItem(position)).getUsername();
+                String username = ((Contact) fragment.getContactAdapter().getItem(position)).getUsername();
 
                 if (direction == SwipeDirection.DIRECTION_FAR_LEFT) {
                     mRefresh.setRefreshing(true);

@@ -1,5 +1,6 @@
 package com.kermekx.smartchatting;
 
+import android.app.FragmentManager;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
@@ -13,6 +14,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 
+import com.kermekx.smartchatting.commandes.GetContactsTask;
 import com.kermekx.smartchatting.commandes.GetMessagesTask;
 import com.kermekx.smartchatting.commandes.GetPrivateKeyTask;
 import com.kermekx.smartchatting.commandes.LoadIconTask;
@@ -20,6 +22,8 @@ import com.kermekx.smartchatting.commandes.TaskListener;
 import com.kermekx.smartchatting.commandes.UpdateMessagesTask;
 import com.kermekx.smartchatting.conversation.Conversation;
 import com.kermekx.smartchatting.conversation.ConversationAdapter;
+import com.kermekx.smartchatting.fragment.ConversationFragment;
+import com.kermekx.smartchatting.fragment.MainActivityFragment;
 import com.kermekx.smartchatting.json.JsonManager;
 import com.kermekx.smartchatting.rsa.RSA;
 
@@ -46,7 +50,7 @@ public class ConversationActivity extends AppCompatActivity {
     private EditText mMessageView;
     private ListView mMessagesView;
 
-    private ConversationAdapter conversationAdapter;
+    private ConversationFragment fragment;
 
     private List<LoadIconTask> mTasks = new ArrayList<>();
 
@@ -102,15 +106,31 @@ public class ConversationActivity extends AppCompatActivity {
 
         setTitle(username);
 
+        FragmentManager fm = getFragmentManager();
+        fragment = (ConversationFragment) fm.findFragmentByTag("ConversationFragment");
+
         SharedPreferences settings = getSharedPreferences(getString(R.string.preference_file_session), 0);
+
+        if (fragment == null) {
+            fragment = new ConversationFragment();
+            fm.beginTransaction().add(fragment, "ConversationFragment").commit();
+
+            TaskListener listener = new GetMessagesTaskListener();
+            AsyncTask<Void, Void, Boolean> task = new GetMessagesTask(ConversationActivity.this, listener);
+            new GetPrivateKeyTask(ConversationActivity.this, new GetPrivateKeyTaskListener(task, listener), settings.getString("email", ""), settings.getString("password", "")).execute();
+
+        } else if (fragment.getConversationAdapter() != null) {
+            mMessagesView.setAdapter(fragment.getConversationAdapter());
+
+            if (mMessagesView.getCount() > 0) {
+                mMessagesView.setSelection(mMessagesView.getCount() - 1);
+            }
+        }
+
         String user = settings.getString("username", "");
 
         new GetPublicKeyTask(username, false).execute();
         new GetPublicKeyTask(user, true).execute();
-
-        TaskListener listener = new GetMessagesTaskListener();
-        AsyncTask<Void, Void, Boolean> task = new GetMessagesTask(ConversationActivity.this, listener);
-        new GetPrivateKeyTask(ConversationActivity.this, new GetPrivateKeyTaskListener(task, listener), settings.getString("email", ""), settings.getString("password", "")).execute();
 
         SharedPreferences.Editor editor = settings.edit();
         editor.putBoolean("notify_" + username, false);
@@ -310,14 +330,14 @@ public class ConversationActivity extends AppCompatActivity {
         public void onPostExecute(Boolean success) {
             if (success && conversations.size() > 0) {
                 for (Conversation conversation : conversations) {
-                    conversationAdapter.add(conversation);
+                    fragment.getConversationAdapter().add(conversation);
                 }
 
                 for (LoadIconTask task : tasks) {
                     task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                 }
 
-                conversationAdapter.notifyDataSetChanged();
+                fragment.getConversationAdapter().notifyDataSetChanged();
 
                 if (mMessagesView.getCount() > 0) {
                     mMessagesView.setSelection(mMessagesView.getCount() - 1);
@@ -361,8 +381,8 @@ public class ConversationActivity extends AppCompatActivity {
                 List<LoadIconTask> tasks = new ArrayList<>();
                 Collections.sort(conversations);
 
-                conversationAdapter = new ConversationAdapter(ConversationActivity.this, conversations);
-                mMessagesView.setAdapter(conversationAdapter);
+                fragment.setConversationAdapter(new ConversationAdapter(ConversationActivity.this, conversations));
+                mMessagesView.setAdapter(fragment.getConversationAdapter());
 
                 if (mMessagesView.getCount() > 0) {
                     mMessagesView.setSelection(mMessagesView.getCount() - 1);
@@ -425,7 +445,7 @@ public class ConversationActivity extends AppCompatActivity {
 
         @Override
         public void onPostExecute(Boolean success) {
-            conversationAdapter.notifyDataSetChanged();
+            fragment.getConversationAdapter().notifyDataSetChanged();
         }
 
         @Override
