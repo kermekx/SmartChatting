@@ -1,6 +1,8 @@
 package com.kermekx.smartchatting;
 
 import android.app.FragmentManager;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
@@ -10,9 +12,12 @@ import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.kermekx.smartchatting.commandes.GetContactsTask;
 import com.kermekx.smartchatting.commandes.GetMessagesTask;
@@ -84,6 +89,28 @@ public class ConversationActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 sendMessage();
+            }
+        });
+        mMessagesView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                // Copier l'item de la ListView des messages
+                String copie =  (mMessagesView.getItemAtPosition(position).toString());
+
+                ClipboardManager mClipBoard;
+                mClipBoard = (ClipboardManager)getSystemService(CLIPBOARD_SERVICE);
+
+                ClipData mClip;
+                mClip = ClipData.newPlainText("Message", copie);
+                mClipBoard.setPrimaryClip(mClip);
+
+                // Get l'item copier afin de le coller
+                ClipData paste = mClipBoard.getPrimaryClip();
+                ClipData.Item item = paste.getItemAt(0);
+
+                Toast.makeText(getApplicationContext(), copie, Toast.LENGTH_LONG).show();
+                //Toast.makeText(getApplicationContext(), item.getText().toString(), Toast.LENGTH_LONG).show();
+                return true;
             }
         });
 
