@@ -67,4 +67,5 @@
     <string name="success_contact_deleted">à été suprimmé</string>
     <string name="warning_load_messages_long">Attention, le chargement de nombreux messages peut être long! Les messages sécurisés prennent plus de données.</string>
     <string name="decrypting">Déchiffrement...</string>
+    <string name="prompt_pin">Code PIN</string>
 </resources>
