@@ -95,7 +95,8 @@ public class ConversationActivity extends AppCompatActivity {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
                 // Copier l'item de la ListView des messages
-                String copie =  (mMessagesView.getItemAtPosition(position).toString());
+                Conversation conversation = (Conversation) (mMessagesView.getItemAtPosition(position));
+                String copie = conversation.getMessage().trim();
 
                 ClipboardManager mClipBoard;
                 mClipBoard = (ClipboardManager)getSystemService(CLIPBOARD_SERVICE);
@@ -108,8 +109,7 @@ public class ConversationActivity extends AppCompatActivity {
                 ClipData paste = mClipBoard.getPrimaryClip();
                 ClipData.Item item = paste.getItemAt(0);
 
-                Toast.makeText(getApplicationContext(), copie, Toast.LENGTH_LONG).show();
-                //Toast.makeText(getApplicationContext(), item.getText().toString(), Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), item.getText().toString() + "Copied", Toast.LENGTH_LONG).show();
                 return true;
             }
         });
