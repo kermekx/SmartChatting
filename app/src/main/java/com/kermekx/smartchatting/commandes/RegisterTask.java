@@ -80,14 +80,12 @@ public class RegisterTask extends AsyncTask<Void, Void, Boolean> {
                                 mListener.onData(line);
                         }
                         return true;
-                        break;
                     case REGISTER_ERROR_DATA:
                         while ((line = reader.readLine()) != null && !line.equals(END_DATA)) {
                             if (mListener != null)
                                 mListener.onError(line);
                         }
                         return false;
-                        break;
                     default:
                         break;
                 }
@@ -95,6 +93,7 @@ public class RegisterTask extends AsyncTask<Void, Void, Boolean> {
         } catch (IOException e) {
             return false;
         }
+        return false;
     }
 
     @Override

@@ -15,11 +15,14 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 
 import com.kermekx.smartchatting.R;
+import com.kermekx.smartchatting.commandes.BaseTaskListener;
 import com.kermekx.smartchatting.commandes.ConnectToServerTask;
 import com.kermekx.smartchatting.commandes.SocketListenerTask;
 import com.kermekx.smartchatting.commandes.TaskListener;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -70,7 +73,12 @@ public class ServerService extends Service {
         return mBinder;
     }
 
-    private class ConnectToServerTaskListener implements TaskListener {
+    private class ConnectToServerTaskListener extends BaseTaskListener {
+
+        @Override
+        public void onError(String error) {
+            stopSelf();
+        }
 
         @Override
         public void onError(int error) {
@@ -94,12 +102,7 @@ public class ServerService extends Service {
         }
     }
 
-    private class SocketListener implements TaskListener {
-
-        @Override
-        public void onError(int error) {
-
-        }
+    private class SocketListener extends BaseTaskListener {
 
         @Override
         public void onData(Object... object) {
@@ -161,6 +164,37 @@ public class ServerService extends Service {
                     break;
                 default:
                     break;
+            }
+        }
+
+        private class ServiceListener extends BaseTaskListener {
+
+            final String mReceiver;
+            List<String> errors = new ArrayList<>();
+            List<String> data = new ArrayList<>();
+
+            public ServiceListener(String receiver) {
+                mReceiver = receiver;
+            }
+
+            @Override
+            public void onError(String error) {
+                errors.add(error);
+            }
+
+            @Override
+            public void onData(String data) {
+                this.data.add(data);
+            }
+
+            @Override
+            public void onPostExecute(Boolean success) {
+                
+            }
+
+            @Override
+            public void onCancelled() {
+
             }
         }
     }
