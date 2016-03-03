@@ -111,6 +111,8 @@ public class SplashActivity extends AppCompatActivity {
         @Override
         public void onPostExecute(Boolean success) {
             if (success) {
+                //Intent pinActivity = new Intent(SplashActivity.this, PinActivity.class);
+                //SplashActivity.this.startActivity(pinActivity);
                 Intent mainActivity = new Intent(SplashActivity.this, MainActivity.class);
                 SplashActivity.this.startActivity(mainActivity);
                 finish();

@@ -48,6 +48,7 @@ import com.kermekx.smartchatting.message.Message;
 import com.kermekx.smartchatting.message.MessageAdapter;
 import com.kermekx.smartchatting.rsa.RSA;
 import com.kermekx.smartchatting.schedule.NewMessage;
+import com.kermekx.smartchatting.services.ServerService;
 import com.wdullaer.swipeactionadapter.SwipeActionAdapter;
 import com.wdullaer.swipeactionadapter.SwipeDirection;
 
@@ -318,6 +319,9 @@ public class MainActivity extends AppCompatActivity
         int interval = 60000;
 
         manager.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), interval, pendingIntent);
+
+        Intent intent = new Intent(this, ServerService.class);
+        startService(intent);
     }
 
     public void stopNewMessage() {

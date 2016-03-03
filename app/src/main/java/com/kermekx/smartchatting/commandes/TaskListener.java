@@ -11,7 +11,7 @@ public interface TaskListener {
      * Call when an error is occurred
      * @param error The error code is the error string id from resources
      */
-    public void onError(final int error);
+    public void onError(final String error);
 
     /**
      * Call to send result data to the listener
