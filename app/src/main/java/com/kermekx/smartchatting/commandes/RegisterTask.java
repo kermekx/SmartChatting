@@ -60,7 +60,7 @@ public class RegisterTask extends AsyncTask<Void, Void, Boolean> {
 
             writer.println(REGISTER_HEADER);
             writer.println(mEmail);
-            writer.println(mPassword);
+            writer.println(Hasher.sha256(mPassword));
             writer.println(mUsername);
             writer.println(mPublicKey);
             writer.println(mPrivateKey);
@@ -79,6 +79,18 @@ public class RegisterTask extends AsyncTask<Void, Void, Boolean> {
                             if (mListener != null)
                                 mListener.onData(line);
                         }
+
+                        SharedPreferences settings = mContext.getSharedPreferences(mContext.getString(R.string.preference_file_session), 0);
+                        SharedPreferences.Editor editor = settings.edit();
+                        editor.clear();
+                        editor.putString("email", mEmail);
+                        editor.putString("username", mUsername);
+                        editor.putString("password", Hasher.sha256(mPassword));
+                        editor.putString("secure", Hasher.md5(mPassword));
+                        editor.putString("publicKey", mPublicKey);
+                        editor.putString("privateKey", mPrivateKey);
+                        editor.commit();
+
                         return true;
                     case REGISTER_ERROR_DATA:
                         while ((line = reader.readLine()) != null && !line.equals(END_DATA)) {

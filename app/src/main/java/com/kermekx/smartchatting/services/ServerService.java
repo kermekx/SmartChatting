@@ -10,6 +10,7 @@ import android.content.IntentFilter;
 import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
@@ -17,14 +18,9 @@ import android.support.v4.app.NotificationCompat;
 import com.kermekx.smartchatting.R;
 import com.kermekx.smartchatting.commandes.BaseTaskListener;
 import com.kermekx.smartchatting.commandes.ConnectToServerTask;
-import com.kermekx.smartchatting.commandes.SocketListenerTask;
-import com.kermekx.smartchatting.commandes.TaskListener;
+import com.kermekx.smartchatting.commandes.RegisterTask;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.net.ssl.SSLSocket;
 
@@ -52,7 +48,7 @@ public class ServerService extends Service {
 
         new ConnectToServerTask(this, new ConnectToServerTaskListener()).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
-        receiver = new ServerReciever();
+        receiver = new ServerReceiver();
         registerReceiver(receiver, new IntentFilter(SERVER_RECEIVER));
     }
 
@@ -134,7 +130,7 @@ public class ServerService extends Service {
         }
     }
 
-    public class ServerReciever extends BroadcastReceiver {
+    public class ServerReceiver extends BroadcastReceiver {
 
         private static final String HEADER_CONNECTION = "CONNECTION DATA";
         private static final String HEADER_REGISTER = "REGISTER DATA";
@@ -142,6 +138,8 @@ public class ServerService extends Service {
         @Override
         public void onReceive(Context context, Intent intent) {
             String header = intent.getExtras().getString("header");
+
+            String receiver = intent.getExtras().getString("filter");
 
             String email;
             String password;
@@ -160,7 +158,7 @@ public class ServerService extends Service {
                     username =  intent.getExtras().getString("username");
                     publicKey =  intent.getExtras().getString("publicKey");
                     privateKey =  intent.getExtras().getString("privateKey");
-
+                    new RegisterTask(new ServiceListener(receiver), socket, email, password, username, publicKey, privateKey).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                     break;
                 default:
                     break;
@@ -170,8 +168,8 @@ public class ServerService extends Service {
         private class ServiceListener extends BaseTaskListener {
 
             final String mReceiver;
-            List<String> errors = new ArrayList<>();
-            List<String> data = new ArrayList<>();
+            ArrayList<String> errors = new ArrayList<>();
+            ArrayList<String> data = new ArrayList<>();
 
             public ServiceListener(String receiver) {
                 mReceiver = receiver;
@@ -189,7 +187,16 @@ public class ServerService extends Service {
 
             @Override
             public void onPostExecute(Boolean success) {
-                
+                Bundle extras = new Bundle();
+
+                extras.putBoolean("success", success);
+                extras.putStringArrayList("errors", errors);
+                extras.putStringArrayList("data", data);
+
+                Intent broadcast = new Intent(mReceiver);
+                broadcast.putExtras(extras);
+
+                sendBroadcast(broadcast);
             }
 
             @Override

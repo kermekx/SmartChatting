@@ -136,4 +136,8 @@
     <string name="decrypting">Decrypting...</string>
     <string name="prompt_pin">PIN Code</string>
     <string name="welcome">Welcome</string>
+    <string name="prompt_confirm_pin" translatable="false">Confirm PIN code</string>
+    <string name="prompt_repeat_pin">Comfirm PIN code</string>
+    <string name="error_invalid_confirm_pin">PIN don\'t matches</string>
+    <string name="error_invalid_pin">The PIN code is invald</string>
 </resources>

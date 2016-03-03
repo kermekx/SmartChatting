@@ -94,9 +94,48 @@
                     android:layout_height="wrap_content"
                     android:hint="@string/prompt_repeat_password"
                     android:imeActionId="@+id/register"
-                    android:imeActionLabel="@string/register"
                     android:imeOptions="actionUnspecified"
                     android:inputType="textPassword"
+                    android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                    android:layout_marginRight="@dimen/activity_horizontal_margin"
+                    android:maxLines="1"
+                    android:singleLine="true"/>
+
+            </android.support.design.widget.TextInputLayout>
+
+            <android.support.design.widget.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <EditText
+                    android:id="@+id/pin"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/prompt_pin"
+                    android:imeOptions="actionUnspecified"
+                    android:inputType="numberPassword"
+                    android:maxLength="8"
+                    android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                    android:layout_marginRight="@dimen/activity_horizontal_margin"
+                    android:maxLines="1"
+                    android:singleLine="true"/>
+
+            </android.support.design.widget.TextInputLayout>
+
+            <android.support.design.widget.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <EditText
+                    android:id="@+id/repeat_pin"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/prompt_repeat_pin"
+                    android:imeActionId="@+id/register"
+                    android:imeActionLabel="@string/register"
+                    android:imeOptions="actionUnspecified"
+                    android:inputType="numberPassword"
+                    android:maxLength="8"
                     android:layout_marginLeft="@dimen/activity_horizontal_margin"
                     android:layout_marginRight="@dimen/activity_horizontal_margin"
                     android:maxLines="1"

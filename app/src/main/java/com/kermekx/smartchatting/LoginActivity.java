@@ -19,6 +19,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.kermekx.smartchatting.commandes.BaseTaskListener;
 import com.kermekx.smartchatting.commandes.LoginTask;
 import com.kermekx.smartchatting.commandes.TaskListener;
 
@@ -138,7 +139,7 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
-    private class LoginTaskListener implements TaskListener {
+    private class LoginTaskListener extends BaseTaskListener {
 
         @Override
         public void onError(final int error) {

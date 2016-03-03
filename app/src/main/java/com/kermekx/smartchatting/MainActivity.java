@@ -30,6 +30,7 @@ import android.widget.TextView;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.kermekx.smartchatting.commandes.AddContactTask;
+import com.kermekx.smartchatting.commandes.BaseTaskListener;
 import com.kermekx.smartchatting.commandes.DeleteContactTask;
 import com.kermekx.smartchatting.commandes.GetContactsTask;
 import com.kermekx.smartchatting.commandes.GetMessagesTask;
@@ -329,7 +330,7 @@ public class MainActivity extends AppCompatActivity
         manager.cancel(pendingIntent);
     }
 
-    private class GetMessagesTaskListener implements TaskListener {
+    private class GetMessagesTaskListener extends BaseTaskListener {
 
         private final Key mKey;
 
@@ -402,7 +403,7 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    private class GetContactsTaskListener implements TaskListener {
+    private class GetContactsTaskListener extends BaseTaskListener {
 
         List<Contact> contacts = new ArrayList<>();
         private List<LoadIconTask> tasks = new ArrayList<>();
@@ -456,7 +457,7 @@ public class MainActivity extends AppCompatActivity
         mRefresh.setRefreshing(true);
     }
 
-    public class UpdateMessagesTaskListener implements TaskListener {
+    public class UpdateMessagesTaskListener extends BaseTaskListener {
 
         public UpdateMessagesTaskListener() {
             Snackbar snackbar = Snackbar.make(mListView, getString(R.string.warning_load_messages_long), Snackbar.LENGTH_LONG)
@@ -501,7 +502,7 @@ public class MainActivity extends AppCompatActivity
         mRefresh.setRefreshing(true);
     }
 
-    public class UpdateContactsTaskListener implements TaskListener {
+    public class UpdateContactsTaskListener extends BaseTaskListener {
 
         @Override
         public void onError(int error) {
@@ -531,7 +532,7 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    private class GetPrivateKeyTaskListener implements TaskListener {
+    private class GetPrivateKeyTaskListener extends BaseTaskListener {
 
         @Override
         public void onError(int error) {
@@ -558,7 +559,7 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    private class LoadIconTaskListener implements TaskListener {
+    private class LoadIconTaskListener extends BaseTaskListener {
 
         private final Object mItem;
 
@@ -602,7 +603,7 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    private class AddContactTaskListener implements TaskListener {
+    private class AddContactTaskListener extends BaseTaskListener {
         private final String mUsername;
         int error = -1;
 
@@ -649,7 +650,7 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    private class DeleteContactTaskListener implements TaskListener {
+    private class DeleteContactTaskListener extends BaseTaskListener {
 
         private final String mUsername;
         int error = -1;

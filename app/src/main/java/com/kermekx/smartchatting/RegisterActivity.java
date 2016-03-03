@@ -3,7 +3,10 @@ package com.kermekx.smartchatting;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -17,11 +20,18 @@ import android.widget.TextView;
 
 import com.kermekx.smartchatting.commandes.RegisterTask;
 import com.kermekx.smartchatting.commandes.TaskListener;
+import com.kermekx.smartchatting.hash.Hasher;
+import com.kermekx.smartchatting.services.ServerService;
+
+import java.util.ArrayList;
 
 /**
  * Created by kermekx on 31/01/2016.
  */
 public class RegisterActivity extends AppCompatActivity {
+
+    private static final String REGISTER_RECEIVER = "RGISTER_RECEIVER";
+    private static final String HEADER_REGISTER = "REGISTER DATA";
 
     /**
      * Keep track of the register task to ensure we can cancel it if requested.
@@ -33,6 +43,8 @@ public class RegisterActivity extends AppCompatActivity {
     private AutoCompleteTextView mUsernameView;
     private EditText mPasswordView;
     private EditText mConfirmPasswordView;
+    private EditText mPinView;
+    private EditText mConfirmPinView;
     private View mProgressView;
     private View mRegisterFormView;
 
@@ -49,7 +61,12 @@ public class RegisterActivity extends AppCompatActivity {
         mPasswordView = (EditText) findViewById(R.id.password);
 
         mConfirmPasswordView = (EditText) findViewById(R.id.repeat_password);
-        mConfirmPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+
+        mPinView = (EditText) findViewById(R.id.pin);
+
+        mConfirmPinView = (EditText) findViewById(R.id.repeat_pin);
+
+        mConfirmPinView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
                 if (id == R.id.login || id == EditorInfo.IME_NULL) {
@@ -81,21 +98,71 @@ public class RegisterActivity extends AppCompatActivity {
         mUsernameView.setError(null);
         mPasswordView.setError(null);
         mConfirmPasswordView.setError(null);
+        mPinView.setError(null);
+        mConfirmPinView.setError(null);
 
         String email = mEmailView.getText().toString();
         String username = mUsernameView.getText().toString();
         String password = mPasswordView.getText().toString();
         String confirmPassword = mConfirmPasswordView.getText().toString();
+        String pin = mPinView.getText().toString();
+        String confirmPin = mConfirmPinView.getText().toString();
 
-        if (!password.equals(confirmPassword)) {
-            mConfirmPasswordView.setError(getString(R.string.error_invalid_confirm_password));
-            mConfirmPasswordView.requestFocus();
-            return;
+        boolean error = false;
+
+        if (username.length() == 0) {
+            mUsernameView.setError(getString(R.string.error_field_required));
+            mUsernameView.requestFocus();
+            error = true;
         }
 
+        if (email.length() == 0) {
+            mEmailView.setError(getString(R.string.error_field_required));
+            mEmailView.requestFocus();
+            error = true;
+        } else if (!(email.contains("@") && email.contains(".") && (email.indexOf("@") < email.lastIndexOf(".")))) {
+            mEmailView.setError(getString(R.string.error_invalid_email));
+            mEmailView.requestFocus();
+            error = true;
+        }
+
+        if (password.length() < 6 || password.length() > 42) {
+            mConfirmPasswordView.setError(getString(R.string.error_invalid_password));
+            mConfirmPasswordView.requestFocus();
+            error = true;
+        } else if (!password.equals(confirmPassword)) {
+            mConfirmPasswordView.setError(getString(R.string.error_invalid_confirm_password));
+            mConfirmPasswordView.requestFocus();
+            error = true;
+        }
+
+        if (pin.length() < 4) {
+            mConfirmPinView.setError(getString(R.string.error_invalid_pin));
+            mConfirmPinView.requestFocus();
+            error = true;
+        } else if (!pin.equals(confirmPin)) {
+            mConfirmPinView.setError(getString(R.string.error_invalid_confirm_pin));
+            mConfirmPinView.requestFocus();
+            error = true;
+        }
+
+        if (error)
+            return;
+
         showProgress(true);
-        mRegisterTask = new RegisterTask(this, new RegisterTaskListener(), email, username, password);
-        mRegisterTask.execute((Void) null);
+
+        Bundle extras = new Bundle();
+
+        extras.putString("header", HEADER_REGISTER);
+        extras.putString("filter", REGISTER_RECEIVER);
+        extras.putString("email", email);
+        extras.putString("password", password);
+        extras.putString("username", username);
+
+        Intent service = new Intent(ServerService.SERVER_RECEIVER);
+        service.putExtras(service);
+
+        sendBroadcast(service);
     }
 
     @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
@@ -126,57 +193,43 @@ public class RegisterActivity extends AppCompatActivity {
         }
     }
 
-    private class RegisterTaskListener implements TaskListener {
+    public class RegisterReceiver extends BroadcastReceiver {
+
+        private static final String USERNAME_ALREADY_USED = "USERNAME ALREADY USED";
+        private static final String EMAIL_ALREADY_USED = "EMAIL ALREADY USED";
+        private static final String INTERNAL_SERVER_ERROR = "INTERNAL ERROR";
 
         @Override
-        public void onError(final int error) {
-            RegisterActivity.this.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    if (error == R.string.error_invalid_email) {
-                        if (mEmailView.getText().toString().length() == 0) {
-                            mEmailView.setError(getString(R.string.error_field_required));
-                        } else {
-                            mEmailView.setError(getString(error));
-                        }
-                        mEmailView.requestFocus();
-                    } else if (error == R.string.error_invalid_password) {
-                        if (mPasswordView.getText().toString().length() == 0) {
-                            mPasswordView.setError(getString(R.string.error_field_required));
-                        } else {
-                            mPasswordView.setError(getString(error));
-                        }
-                        mPasswordView.requestFocus();
-                    } else if (error == R.string.error_field_required){
-                        mUsernameView.setError(getString(error));
-                        mUsernameView.requestFocus();
-                    } else {
-                        mConfirmPasswordView.setError(getString(error));
-                        mConfirmPasswordView.requestFocus();
-                    }
-                }
-            });
-        }
+        public void onReceive(Context context, Intent intent) {
+            Boolean success = intent.getExtras().getBoolean("success");
 
-        @Override
-        public void onData(Object... object) {
-
-        }
-
-        @Override
-        public void onPostExecute(Boolean success) {
-            mRegisterTask = null;
-            showProgress(false);
             if (success) {
                 Intent mainActivity = new Intent(RegisterActivity.this, MainActivity.class);
                 RegisterActivity.this.startActivity(mainActivity);
                 finish();
-            }
-        }
+            } else {
+                ArrayList<String> errors = intent.getExtras().getStringArrayList("errors");
 
-        @Override
-        public void onCancelled() {
-            mRegisterTask = null;
+                for (String error : errors) {
+                    switch (error) {
+                        case USERNAME_ALREADY_USED:
+                            mUsernameView.setError(getString(R.string.error_username_already_used));
+                            mUsernameView.requestFocus();
+                            break;
+                        case EMAIL_ALREADY_USED:
+                            mEmailView.setError(getString(R.string.error_email_already_used));
+                            mEmailView.requestFocus();
+                            break;
+                        case INTERNAL_SERVER_ERROR:
+                            mConfirmPinView.setError(getString(R.string.error_connection_server));
+                            mConfirmPinView.requestFocus();
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+
             showProgress(false);
         }
     }

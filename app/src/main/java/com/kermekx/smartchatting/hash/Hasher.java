@@ -33,6 +33,14 @@ public class Hasher {
         return INSTANCE.hash(s, "MD5");
     }
 
+    public static byte[] sha256Byte(String s) {
+        return INSTANCE.hashByte(s, "SHA-256");
+    }
+
+    public static byte[] md5Byte(String s) {
+        return INSTANCE.hashByte(s, "MD5");
+    }
+
     public static String aesEncrypt(String s, String secret) {
         return INSTANCE.encrypt(s, secret, "AES");
     }
@@ -61,6 +69,25 @@ public class Hasher {
             }
 
             return sb.toString();
+        } catch (UnsupportedEncodingException e) {
+            Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, e);
+            return null;
+        }
+    }
+
+    public byte[] hashByte(String s, String hash) {
+
+        MessageDigest digester = null;
+
+        try {
+            digester  = MessageDigest.getInstance(hash);
+        } catch (NoSuchAlgorithmException e) {
+            Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, e);
+            return null;
+        }
+        digester.reset();
+        try {
+            return digester.digest(s.getBytes("UTF-8"));
         } catch (UnsupportedEncodingException e) {
             Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, e);
             return null;

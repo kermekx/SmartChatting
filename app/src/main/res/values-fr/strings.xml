@@ -69,4 +69,7 @@
     <string name="decrypting">Déchiffrement...</string>
     <string name="prompt_pin">Code PIN</string>
     <string name="welcome">Bienvenue</string>
+    <string name="prompt_repeat_pin">Confirmer le code PIN</string>
+    <string name="error_invalid_confirm_pin">Les codes PIN ne correspondent pas</string>
+    <string name="error_invalid_pin">Ce code PIN n\'est pas valide</string>
 </resources>

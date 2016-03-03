@@ -14,6 +14,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.kermekx.smartchatting.commandes.ActivationTask;
+import com.kermekx.smartchatting.commandes.BaseTaskListener;
 import com.kermekx.smartchatting.commandes.LoginTask;
 import com.kermekx.smartchatting.commandes.TaskListener;
 
@@ -94,7 +95,7 @@ public class SplashActivity extends AppCompatActivity {
         }
     }
 
-    private class LoginTaskListener implements TaskListener {
+    private class LoginTaskListener extends BaseTaskListener {
 
         private int error;
 
