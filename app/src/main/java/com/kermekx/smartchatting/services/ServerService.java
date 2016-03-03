@@ -158,7 +158,7 @@ public class ServerService extends Service {
                     username =  intent.getExtras().getString("username");
                     publicKey =  intent.getExtras().getString("publicKey");
                     privateKey =  intent.getExtras().getString("privateKey");
-                    new RegisterTask(new ServiceListener(receiver), socket, email, password, username, publicKey, privateKey).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                    new RegisterTask(context, new ServiceListener(receiver), socket, email, password, username, publicKey, privateKey).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                     break;
                 default:
                     break;

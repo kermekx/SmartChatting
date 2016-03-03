@@ -6,6 +6,7 @@ import android.annotation.TargetApi;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
@@ -48,9 +49,14 @@ public class RegisterActivity extends AppCompatActivity {
     private View mProgressView;
     private View mRegisterFormView;
 
+    private BroadcastReceiver receiver;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        receiver = new RegisterReceiver();
+        registerReceiver(receiver, new IntentFilter(REGISTER_RECEIVER));
 
         setContentView(R.layout.activity_register);
 
@@ -160,7 +166,7 @@ public class RegisterActivity extends AppCompatActivity {
         extras.putString("username", username);
 
         Intent service = new Intent(ServerService.SERVER_RECEIVER);
-        service.putExtras(service);
+        service.putExtras(extras);
 
         sendBroadcast(service);
     }

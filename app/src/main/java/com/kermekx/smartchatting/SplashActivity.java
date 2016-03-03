@@ -17,6 +17,7 @@ import com.kermekx.smartchatting.commandes.ActivationTask;
 import com.kermekx.smartchatting.commandes.BaseTaskListener;
 import com.kermekx.smartchatting.commandes.LoginTask;
 import com.kermekx.smartchatting.commandes.TaskListener;
+import com.kermekx.smartchatting.services.ServerService;
 
 /**
  * Activity launched at start of the application
@@ -35,6 +36,9 @@ public class SplashActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
+
+        Intent service = new Intent(this, ServerService.class);
+        startService(service);
 
         mProgressView = (ProgressBar) findViewById(R.id.login_progress);
         mErrorView = (TextView) findViewById(R.id.error);

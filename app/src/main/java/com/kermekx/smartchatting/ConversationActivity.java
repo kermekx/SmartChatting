@@ -19,6 +19,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.kermekx.smartchatting.commandes.BaseTaskListener;
 import com.kermekx.smartchatting.commandes.GetContactsTask;
 import com.kermekx.smartchatting.commandes.GetMessagesTask;
 import com.kermekx.smartchatting.commandes.GetPrivateKeyTask;
@@ -334,7 +335,7 @@ public class ConversationActivity extends AppCompatActivity {
         }
     }
 
-    private class UpdateMessagesTaskListener implements TaskListener {
+    private class UpdateMessagesTaskListener extends BaseTaskListener {
 
         private Key mKey;
 
@@ -385,7 +386,7 @@ public class ConversationActivity extends AppCompatActivity {
         }
     }
 
-    private class GetMessagesTaskListener implements TaskListener {
+    private class GetMessagesTaskListener extends BaseTaskListener {
 
         private Key mKey;
 
@@ -441,7 +442,7 @@ public class ConversationActivity extends AppCompatActivity {
         }
     }
 
-    private class LoadIconTaskListener implements TaskListener {
+    private class LoadIconTaskListener extends BaseTaskListener {
 
         private final Object mItem;
         private final Key mKey;
@@ -482,7 +483,7 @@ public class ConversationActivity extends AppCompatActivity {
         }
     }
 
-    private class GetPrivateKeyTaskListener implements TaskListener {
+    private class GetPrivateKeyTaskListener extends BaseTaskListener {
 
         private final AsyncTask<Void, Void, Boolean> mTask;
         private final TaskListener mListener;

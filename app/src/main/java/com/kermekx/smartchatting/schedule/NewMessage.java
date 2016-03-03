@@ -15,6 +15,7 @@ import android.support.v4.app.NotificationCompat;
 
 import com.kermekx.smartchatting.ConversationActivity;
 import com.kermekx.smartchatting.R;
+import com.kermekx.smartchatting.commandes.BaseTaskListener;
 import com.kermekx.smartchatting.commandes.GetPrivateKeyTask;
 import com.kermekx.smartchatting.commandes.TaskListener;
 import com.kermekx.smartchatting.commandes.UpdateMessagesTask;
@@ -47,7 +48,7 @@ public class NewMessage extends BroadcastReceiver {
         new GetPrivateKeyTask(context, new GetPrivateKeyTaskListener(context), settings.getString("email", ""), settings.getString("password", "")).execute();
     }
 
-    private class GetPrivateKeyTaskListener implements TaskListener {
+    private class GetPrivateKeyTaskListener extends BaseTaskListener {
 
         private final Context mContext;
 
@@ -77,7 +78,7 @@ public class NewMessage extends BroadcastReceiver {
         }
     }
 
-    private class UpdateMessagesTaskListener implements TaskListener {
+    private class UpdateMessagesTaskListener extends BaseTaskListener {
 
         private final Context mContext;
         private final Key mKey;
