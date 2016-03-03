@@ -22,9 +22,13 @@ import android.widget.TextView;
 import com.kermekx.smartchatting.commandes.RegisterTask;
 import com.kermekx.smartchatting.commandes.TaskListener;
 import com.kermekx.smartchatting.hash.Hasher;
+import com.kermekx.smartchatting.pgp.KeyGenetor;
 import com.kermekx.smartchatting.services.ServerService;
 
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Created by kermekx on 31/01/2016.
@@ -164,6 +168,16 @@ public class RegisterActivity extends AppCompatActivity {
         extras.putString("email", email);
         extras.putString("password", password);
         extras.putString("username", username);
+
+        ByteArrayOutputStream publicKey = new ByteArrayOutputStream(2048);
+        ByteArrayOutputStream privateKey = new ByteArrayOutputStream(4096);
+
+        KeyGenetor.generateKeys(email, password, pin, publicKey, privateKey);
+
+        extras.putString("publicKey", new String(publicKey.toByteArray()));
+        extras.putString("privateKey", new String(privateKey.toByteArray()));
+
+        Logger.getLogger(getClass().getName()).log(Level.INFO, new String(publicKey.toByteArray()));
 
         Intent service = new Intent(ServerService.SERVER_RECEIVER);
         service.putExtras(extras);

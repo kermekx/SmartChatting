@@ -28,6 +28,8 @@ import java.io.ByteArrayOutputStream;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Created by kermekx on 03/03/2016.
