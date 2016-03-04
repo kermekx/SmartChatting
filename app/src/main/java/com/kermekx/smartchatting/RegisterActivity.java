@@ -10,6 +10,7 @@ import android.content.IntentFilter;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -175,14 +176,7 @@ public class RegisterActivity extends AppCompatActivity {
         extras.putString("email", email);
         extras.putString("password", password);
         extras.putString("username", username);
-
-        ByteArrayOutputStream publicKey = new ByteArrayOutputStream(2048);
-        ByteArrayOutputStream privateKey = new ByteArrayOutputStream(4096);
-
-        KeyGenetor.generateKeys(email, password, pin, publicKey, privateKey);
-
-        extras.putString("publicKey", new String(publicKey.toByteArray()));
-        extras.putString("privateKey", new String(privateKey.toByteArray()));
+        extras.putString("pin", pin);
 
         Intent service = new Intent(ServerService.SERVER_RECEIVER);
         service.putExtras(extras);

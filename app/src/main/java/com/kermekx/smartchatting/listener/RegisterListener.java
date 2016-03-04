@@ -18,7 +18,7 @@ public class RegisterListener extends DataListener {
         List<String> data = (List<String>) object[0];
 
         if (data.get(0).equals(REGISTER_ERROR_DATA) || data.get(0).equals(REGISTERED_DATA)) {
-            synchronized(data) {
+            synchronized(this.data) {
                 for (String d : data)
                     this.data.add(d);
                 this.data.notify();

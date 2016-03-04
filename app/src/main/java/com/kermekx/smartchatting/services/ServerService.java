@@ -157,8 +157,7 @@ public class ServerService extends Service {
             String email;
             String password;
             String username;
-            String privateKey;
-            String publicKey;
+            String pin;
 
             switch (header) {
                 case HEADER_CONNECTION:
@@ -169,13 +168,12 @@ public class ServerService extends Service {
                     email = intent.getExtras().getString("email");
                     password = intent.getExtras().getString("password");
                     username =  intent.getExtras().getString("username");
-                    publicKey =  intent.getExtras().getString("publicKey");
-                    privateKey =  intent.getExtras().getString("privateKey");
+                    pin =  intent.getExtras().getString("pin");
 
                     listener = new RegisterListener();
                     dataListeners.add(listener);
 
-                    new RegisterTask(context, new ServiceListener(receiver), (RegisterListener) listener, socket, email, username, password, publicKey, privateKey).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                    new RegisterTask(context, new ServiceListener(receiver), (RegisterListener) listener, socket, email, username, password, pin).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                     break;
                 default:
                     break;
