@@ -6,6 +6,7 @@ import android.os.AsyncTask;
 import com.kermekx.smartchatting.R;
 import com.kermekx.smartchatting.datas.ContactsData;
 import com.kermekx.smartchatting.json.JsonManager;
+import com.kermekx.smartchatting.listener.TaskListener;
 
 import org.json.JSONArray;
 import org.json.JSONObject;

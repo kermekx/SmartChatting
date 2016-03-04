@@ -4,11 +4,8 @@ import android.content.Context;
 import android.database.Cursor;
 import android.os.AsyncTask;
 
-import com.kermekx.smartchatting.datas.ContactsData;
 import com.kermekx.smartchatting.datas.MessagesData;
-import com.kermekx.smartchatting.rsa.RSA;
-
-import java.security.Key;
+import com.kermekx.smartchatting.listener.TaskListener;
 
 /**
  * Created by kermekx on 23/02/2016.

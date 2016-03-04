@@ -1,7 +1,5 @@
 package com.kermekx.smartchatting.services;
 
-import android.app.Notification;
-import android.app.NotificationManager;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -9,18 +7,21 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.AsyncTask;
 import android.os.Binder;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
-import android.support.v4.app.NotificationCompat;
 
-import com.kermekx.smartchatting.R;
 import com.kermekx.smartchatting.commandes.BaseTaskListener;
 import com.kermekx.smartchatting.commandes.ConnectToServerTask;
 import com.kermekx.smartchatting.commandes.RegisterTask;
+import com.kermekx.smartchatting.commandes.SocketListenerTask;
+import com.kermekx.smartchatting.listener.RegisterListener;
+import com.kermekx.smartchatting.listener.TaskListener;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.net.ssl.SSLSocket;
 
@@ -32,6 +33,7 @@ public class ServerService extends Service {
     private BroadcastReceiver receiver;
     public static String SERVER_RECEIVER = "SERVER_RECEIVER";
 
+    private List<TaskListener> dataListeners = new ArrayList<>();
 
     public class LocalBinder extends Binder {
         ServerService getService() {
@@ -90,6 +92,8 @@ public class ServerService extends Service {
         public void onPostExecute(Boolean success) {
             if (!success)
                 stopSelf();
+            else
+                new SocketListenerTask(new SocketListener(), socket).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         }
 
         @Override
@@ -102,6 +106,12 @@ public class ServerService extends Service {
 
         @Override
         public void onData(Object... object) {
+            Logger.getLogger(getClass().getName()).log(Level.INFO, object.toString());
+
+            for (TaskListener listener : dataListeners)
+            listener.onData(object);
+
+            /**
             String[] data = (String[]) object;
 
             NotificationManager mNotificationManager =
@@ -117,6 +127,7 @@ public class ServerService extends Service {
             }
 
             mNotificationManager.notify("SMART_CHATTING_MESSAGE_KEY".hashCode(), builder.build());
+             */
         }
 
         @Override
@@ -134,6 +145,8 @@ public class ServerService extends Service {
 
         private static final String HEADER_CONNECTION = "CONNECTION DATA";
         private static final String HEADER_REGISTER = "REGISTER DATA";
+
+        private TaskListener listener;
 
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -158,7 +171,11 @@ public class ServerService extends Service {
                     username =  intent.getExtras().getString("username");
                     publicKey =  intent.getExtras().getString("publicKey");
                     privateKey =  intent.getExtras().getString("privateKey");
-                    new RegisterTask(context, new ServiceListener(receiver), socket, email, username, password, publicKey, privateKey).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
+                    listener = new RegisterListener();
+                    dataListeners.add(listener);
+
+                    new RegisterTask(context, new ServiceListener(receiver), (RegisterListener) listener, socket, email, username, password, publicKey, privateKey).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                     break;
                 default:
                     break;
@@ -187,6 +204,8 @@ public class ServerService extends Service {
 
             @Override
             public void onPostExecute(Boolean success) {
+                dataListeners.remove(listener);
+
                 Bundle extras = new Bundle();
 
                 extras.putBoolean("success", success);
@@ -201,7 +220,7 @@ public class ServerService extends Service {
 
             @Override
             public void onCancelled() {
-
+                dataListeners.remove(listener);
             }
         }
     }

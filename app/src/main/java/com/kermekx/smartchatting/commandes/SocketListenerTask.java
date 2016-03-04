@@ -2,9 +2,13 @@ package com.kermekx.smartchatting.commandes;
 
 import android.os.AsyncTask;
 
+import com.kermekx.smartchatting.listener.TaskListener;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -18,7 +22,7 @@ public class SocketListenerTask extends AsyncTask<Void, Void, Boolean> {
     private final TaskListener mListener;
     private final SSLSocket mSocket;
 
-    private final String MESSAGE_HEADER = "MESSAGE";
+    private static final String END_DATA = "END OF DATA";
 
     public SocketListenerTask (TaskListener listener, SSLSocket socket) {
         mListener = listener;
@@ -35,15 +39,16 @@ public class SocketListenerTask extends AsyncTask<Void, Void, Boolean> {
 
             Logger.getLogger(getClass().getName()).log(Level.INFO, "Reading info!");
 
+            List<String> data = new ArrayList<>();
+
             while ((line = reader.readLine()) != null) {
-                Logger.getLogger(getClass().getName()).log(Level.INFO, line);
-                if (line.equals(MESSAGE_HEADER)) {
-                    String contact = reader.readLine();
-                    Logger.getLogger(getClass().getName()).log(Level.INFO, contact);
-                    String message = reader.readLine();
-                    Logger.getLogger(getClass().getName()).log(Level.INFO, message);
+                //Logger.getLogger(getClass().getName()).log(Level.INFO, line);
+                if (line.equals(END_DATA)) {
                     if (mListener != null)
-                        mListener.onData(new String[] {contact, message});
+                        mListener.onData(data);
+                    data = new ArrayList<>();
+                } else {
+                    data.add(line);
                 }
             }
         } catch (IOException e) {

@@ -8,7 +8,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
@@ -17,23 +16,12 @@ import com.kermekx.smartchatting.ConversationActivity;
 import com.kermekx.smartchatting.R;
 import com.kermekx.smartchatting.commandes.BaseTaskListener;
 import com.kermekx.smartchatting.commandes.GetPrivateKeyTask;
-import com.kermekx.smartchatting.commandes.TaskListener;
 import com.kermekx.smartchatting.commandes.UpdateMessagesTask;
-import com.kermekx.smartchatting.hash.Hasher;
-import com.kermekx.smartchatting.json.JsonManager;
 import com.kermekx.smartchatting.rsa.RSA;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-
-import java.math.BigInteger;
 import java.security.Key;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Created by kermekx on 14/02/2016.

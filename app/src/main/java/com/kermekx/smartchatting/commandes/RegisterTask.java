@@ -6,17 +6,13 @@ import android.os.AsyncTask;
 
 import com.kermekx.smartchatting.R;
 import com.kermekx.smartchatting.hash.Hasher;
-import com.kermekx.smartchatting.json.JsonManager;
-import com.kermekx.smartchatting.rsa.RSA;
+import com.kermekx.smartchatting.listener.DataListener;
+import com.kermekx.smartchatting.listener.RegisterListener;
+import com.kermekx.smartchatting.listener.TaskListener;
 
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 import javax.net.ssl.SSLSocket;
 
@@ -28,13 +24,14 @@ import javax.net.ssl.SSLSocket;
 public class RegisterTask extends AsyncTask<Void, Void, Boolean> {
 
     private static final String REGISTER_HEADER = "REGISTER";
-    private static final String END_DATA = "END OF DATA";
 
     private static final String REGISTERED_DATA = "REGISTERED";
     private static final String REGISTER_ERROR_DATA = "CONNECTION ERROR";
+    private static final String END_DATA = "END OF DATA";
 
     private final Context mContext;
     private final TaskListener mListener;
+    private final RegisterListener mDataListener;
     private final SSLSocket mSocket;
     private final String mEmail;
     private final String mUsername;
@@ -42,9 +39,10 @@ public class RegisterTask extends AsyncTask<Void, Void, Boolean> {
     private final String mPublicKey;
     private final String mPrivateKey;
 
-    public RegisterTask(Context context, TaskListener listener, SSLSocket socket, String email, String username, String password, String publicKey, String privateKey) {
+    public RegisterTask(Context context, TaskListener listener, RegisterListener dataListener, SSLSocket socket, String email, String username, String password, String publicKey, String privateKey) {
         mContext = context;
         mListener = listener;
+        mDataListener = dataListener;
         mSocket = socket;
         mEmail = email;
         mUsername = username;
@@ -68,38 +66,33 @@ public class RegisterTask extends AsyncTask<Void, Void, Boolean> {
             writer.flush();
             writer.close();
 
-            BufferedReader reader = new BufferedReader(new InputStreamReader(mSocket.getInputStream()));
+            while (mDataListener.data.size() == 0) {
+                try {
+                    synchronized(mDataListener.data) {
+                        mDataListener.data.wait();
+                    }
+                } catch (InterruptedException e) {
 
-            String line;
+                }
+            }
 
-            while ((line = reader.readLine()) != null) {
-                switch (line) {
-                    case REGISTERED_DATA:
-                        while ((line = reader.readLine()) != null && !line.equals(END_DATA)) {
-                            if (mListener != null)
-                                mListener.onData(line);
-                        }
+            if (mDataListener.data.equals(REGISTERED_DATA)) {
+                SharedPreferences settings = mContext.getSharedPreferences(mContext.getString(R.string.preference_file_session), 0);
+                SharedPreferences.Editor editor = settings.edit();
+                editor.clear();
+                editor.putString("email", mEmail);
+                editor.putString("username", mUsername);
+                editor.putString("password", Hasher.sha256(mPassword));
+                editor.putString("secure", Hasher.md5(mPassword));
+                editor.putString("publicKey", mPublicKey);
+                editor.putString("privateKey", mPrivateKey);
+                editor.commit();
 
-                        SharedPreferences settings = mContext.getSharedPreferences(mContext.getString(R.string.preference_file_session), 0);
-                        SharedPreferences.Editor editor = settings.edit();
-                        editor.clear();
-                        editor.putString("email", mEmail);
-                        editor.putString("username", mUsername);
-                        editor.putString("password", Hasher.sha256(mPassword));
-                        editor.putString("secure", Hasher.md5(mPassword));
-                        editor.putString("publicKey", mPublicKey);
-                        editor.putString("privateKey", mPrivateKey);
-                        editor.commit();
-
-                        return true;
-                    case REGISTER_ERROR_DATA:
-                        while ((line = reader.readLine()) != null && !line.equals(END_DATA)) {
-                            if (mListener != null)
-                                mListener.onError(line);
-                        }
-                        return false;
-                    default:
-                        break;
+                return true;
+            } else {
+                for (int i = 1; i < mDataListener.data.size(); i ++) {
+                    if (mListener != null)
+                        mListener.onError(mDataListener.data.get(i));
                 }
             }
         } catch (IOException e) {
@@ -119,5 +112,4 @@ public class RegisterTask extends AsyncTask<Void, Void, Boolean> {
         if (mListener != null)
             mListener.onCancelled();
     }
-
 }

@@ -36,7 +36,6 @@ import com.kermekx.smartchatting.commandes.GetContactsTask;
 import com.kermekx.smartchatting.commandes.GetMessagesTask;
 import com.kermekx.smartchatting.commandes.GetPrivateKeyTask;
 import com.kermekx.smartchatting.commandes.LoadIconTask;
-import com.kermekx.smartchatting.commandes.TaskListener;
 import com.kermekx.smartchatting.commandes.UpdateContactsTask;
 import com.kermekx.smartchatting.commandes.UpdateMessagesTask;
 import com.kermekx.smartchatting.contact.Contact;

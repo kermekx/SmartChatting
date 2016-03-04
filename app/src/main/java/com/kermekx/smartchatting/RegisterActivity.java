@@ -7,7 +7,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -20,8 +19,6 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.kermekx.smartchatting.commandes.RegisterTask;
-import com.kermekx.smartchatting.commandes.TaskListener;
-import com.kermekx.smartchatting.hash.Hasher;
 import com.kermekx.smartchatting.pgp.KeyGenetor;
 import com.kermekx.smartchatting.services.ServerService;
 
@@ -59,9 +56,6 @@ public class RegisterActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        receiver = new RegisterReceiver();
-        registerReceiver(receiver, new IntentFilter(REGISTER_RECEIVER));
-
         setContentView(R.layout.activity_register);
 
         mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
@@ -97,6 +91,19 @@ public class RegisterActivity extends AppCompatActivity {
 
         mRegisterFormView = findViewById(R.id.register_form);
         mProgressView = findViewById(R.id.register_progress);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        receiver = new RegisterReceiver();
+        registerReceiver(receiver, new IntentFilter(REGISTER_RECEIVER));
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unregisterReceiver(receiver);
     }
 
     private void attemptRegister() {
@@ -176,8 +183,6 @@ public class RegisterActivity extends AppCompatActivity {
 
         extras.putString("publicKey", new String(publicKey.toByteArray()));
         extras.putString("privateKey", new String(privateKey.toByteArray()));
-
-        Logger.getLogger(getClass().getName()).log(Level.INFO, new String(publicKey.toByteArray()));
 
         Intent service = new Intent(ServerService.SERVER_RECEIVER);
         service.putExtras(extras);

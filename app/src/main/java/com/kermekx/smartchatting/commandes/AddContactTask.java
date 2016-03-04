@@ -2,11 +2,10 @@ package com.kermekx.smartchatting.commandes;
 
 import android.content.Context;
 import android.os.AsyncTask;
-import android.support.design.widget.Snackbar;
 
 import com.kermekx.smartchatting.R;
-import com.kermekx.smartchatting.datas.ContactsData;
 import com.kermekx.smartchatting.json.JsonManager;
+import com.kermekx.smartchatting.listener.TaskListener;
 
 import org.json.JSONObject;
 

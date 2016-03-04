@@ -6,10 +6,9 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.util.TypedValue;
-import android.widget.ImageView;
 
-import com.kermekx.smartchatting.contact.Contact;
 import com.kermekx.smartchatting.icon.IconManager;
+import com.kermekx.smartchatting.listener.TaskListener;
 
 /**
  * Created by kermekx on 23/02/2016.

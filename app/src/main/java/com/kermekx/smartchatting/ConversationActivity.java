@@ -16,20 +16,17 @@ import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.kermekx.smartchatting.commandes.BaseTaskListener;
-import com.kermekx.smartchatting.commandes.GetContactsTask;
 import com.kermekx.smartchatting.commandes.GetMessagesTask;
 import com.kermekx.smartchatting.commandes.GetPrivateKeyTask;
 import com.kermekx.smartchatting.commandes.LoadIconTask;
-import com.kermekx.smartchatting.commandes.TaskListener;
+import com.kermekx.smartchatting.listener.TaskListener;
 import com.kermekx.smartchatting.commandes.UpdateMessagesTask;
 import com.kermekx.smartchatting.conversation.Conversation;
 import com.kermekx.smartchatting.conversation.ConversationAdapter;
 import com.kermekx.smartchatting.fragment.ConversationFragment;
-import com.kermekx.smartchatting.fragment.MainActivityFragment;
 import com.kermekx.smartchatting.json.JsonManager;
 import com.kermekx.smartchatting.rsa.RSA;
 

@@ -21,7 +21,6 @@ import android.widget.TextView;
 
 import com.kermekx.smartchatting.commandes.BaseTaskListener;
 import com.kermekx.smartchatting.commandes.LoginTask;
-import com.kermekx.smartchatting.commandes.TaskListener;
 
 public class LoginActivity extends AppCompatActivity {
 

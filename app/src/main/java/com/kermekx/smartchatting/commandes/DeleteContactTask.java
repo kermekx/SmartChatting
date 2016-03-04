@@ -6,13 +6,12 @@ import android.os.AsyncTask;
 import com.kermekx.smartchatting.R;
 import com.kermekx.smartchatting.datas.ContactsData;
 import com.kermekx.smartchatting.json.JsonManager;
+import com.kermekx.smartchatting.listener.TaskListener;
 
 import org.json.JSONObject;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Created by kermekx on 24/02/2016.
