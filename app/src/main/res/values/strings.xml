@@ -13,6 +13,7 @@
     <string name="permission_rationale">"Contacts permissions are needed for providing email
         completions."
     </string>
+    <string name="loginPin">Pin</string>
 
     <!-- Strings related to URLS -->
     <string name="url_connection" translatable="false">https://www.smart-chatting.com/commandes/SignIn.php</string>
