@@ -26,14 +26,16 @@ public class LoginTask extends AsyncTask<Void, Void, Boolean> {
     private final TaskListener mListener;
     private final String mEmail;
     private final String mPassword;
+    private final String mPin;
     private final boolean mHashed;
 
-    public LoginTask(Activity context, TaskListener listener, String email, String password, boolean hashed) {
+    public LoginTask(Activity context, TaskListener listener, String email, String password,  String pin, boolean hashed) {
         mContext = context;
         mListener = listener;
         mEmail = email;
         mPassword = password;
         mHashed = hashed;
+        mPin = pin;
     }
 
     @Override

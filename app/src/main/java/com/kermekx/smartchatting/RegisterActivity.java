@@ -10,7 +10,6 @@ import android.content.IntentFilter;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -20,13 +19,9 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.kermekx.smartchatting.commandes.RegisterTask;
-import com.kermekx.smartchatting.pgp.KeyGenetor;
 import com.kermekx.smartchatting.services.ServerService;
 
-import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Created by kermekx on 31/01/2016.

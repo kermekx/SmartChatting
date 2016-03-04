@@ -3,12 +3,12 @@ package com.kermekx.smartchatting;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.content.BroadcastReceiver;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.support.v7.app.AppCompatActivity;
-
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
@@ -34,8 +34,11 @@ public class LoginActivity extends AppCompatActivity {
     // UI references.
     private AutoCompleteTextView mEmailView;
     private EditText mPasswordView;
+    private EditText mPinView;
     private View mProgressView;
     private View mLoginFormView;
+
+    private BroadcastReceiver receiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,28 +88,67 @@ public class LoginActivity extends AppCompatActivity {
         if (!TextUtils.isEmpty(mEmailView.getText())) {
             String password = settings.getString("password", null);
             if (password != null) {
-                attemptLogin(mEmailView.getText().toString(), password, true);
+                attemptLogin(mEmailView.getText().toString(), password, mPinView.getText().toString(), true);
             }
         }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unregisterReceiver(receiver);
     }
 
     private void attemptLogin() {
         String email = mEmailView.getText().toString();
         String password = mPasswordView.getText().toString();
+        String pin = mPinView.getText().toString();
 
-        attemptLogin(email, password, false);
+        attemptLogin(email, password, pin, false);
     }
 
-    private void attemptLogin(String email, String password, boolean hashed) {
+    private void attemptLogin(String email, String password, String pin, boolean hashed) {
         if (mAuthTask != null) {
             return;
         }
 
         mEmailView.setError(null);
         mPasswordView.setError(null);
+        mPinView.setError(null);
+
+        email = mEmailView.getText().toString();
+        password = mPasswordView.getText().toString();
+        pin = mPinView.getText().toString();
+
+        boolean error = false;
+
+        if (email.length() == 0) {
+            mEmailView.setError(getString(R.string.error_field_required));
+            mEmailView.requestFocus();
+            error = true;
+        } else if (!(email.contains("@") && email.contains(".") && (email.indexOf("@") < email.lastIndexOf(".")))) {
+            mEmailView.setError(getString(R.string.error_invalid_email));
+            mEmailView.requestFocus();
+            error = true;
+        }
+
+        if (password.length() < 6 || password.length() > 42) {
+            mPasswordView.setError(getString(R.string.error_invalid_password));
+            mPasswordView.requestFocus();
+            error = true;
+        }
+
+        if (pin.length() < 4) {
+            mPinView.setError(getString(R.string.error_invalid_pin));
+            mPinView.requestFocus();
+            error = true;
+        }
+
+        if (error)
+            return;
 
         showProgress(true);
-        mAuthTask = new LoginTask(this, new LoginTaskListener(), email, password, hashed);
+        mAuthTask = new LoginTask(this, new LoginTaskListener(), email, password, pin, hashed);
         mAuthTask.execute();
     }
 
