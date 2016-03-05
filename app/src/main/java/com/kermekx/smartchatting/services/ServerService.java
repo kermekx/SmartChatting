@@ -35,6 +35,7 @@ public class ServerService extends Service {
     private BroadcastReceiver receiver;
     public static String SERVER_RECEIVER = "SERVER_RECEIVER";
 
+    public static volatile StringBuilder ready = new StringBuilder("f");
     private boolean connected = true;
     private List<TaskListener> dataListeners = new ArrayList<>();
 
@@ -50,6 +51,10 @@ public class ServerService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+
+        synchronized (ready) {
+            ready.setCharAt(0, 'f');
+        }
 
         new ConnectToServerTask(this, new ConnectToServerTaskListener()).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
@@ -87,6 +92,11 @@ public class ServerService extends Service {
                 connected = false;
             else
                 new SocketListenerTask(new SocketListener(), socket).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
+            synchronized (ready) {
+                ready.setCharAt(0, 't');
+                ready.notify();
+            }
         }
 
         @Override

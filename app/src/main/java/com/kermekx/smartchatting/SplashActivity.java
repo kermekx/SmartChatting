@@ -96,10 +96,25 @@ public class SplashActivity extends AppCompatActivity {
             extras.putString("pin", mPin);
             extras.putBoolean("firstConnection", false);
 
-            Intent loginIntent = new Intent(ServerService.SERVER_RECEIVER);
+            final Intent loginIntent = new Intent(ServerService.SERVER_RECEIVER);
             loginIntent.putExtras(extras);
 
-            sendBroadcast(loginIntent);
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    while (ServerService.ready.charAt(0) == 'f') {
+                        Logger.getLogger(getClass().getName()).log(Level.WARNING, "Waiting!");
+                        synchronized (ServerService.ready) {
+                            try {
+                                ServerService.ready.wait();
+                            } catch (InterruptedException e) {
+
+                            }
+                        }
+                    }
+                    sendBroadcast(loginIntent);
+                }
+            }).start();
         }
     }
 
