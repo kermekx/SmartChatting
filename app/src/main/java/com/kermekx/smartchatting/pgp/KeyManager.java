@@ -192,12 +192,10 @@ public class KeyManager {
             return null;
 
         Iterator keys = keyRing.getSecretKeys();
-        PGPSecretKey key = null;
+        PGPSecretKey key;
         while (keys.hasNext()) {
             key = (PGPSecretKey) keys.next();
-
             return key;
-
         }
         return null;
     }
