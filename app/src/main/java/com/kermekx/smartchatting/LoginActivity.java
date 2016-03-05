@@ -149,7 +149,8 @@ public class LoginActivity extends AppCompatActivity {
             return;
 
         showProgress(true);
-        mAuthTask = new LoginTask(this, new LoginTaskListener(), email, password, pin, hashed);
+        //TODO : Connection
+        //mAuthTask = new LoginTask(this, new LoginTaskListener(), email, password, pin, hashed);
         mAuthTask.execute();
     }
 

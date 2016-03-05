@@ -3,7 +3,10 @@ package com.kermekx.smartchatting;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Build;
@@ -18,6 +21,10 @@ import com.kermekx.smartchatting.commandes.BaseTaskListener;
 import com.kermekx.smartchatting.commandes.LoginTask;
 import com.kermekx.smartchatting.services.ServerService;
 
+import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  * Activity launched at start of the application
  *
@@ -25,12 +32,17 @@ import com.kermekx.smartchatting.services.ServerService;
  */
 public class SplashActivity extends AppCompatActivity {
 
+    private static final String SPLASH_RECEIVER = "SPLASH_RECEIVER";
+    private static final String HEADER_CONNECTION = "CONNECTION DATA";
+
     private ProgressBar mProgressView;
     private TextView mErrorView;
 
     private String mEmail;
     private String mPassword;
     private String mPin;
+
+    private BroadcastReceiver receiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +68,13 @@ public class SplashActivity extends AppCompatActivity {
                 new ActivationTask(this, user, key).execute();
             }
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        receiver = new SplashReceiver();
+        registerReceiver(receiver, new IntentFilter(SPLASH_RECEIVER));
 
         SharedPreferences settings = getSharedPreferences(getString(R.string.preference_file_session), 0);
 
@@ -68,8 +87,26 @@ public class SplashActivity extends AppCompatActivity {
             SplashActivity.this.startActivity(loginIntent);
             finish();
         } else {
-            new LoginTask(this, new LoginTaskListener(), mEmail, mPassword, mPin, true).execute();
+            Bundle extras = new Bundle();
+
+            extras.putString("header", HEADER_CONNECTION);
+            extras.putString("filter", SPLASH_RECEIVER);
+            extras.putString("email", mEmail);
+            extras.putString("password", mPassword);
+            extras.putString("pin", mPin);
+            extras.putBoolean("firstConnection", false);
+
+            Intent loginIntent = new Intent(ServerService.SERVER_RECEIVER);
+            loginIntent.putExtras(extras);
+
+            sendBroadcast(loginIntent);
         }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unregisterReceiver(receiver);
     }
 
     @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
@@ -100,41 +137,46 @@ public class SplashActivity extends AppCompatActivity {
         }
     }
 
-    private class LoginTaskListener extends BaseTaskListener {
+    public class SplashReceiver extends BroadcastReceiver {
 
-        private int error;
-
-        @Override
-        public void onError(int error) {
-            this.error = error;
-        }
+        private static final String INTERNAL_SERVER_ERROR = "INTERNAL ERROR";
 
         @Override
-        public void onData(Object... object) {
+        public void onReceive(Context context, Intent intent) {
+            Boolean connected = intent.getExtras().getBoolean("connected");
 
-        }
+            if (connected) {
+                Boolean success = intent.getExtras().getBoolean("success");
 
-        @Override
-        public void onPostExecute(Boolean success) {
-            if (success) {
-                //Intent pinActivity = new Intent(SplashActivity.this, PinActivity.class);
-                //SplashActivity.this.startActivity(pinActivity);
-                Intent mainActivity = new Intent(SplashActivity.this, MainActivity.class);
-                SplashActivity.this.startActivity(mainActivity);
-                finish();
-            } else if (error == R.string.error_connection_server){
-                showConnectionError(true);
+                if (success) {
+                    Intent pinActivity = new Intent(SplashActivity.this, PinActivity.class);
+                    SplashActivity.this.startActivity(pinActivity);
+                    finish();
+                } else {
+                    boolean internalError = false;
+
+                    ArrayList<String> errors = intent.getExtras().getStringArrayList("errors");
+
+                    for (String error : errors) {
+                        switch (error) {
+                            case INTERNAL_SERVER_ERROR:
+                                internalError = true;
+                            default:
+                                break;
+                        }
+                    }
+
+                    if (internalError) {
+                        showConnectionError(true);
+                    } else {
+                        Intent loginIntent = new Intent(SplashActivity.this, LoginActivity.class);
+                        SplashActivity.this.startActivity(loginIntent);
+                        finish();
+                    }
+                }
             } else {
-                Intent loginIntent = new Intent(SplashActivity.this, LoginActivity.class);
-                SplashActivity.this.startActivity(loginIntent);
-                finish();
+                showConnectionError(true);
             }
-        }
-
-        @Override
-        public void onCancelled() {
-            error = 0;
-            new LoginTask(SplashActivity.this, this, mEmail, mPassword, mPin, true).execute();
         }
     }
 }

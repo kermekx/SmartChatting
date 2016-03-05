@@ -28,7 +28,7 @@ import java.util.ArrayList;
  */
 public class RegisterActivity extends AppCompatActivity {
 
-    private static final String REGISTER_RECEIVER = "RGISTER_RECEIVER";
+    private static final String REGISTER_RECEIVER = "REGISTER_RECEIVER";
     private static final String HEADER_REGISTER = "REGISTER DATA";
 
     /**
@@ -215,36 +215,45 @@ public class RegisterActivity extends AppCompatActivity {
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            Boolean success = intent.getExtras().getBoolean("success");
+            Boolean connected = intent.getExtras().getBoolean("connected");
 
-            if (success) {
-                Intent mainActivity = new Intent(RegisterActivity.this, MainActivity.class);
-                RegisterActivity.this.startActivity(mainActivity);
-                finish();
-            } else {
-                ArrayList<String> errors = intent.getExtras().getStringArrayList("errors");
+            if (connected) {
+                Boolean success = intent.getExtras().getBoolean("success");
 
-                for (String error : errors) {
-                    switch (error) {
-                        case USERNAME_ALREADY_USED:
-                            mUsernameView.setError(getString(R.string.error_username_already_used));
-                            mUsernameView.requestFocus();
-                            break;
-                        case EMAIL_ALREADY_USED:
-                            mEmailView.setError(getString(R.string.error_email_already_used));
-                            mEmailView.requestFocus();
-                            break;
-                        case INTERNAL_SERVER_ERROR:
-                            mConfirmPinView.setError(getString(R.string.error_connection_server));
-                            mConfirmPinView.requestFocus();
-                            break;
-                        default:
-                            break;
+                if (success) {
+                    Intent mainActivity = new Intent(RegisterActivity.this, MainActivity.class);
+                    RegisterActivity.this.startActivity(mainActivity);
+                    finish();
+                } else {
+                    ArrayList<String> errors = intent.getExtras().getStringArrayList("errors");
+
+                    for (String error : errors) {
+                        switch (error) {
+                            case USERNAME_ALREADY_USED:
+                                mUsernameView.setError(getString(R.string.error_username_already_used));
+                                mUsernameView.requestFocus();
+                                break;
+                            case EMAIL_ALREADY_USED:
+                                mEmailView.setError(getString(R.string.error_email_already_used));
+                                mEmailView.requestFocus();
+                                break;
+                            case INTERNAL_SERVER_ERROR:
+                                mConfirmPinView.setError(getString(R.string.error_connection_server));
+                                mConfirmPinView.requestFocus();
+                                break;
+                            default:
+                                break;
+                        }
                     }
                 }
-            }
 
-            showProgress(false);
+                showProgress(false);
+
+            } else {
+                mConfirmPinView.setError(getString(R.string.error_connection_server));
+                mConfirmPinView.requestFocus();
+                showProgress(false);
+            }
         }
     }
 }

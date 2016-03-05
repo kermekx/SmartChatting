@@ -35,6 +35,7 @@ public class ServerService extends Service {
     private BroadcastReceiver receiver;
     public static String SERVER_RECEIVER = "SERVER_RECEIVER";
 
+    private boolean connected = true;
     private List<TaskListener> dataListeners = new ArrayList<>();
 
     public class LocalBinder extends Binder {
@@ -76,16 +77,6 @@ public class ServerService extends Service {
     private class ConnectToServerTaskListener extends BaseTaskListener {
 
         @Override
-        public void onError(String error) {
-            stopSelf();
-        }
-
-        @Override
-        public void onError(int error) {
-            stopSelf();
-        }
-
-        @Override
         public void onData(Object... object) {
             socket = (SSLSocket) object[0];
         }
@@ -93,7 +84,7 @@ public class ServerService extends Service {
         @Override
         public void onPostExecute(Boolean success) {
             if (!success)
-                stopSelf();
+                connected = false;
             else
                 new SocketListenerTask(new SocketListener(), socket).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         }
@@ -134,12 +125,12 @@ public class ServerService extends Service {
 
         @Override
         public void onPostExecute(Boolean success) {
-            stopSelf();
+            connected = false;
         }
 
         @Override
         public void onCancelled() {
-            stopSelf();
+            connected = false;
         }
     }
 
@@ -155,6 +146,21 @@ public class ServerService extends Service {
             String header = intent.getExtras().getString("header");
 
             String receiver = intent.getExtras().getString("filter");
+
+            Logger.getLogger(getClass().getName()).log(Level.INFO, "Connected : " + connected);
+            Logger.getLogger(getClass().getName()).log(Level.INFO, receiver + " ask to " + header);
+
+            if (!connected) {
+                Bundle extras = new Bundle();
+
+                extras.putBoolean("connected", false);
+
+                Intent broadcast = new Intent(receiver);
+                broadcast.putExtras(extras);
+
+                sendBroadcast(broadcast);
+                return;
+            }
 
             String email;
             String password;
@@ -217,6 +223,7 @@ public class ServerService extends Service {
 
                 Bundle extras = new Bundle();
 
+                extras.putBoolean("connected", true);
                 extras.putBoolean("success", success);
                 extras.putStringArrayList("errors", errors);
                 extras.putStringArrayList("data", data);

@@ -42,7 +42,7 @@ public class SocketListenerTask extends AsyncTask<Void, Void, Boolean> {
             List<String> data = new ArrayList<>();
 
             while ((line = reader.readLine()) != null) {
-                //Logger.getLogger(getClass().getName()).log(Level.INFO, line);
+                Logger.getLogger(getClass().getName()).log(Level.INFO, line);
                 if (line.equals(END_DATA)) {
                     if (mListener != null)
                         mListener.onData(data);
