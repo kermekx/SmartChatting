@@ -30,6 +30,7 @@ public class SplashActivity extends AppCompatActivity {
 
     private String mEmail;
     private String mPassword;
+    private String mPin;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,13 +61,14 @@ public class SplashActivity extends AppCompatActivity {
 
         mEmail = settings.getString("email", null);
         mPassword = settings.getString("password", null);
+        mPin = settings.getString("pin", null);
 
         if (mEmail == null || mPassword == null) {
             Intent loginIntent = new Intent(SplashActivity.this, LoginActivity.class);
             SplashActivity.this.startActivity(loginIntent);
             finish();
         } else {
-            new LoginTask(this, new LoginTaskListener(), mEmail, mPassword, true).execute();
+            new LoginTask(this, new LoginTaskListener(), mEmail, mPassword, mPin, true).execute();
         }
     }
 
@@ -132,7 +134,7 @@ public class SplashActivity extends AppCompatActivity {
         @Override
         public void onCancelled() {
             error = 0;
-            new LoginTask(SplashActivity.this, this, mEmail, mPassword, true).execute();
+            new LoginTask(SplashActivity.this, this, mEmail, mPassword, mPin, true).execute();
         }
     }
 }
