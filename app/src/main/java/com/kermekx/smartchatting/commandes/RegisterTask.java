@@ -8,7 +8,7 @@ import com.kermekx.smartchatting.R;
 import com.kermekx.smartchatting.hash.Hasher;
 import com.kermekx.smartchatting.listener.RegisterListener;
 import com.kermekx.smartchatting.listener.TaskListener;
-import com.kermekx.smartchatting.pgp.KeyGenetor;
+import com.kermekx.smartchatting.pgp.KeyManager;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -56,7 +56,7 @@ public class RegisterTask extends AsyncTask<Void, Void, Boolean> {
         ByteArrayOutputStream publicKey = new ByteArrayOutputStream(2048);
         ByteArrayOutputStream privateKey = new ByteArrayOutputStream(4096);
 
-        KeyGenetor.generateKeys(mEmail, mPassword, mPin, publicKey, privateKey);
+        KeyManager.generateKeys(mEmail, mPassword, mPin, publicKey, privateKey);
 
         mPublicKey = new String(publicKey.toByteArray());
         mPrivateKey = new String(privateKey.toByteArray());

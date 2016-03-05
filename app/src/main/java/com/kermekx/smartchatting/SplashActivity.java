@@ -10,15 +10,13 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Build;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.kermekx.smartchatting.commandes.ActivationTask;
-import com.kermekx.smartchatting.commandes.BaseTaskListener;
-import com.kermekx.smartchatting.commandes.LoginTask;
 import com.kermekx.smartchatting.services.ServerService;
 
 import java.util.ArrayList;
@@ -27,7 +25,7 @@ import java.util.logging.Logger;
 
 /**
  * Activity launched at start of the application
- *
+ * <p/>
  * The activity try to connect
  */
 public class SplashActivity extends AppCompatActivity {
