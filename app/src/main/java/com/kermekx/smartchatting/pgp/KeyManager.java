@@ -9,17 +9,22 @@ import org.bouncycastle.bcpg.sig.KeyFlags;
 import org.bouncycastle.crypto.generators.RSAKeyPairGenerator;
 import org.bouncycastle.crypto.params.RSAKeyGenerationParameters;
 import org.bouncycastle.openpgp.PGPEncryptedData;
+import org.bouncycastle.openpgp.PGPException;
 import org.bouncycastle.openpgp.PGPKeyPair;
 import org.bouncycastle.openpgp.PGPKeyRingGenerator;
 import org.bouncycastle.openpgp.PGPObjectFactory;
+import org.bouncycastle.openpgp.PGPPrivateKey;
 import org.bouncycastle.openpgp.PGPPublicKey;
 import org.bouncycastle.openpgp.PGPPublicKeyRing;
+import org.bouncycastle.openpgp.PGPSecretKey;
 import org.bouncycastle.openpgp.PGPSecretKeyRing;
 import org.bouncycastle.openpgp.PGPSignature;
 import org.bouncycastle.openpgp.PGPSignatureSubpacketGenerator;
+import org.bouncycastle.openpgp.operator.PBESecretKeyDecryptor;
 import org.bouncycastle.openpgp.operator.PBESecretKeyEncryptor;
 import org.bouncycastle.openpgp.operator.PGPDigestCalculator;
 import org.bouncycastle.openpgp.operator.bc.BcKeyFingerprintCalculator;
+import org.bouncycastle.openpgp.operator.bc.BcPBESecretKeyDecryptorBuilder;
 import org.bouncycastle.openpgp.operator.bc.BcPBESecretKeyEncryptorBuilder;
 import org.bouncycastle.openpgp.operator.bc.BcPGPContentSignerBuilder;
 import org.bouncycastle.openpgp.operator.bc.BcPGPDigestCalculatorProvider;
@@ -109,14 +114,14 @@ public class KeyManager {
 
     public static PGPPublicKey readPublicKey(String publicKey) {
         try {
-            PGPPublicKeyRing keyRing = getKeyring(publicKey);
-            return getEncryptionKey(keyRing);
+            PGPPublicKeyRing keyRing = getPublicKeyRing(publicKey);
+            return getPublicKey(keyRing);
         } catch (IOException e) {
             return null;
         }
     }
 
-    private static PGPPublicKeyRing getKeyring(String keyBlock) throws IOException {
+    private static PGPPublicKeyRing getPublicKeyRing(String keyBlock) throws IOException {
 
         Base64Encoder encoder = new Base64Encoder();
         ByteArrayOutputStream data = new ByteArrayOutputStream(2048);
@@ -131,15 +136,10 @@ public class KeyManager {
         throw new IllegalArgumentException("Input text does not contain a PGP Public Key");
     }
 
-    /**
-     * Get the first encyption key off the given keyring.
-     */
-    private static PGPPublicKey getEncryptionKey(PGPPublicKeyRing keyRing) {
+    private static PGPPublicKey getPublicKey(PGPPublicKeyRing keyRing) {
         if (keyRing == null)
             return null;
 
-        // iterate over the keys on the ring, look for one
-        // which is suitable for encryption.
         Iterator keys = keyRing.getPublicKeys();
         PGPPublicKey key;
         while (keys.hasNext()) {
@@ -151,4 +151,54 @@ public class KeyManager {
         return null;
     }
 
+    public static PGPPrivateKey readPrivateKey(String privateKey, String md5Password, String sha256Pin) {
+        try {
+            PGPSecretKeyRing keyRing = getSecreteKeyRing(privateKey);
+            PGPSecretKey secretKey = getSecretKey(keyRing);
+
+            BigInteger integer = new BigInteger(md5Password).multiply(new BigInteger(sha256Pin));
+            byte[] pass = integer.toByteArray();
+            PBESecretKeyDecryptor pskd = (new BcPBESecretKeyDecryptorBuilder(new BcPGPDigestCalculatorProvider())).build(new String(pass).toCharArray());
+
+            try {
+                return secretKey.extractPrivateKey(pskd);
+            } catch (PGPException e) {
+                //wrong password(s)
+                return null;
+            }
+        } catch (IOException e) {
+            //bad key block (corrupted, network error, ...)
+            return null;
+        }
+    }
+
+    private static PGPSecretKeyRing getSecreteKeyRing(String keyBlock) throws IOException {
+
+        Base64Encoder encoder = new Base64Encoder();
+        ByteArrayOutputStream data = new ByteArrayOutputStream(2048);
+        encoder.decode(keyBlock, data);
+
+        PGPObjectFactory factory = new PGPObjectFactory(data.toByteArray(), new BcKeyFingerprintCalculator());
+
+        Object o = factory.nextObject();
+        if (o instanceof PGPSecretKeyRing) {
+            return (PGPSecretKeyRing) o;
+        }
+        throw new IllegalArgumentException("Input text does not contain a PGP secret Key");
+    }
+
+    private static PGPSecretKey getSecretKey(PGPSecretKeyRing keyRing) {
+        if (keyRing == null)
+            return null;
+
+        Iterator keys = keyRing.getSecretKeys();
+        PGPSecretKey key = null;
+        while (keys.hasNext()) {
+            key = (PGPSecretKey) keys.next();
+
+            return key;
+
+        }
+        return null;
+    }
 }
