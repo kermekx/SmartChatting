@@ -4,12 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by kermekx on 04/03/2016.
+ * Created by Le Dragon on 05/03/2016.
  */
-public class RegisterListener extends DataListener {
+public class LoginListener extends DataListener {
 
-    private static final String REGISTERED_DATA = "REGISTERED";
-    private static final String REGISTER_ERROR_DATA = "REGISTER ERROR";
+    private static final String CONNECTED_DATA = "CONNECTED";
+    private static final String CONNECTION_ERROR_DATA = "CONNECTION ERROR";
 
     public volatile List<String> data = new ArrayList<>();
 
@@ -17,7 +17,7 @@ public class RegisterListener extends DataListener {
     public void onData(Object... object) {
         List<String> data = (List<String>) object[0];
 
-        if (data.get(0).equals(REGISTER_ERROR_DATA) || data.get(0).equals(REGISTERED_DATA)) {
+        if (data.get(0).equals(CONNECTION_ERROR_DATA) || data.get(0).equals(CONNECTED_DATA)) {
             synchronized(this.data) {
                 for (String d : data)
                     this.data.add(d);

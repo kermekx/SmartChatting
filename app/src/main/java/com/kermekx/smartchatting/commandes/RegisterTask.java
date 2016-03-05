@@ -6,7 +6,6 @@ import android.os.AsyncTask;
 
 import com.kermekx.smartchatting.R;
 import com.kermekx.smartchatting.hash.Hasher;
-import com.kermekx.smartchatting.listener.DataListener;
 import com.kermekx.smartchatting.listener.RegisterListener;
 import com.kermekx.smartchatting.listener.TaskListener;
 import com.kermekx.smartchatting.pgp.KeyGenetor;
@@ -14,7 +13,6 @@ import com.kermekx.smartchatting.pgp.KeyGenetor;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.List;
 
 import javax.net.ssl.SSLSocket;
 
@@ -28,7 +26,7 @@ public class RegisterTask extends AsyncTask<Void, Void, Boolean> {
     private static final String REGISTER_HEADER = "REGISTER";
 
     private static final String REGISTERED_DATA = "REGISTERED";
-    private static final String REGISTER_ERROR_DATA = "CONNECTION ERROR";
+    private static final String REGISTER_ERROR_DATA = "REGISTER ERROR";
     private static final String END_DATA = "END OF DATA";
 
     private final Context mContext;
@@ -100,7 +98,7 @@ public class RegisterTask extends AsyncTask<Void, Void, Boolean> {
                 editor.commit();
 
                 return true;
-            } else {
+            } else if (mDataListener.data.get(0).equals(REGISTER_ERROR_DATA)){
                 for (int i = 1; i < mDataListener.data.size(); i ++) {
                     if (mListener != null)
                         mListener.onError(mDataListener.data.get(i));
@@ -108,6 +106,9 @@ public class RegisterTask extends AsyncTask<Void, Void, Boolean> {
 
                 return false;
             }
+
+            return false;
+
         } catch (IOException e) {
             return false;
         }

@@ -8,12 +8,17 @@ import android.os.AsyncTask;
 import com.kermekx.smartchatting.R;
 import com.kermekx.smartchatting.hash.Hasher;
 import com.kermekx.smartchatting.json.JsonManager;
+import com.kermekx.smartchatting.listener.LoginListener;
 import com.kermekx.smartchatting.listener.TaskListener;
 
 import org.json.JSONObject;
 
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.net.ssl.SSLSocket;
 
 /**
  * Created by kermekx on 22/02/2016.
@@ -22,80 +27,82 @@ import java.util.Map;
  */
 public class LoginTask extends AsyncTask<Void, Void, Boolean> {
 
+    private static final String LOGIN_HEADER = "LOGIN";
+    private static final String END_DATA = "END OF DATA";
+
+    private static final String CONNECTED_DATA = "CONNECTED";
+    private static final String CONNECTION_ERROR_DATA = "CONNECTION ERROR";
+
     private final Context mContext;
     private final TaskListener mListener;
+    private final LoginListener mDataListener;
+    private final SSLSocket mSocket;
     private final String mEmail;
     private final String mPassword;
     private final String mPin;
-    private final boolean mHashed;
+    private final boolean mFirstConnection;
 
-    public LoginTask(Activity context, TaskListener listener, String email, String password,  String pin, boolean hashed) {
+    public LoginTask(Context context, TaskListener listener, LoginListener dataListener, SSLSocket socket, String email, String password, String pin, boolean firstConnection) {
         mContext = context;
         mListener = listener;
+        mDataListener = dataListener;
+        mSocket = socket;
         mEmail = email;
         mPassword = password;
-        mHashed = hashed;
         mPin = pin;
+        mFirstConnection = firstConnection;
     }
 
     @Override
     protected Boolean doInBackground(Void... params) {
-        boolean shouldExecute = true;
+        try {
+            PrintWriter writer = new PrintWriter(mSocket.getOutputStream());
 
-        if (!(mEmail.contains("@") && mEmail.contains(".") && (mEmail.indexOf("@") < mEmail.lastIndexOf(".")))) {
-            if (mListener != null)
-                mListener.onError(R.string.error_invalid_email);
-            shouldExecute = false;
-        }
+            writer.println(LOGIN_HEADER);
+            writer.println(mEmail);
+            writer.println((mFirstConnection) ? Hasher.sha256(mPassword) : mPassword);
+            writer.println(END_DATA);
+            writer.flush();
+            writer.close();
 
-        if (!mHashed && (mPassword.length() < 6 || mPassword.length() > 42)) {
-            if (mListener != null)
-                mListener.onError(R.string.error_invalid_password);
-            shouldExecute = false;
-        }
-
-        if (shouldExecute) {
-            Map<String, String> values = new HashMap<String, String>();
-
-            values.put("email", mEmail);
-            values.put("password", mHashed ? mPassword : Hasher.sha256(mPassword));
-
-            String json = JsonManager.getJSON(mContext.getString(R.string.url_connection), values);
-
-            if (json == null) {
-                if (mListener != null)
-                    mListener.onError(R.string.error_connection_server);
-                return false;
-            }
-
-            try {
-                JSONObject result = new JSONObject(json);
-                if (result.getBoolean("signed")) {
-                    if (!mHashed) {
-                        SharedPreferences settings = mContext.getSharedPreferences(mContext.getString(R.string.preference_file_session), 0);
-                        SharedPreferences.Editor editor = settings.edit();
-                        editor.putString("email", mEmail);
-                        editor.putString("username", result.getString("username"));
-                        editor.putString("password", values.get("password"));
-                        editor.putString("secure", Hasher.md5(mPassword));
-                        editor.commit();
+            while (mDataListener.data.size() == 0) {
+                try {
+                    synchronized(mDataListener.data) {
+                        mDataListener.data.wait();
                     }
+                } catch (InterruptedException e) {
 
-                    return true;
-                } else if (!result.getBoolean("verified")) {
-                    if (mListener != null)
-                        mListener.onError(R.string.error_verify_account);
-                } else {
-                    if (mListener != null)
-                        mListener.onError(R.string.error_incorrect_password);
                 }
-                return false;
-            } catch (Exception e) {
-                if (mListener != null)
-                    mListener.onError(R.string.error_connection_server);
+            }
+
+            if (mDataListener.data.get(0).equals(CONNECTED_DATA)) {
+                if (mFirstConnection) {
+                    SharedPreferences settings = mContext.getSharedPreferences(mContext.getString(R.string.preference_file_session), 0);
+                    SharedPreferences.Editor editor = settings.edit();
+                    editor.clear();
+                    editor.putString("email", mEmail);
+                    editor.putString("username", mDataListener.data.get(1));
+                    editor.putString("password", Hasher.sha256(mPassword));
+                    editor.putString("secure", Hasher.md5(mPassword));
+                    editor.putString("pinCheck", Hasher.md5(mPin));
+                    editor.putString("publicKey", mDataListener.data.get(2));
+                    editor.putString("privateKey", mDataListener.data.get(3));
+                    editor.commit();
+                }
+
+                return true;
+            } else if (mDataListener.data.get(0).equals(CONNECTION_ERROR_DATA)){
+                for (int i = 1; i < mDataListener.data.size(); i ++) {
+                    if (mListener != null)
+                        mListener.onError(mDataListener.data.get(i));
+                }
+
                 return false;
             }
-        } else {
+
+            return false;
+
+        } catch (IOException e) {
             return false;
         }
     }

@@ -13,8 +13,10 @@ import android.support.annotation.Nullable;
 
 import com.kermekx.smartchatting.commandes.BaseTaskListener;
 import com.kermekx.smartchatting.commandes.ConnectToServerTask;
+import com.kermekx.smartchatting.commandes.LoginTask;
 import com.kermekx.smartchatting.commandes.RegisterTask;
 import com.kermekx.smartchatting.commandes.SocketListenerTask;
+import com.kermekx.smartchatting.listener.LoginListener;
 import com.kermekx.smartchatting.listener.RegisterListener;
 import com.kermekx.smartchatting.listener.TaskListener;
 
@@ -158,11 +160,20 @@ public class ServerService extends Service {
             String password;
             String username;
             String pin;
+            boolean firstConnection;
 
             switch (header) {
                 case HEADER_CONNECTION:
                     email = intent.getExtras().getString("email");
                     password = intent.getExtras().getString("password");
+                    pin =  intent.getExtras().getString("pin");
+                    firstConnection = intent.getExtras().getBoolean("firstConnection");
+
+                    listener = new LoginListener();
+                    dataListeners.add(listener);
+
+                    new LoginTask(context, new ServiceListener(receiver), (LoginListener) listener, socket, email, password, pin, firstConnection).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
                     break;
                 case HEADER_REGISTER:
                     email = intent.getExtras().getString("email");
