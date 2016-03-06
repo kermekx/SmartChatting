@@ -59,9 +59,9 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
+    private static final String HEADER_DISCONNECT = "DISCONNECT DATA";
+
     private ListView mListView;
-    private PendingIntent pendingIntent;
-    private AlarmManager manager;
 
     private MainActivityFragment fragment;
 
@@ -113,12 +113,6 @@ public class MainActivity extends AppCompatActivity
         loadIcons(settings.getString("username", "erreur!"));
 
         mListView = (ListView) findViewById(R.id.contacts);
-
-        Intent newMessageIntent = new Intent(MainActivity.this, NewMessage.class);
-        pendingIntent = PendingIntent.getBroadcast(this, 0, newMessageIntent, 0);
-
-        stopNewMessage();
-        startNewMessage();
 
         mAdView = (AdView) findViewById(R.id.adView);
         AdRequest adRequest = new AdRequest.Builder().build();
@@ -284,14 +278,16 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void logout() {
-        SharedPreferences settings = getSharedPreferences(getString(R.string.preference_file_session), 0);
-        SharedPreferences.Editor editor = settings.edit();
-        editor.clear();
-        editor.commit();
+        Bundle extras = new Bundle();
 
-        SmartChattingBdHelper.getInstance(this).onDowngrade(SmartChattingBdHelper.getInstance(this).getWritableDatabase(), 0, 0);
+        extras.putString("header", HEADER_DISCONNECT);
+        extras.putString("filter", "null");
 
-        stopNewMessage();
+
+        Intent service = new Intent(ServerService.SERVER_RECEIVER);
+        service.putExtras(extras);
+
+        sendBroadcast(service);
 
         Intent loginActivity = new Intent(MainActivity.this, LoginActivity.class);
         MainActivity.this.startActivity(loginActivity);
@@ -306,27 +302,6 @@ public class MainActivity extends AppCompatActivity
 
     public void loadIcon(String username, ImageView imageView) {
         new LoadIconTask(this, new LoadIconTaskListener(imageView), username, 48).execute();
-    }
-
-    public void startNewMessage() {
-        SharedPreferences settings = getSharedPreferences(getString(R.string.preference_file_session), 0);
-        SharedPreferences.Editor editor = settings.edit();
-        editor.remove("senders");
-        editor.remove("messages");
-        editor.commit();
-
-        manager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-        int interval = 60000;
-
-        manager.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), interval, pendingIntent);
-
-        Intent intent = new Intent(this, ServerService.class);
-        startService(intent);
-    }
-
-    public void stopNewMessage() {
-        manager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-        manager.cancel(pendingIntent);
     }
 
     private class GetMessagesTaskListener extends BaseTaskListener {

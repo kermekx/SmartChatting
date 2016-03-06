@@ -88,6 +88,18 @@
 
             </android.support.design.widget.TextInputLayout>
 
+            <TextView
+                android:id="@+id/loginError"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/error_connection_server"
+                android:textColor="@color/danger"
+                android:textAlignment="center"
+                android:textSize="20dp"
+                android:textStyle="bold"
+                android:visibility="gone"
+                android:padding="10dp" />
+
             <Button
                 android:id="@+id/email_sign_in_button"
                 style="?android:textAppearanceSmall"
@@ -116,17 +128,4 @@
 
         </LinearLayout>
     </ScrollView>
-    <TextView
-        android:id="@+id/loginError"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/error_connection_server"
-        android:textColor="@color/danger"
-        android:textAlignment="center"
-        android:textSize="20dp"
-        android:textStyle="bold"
-        android:padding="10dp"
-        android:layout_alignParentBottom="true"
-        android:visibility="gone"
-        android:layout_centerHorizontal="true" />
 </RelativeLayout>

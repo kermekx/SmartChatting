@@ -7,11 +7,9 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -99,16 +97,6 @@ public class LoginActivity extends AppCompatActivity {
 
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
-
-        SharedPreferences settings = getSharedPreferences(getString(R.string.preference_file_session), 0);
-        mEmailView.setText(settings.getString("email", ""));
-
-        if (!TextUtils.isEmpty(mEmailView.getText())) {
-            String password = settings.getString("password", null);
-            if (password != null) {
-                attemptLogin(mEmailView.getText().toString(), password, mPinView.getText().toString(), true);
-            }
-        }
     }
 
     @Override
@@ -220,15 +208,6 @@ public class LoginActivity extends AppCompatActivity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
             int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
 
-            mProgressView.setVisibility(show ? View.GONE : View.VISIBLE);
-            mProgressView.animate().setDuration(shortAnimTime).alpha(
-                    show ? 0 : 1).setListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    mProgressView.setVisibility(show ? View.GONE : View.VISIBLE);
-                }
-            });
-
             mErrorView.setVisibility(show ? View.VISIBLE : View.GONE);
             mErrorView.animate().setDuration(shortAnimTime).alpha(
                     show ? 1 : 0).setListener(new AnimatorListenerAdapter() {
@@ -239,7 +218,6 @@ public class LoginActivity extends AppCompatActivity {
             });
         } else {
             mErrorView.setVisibility(show ? View.VISIBLE : View.GONE);
-            mProgressView.setVisibility(show ? View.GONE : View.VISIBLE);
         }
     }
 
@@ -288,6 +266,7 @@ public class LoginActivity extends AppCompatActivity {
                 }
                 showProgress(false);
             } else {
+                showProgress(false);
                 showConnectionError(true);
             }
         }

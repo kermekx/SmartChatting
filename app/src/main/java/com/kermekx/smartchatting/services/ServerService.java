@@ -13,6 +13,7 @@ import android.support.annotation.Nullable;
 
 import com.kermekx.smartchatting.commandes.BaseTaskListener;
 import com.kermekx.smartchatting.commandes.ConnectToServerTask;
+import com.kermekx.smartchatting.commandes.DisconnectTask;
 import com.kermekx.smartchatting.commandes.LoginTask;
 import com.kermekx.smartchatting.commandes.RegisterTask;
 import com.kermekx.smartchatting.commandes.SocketListenerTask;
@@ -148,6 +149,7 @@ public class ServerService extends Service {
 
         private static final String HEADER_CONNECTION = "CONNECTION DATA";
         private static final String HEADER_REGISTER = "REGISTER DATA";
+        private static final String HEADER_DISCONNECT = "DISCONNECT DATA";
 
         private TaskListener listener;
 
@@ -156,9 +158,6 @@ public class ServerService extends Service {
             String header = intent.getExtras().getString("header");
 
             String receiver = intent.getExtras().getString("filter");
-
-            Logger.getLogger(getClass().getName()).log(Level.INFO, "Connected : " + connected);
-            Logger.getLogger(getClass().getName()).log(Level.INFO, receiver + " ask to " + header);
 
             if (!connected) {
                 Bundle extras = new Bundle();
@@ -202,6 +201,8 @@ public class ServerService extends Service {
 
                     new RegisterTask(context, new ServiceListener(receiver), (RegisterListener) listener, socket, email, username, password, pin).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                     break;
+                case HEADER_DISCONNECT:
+                    new DisconnectTask(context, socket).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                 default:
                     break;
             }
