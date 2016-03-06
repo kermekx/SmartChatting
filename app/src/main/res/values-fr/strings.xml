@@ -74,4 +74,5 @@
     <string name="error_invalid_confirm_pin">Les codes PIN ne correspondent pas</string>
     <string name="error_invalid_pin">Ce code PIN n\'est pas valide</string>
     <string name="action_unlock_short">Déverrouiller</string>
+    <string name="error_incorrect_pin">Ce code PIN n\'est pas correcte</string>
 </resources>
