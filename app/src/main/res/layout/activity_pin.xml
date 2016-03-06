@@ -35,9 +35,14 @@
             android:hint="@string/prompt_pin"
             android:inputType="numberPassword"
             android:maxLength="8"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
             android:layout_below="@+id/welcome"
             android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true" />
+            android:layout_alignParentEnd="true" >
+
+            <requestFocus />
+        </EditText>
 
     </android.support.design.widget.TextInputLayout>
 

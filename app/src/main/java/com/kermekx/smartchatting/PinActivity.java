@@ -27,7 +27,5 @@ public class PinActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-
-        mPinView.requestFocus();
     }
 }
