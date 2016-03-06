@@ -4,7 +4,9 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
@@ -23,7 +25,12 @@ import com.kermekx.smartchatting.commandes.BaseTaskListener;
 import com.kermekx.smartchatting.commandes.LoginTask;
 import com.kermekx.smartchatting.services.ServerService;
 
+import java.util.ArrayList;
+
 public class LoginActivity extends AppCompatActivity {
+
+    private static final String LOGIN_RECEIVER = "LOGIN_RECEIVER";
+    private static final String HEADER_REGISTER = "REGISTER DATA";
 
     private static LoginActivity INSTANCE;
 
@@ -36,6 +43,7 @@ public class LoginActivity extends AppCompatActivity {
     private AutoCompleteTextView mEmailView;
     private EditText mPasswordView;
     private EditText mPinView;
+    private TextView mErrorView;
     private View mProgressView;
     private View mLoginFormView;
 
@@ -51,6 +59,7 @@ public class LoginActivity extends AppCompatActivity {
         // Set up the login form.
         mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
         mPinView = (EditText) findViewById(R.id.loginPin);
+        mErrorView = (TextView) findViewById(R.id.loginError);
 
         mPasswordView = (EditText) findViewById(R.id.password);
         mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -93,6 +102,13 @@ public class LoginActivity extends AppCompatActivity {
                 attemptLogin(mEmailView.getText().toString(), password, mPinView.getText().toString(), true);
             }
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        receiver = new LoginReceiver();
+        registerReceiver(receiver, new IntentFilter(LOGIN_RECEIVER));
     }
 
     @Override
@@ -150,7 +166,6 @@ public class LoginActivity extends AppCompatActivity {
             return;
 
         showProgress(true);
-        //TODO : Connection
         Bundle extras = new Bundle();
         extras.putString("email", email);
         extras.putString("password", password);
@@ -188,6 +203,78 @@ public class LoginActivity extends AppCompatActivity {
         } else {
             mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
             mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
+        }
+    }
+
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
+    private void showConnectionError(final boolean show) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
+            int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
+
+            mProgressView.setVisibility(show ? View.GONE : View.VISIBLE);
+            mProgressView.animate().setDuration(shortAnimTime).alpha(
+                    show ? 0 : 1).setListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    mProgressView.setVisibility(show ? View.GONE : View.VISIBLE);
+                }
+            });
+
+            mErrorView.setVisibility(show ? View.VISIBLE : View.GONE);
+            mErrorView.animate().setDuration(shortAnimTime).alpha(
+                    show ? 1 : 0).setListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    mErrorView.setVisibility(show ? View.VISIBLE : View.GONE);
+                }
+            });
+        } else {
+            mErrorView.setVisibility(show ? View.VISIBLE : View.GONE);
+            mProgressView.setVisibility(show ? View.GONE : View.VISIBLE);
+        }
+    }
+
+    public class LoginReceiver extends BroadcastReceiver {
+
+        private static final String INTERNAL_SERVER_ERROR = "INTERNAL ERROR";
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Boolean connected = intent.getExtras().getBoolean("connected");
+
+            if (connected) {
+                Boolean success = intent.getExtras().getBoolean("success");
+
+                if (success) {
+                    Intent mainActivity = new Intent(LoginActivity.this, MainActivity.class);
+                    LoginActivity.this.startActivity(mainActivity);
+                    finish();
+                } else {
+                    boolean internalError = false;
+
+                    ArrayList<String> errors = intent.getExtras().getStringArrayList("errors");
+
+                    for (String error : errors) {
+                        switch (error) {
+                            case INTERNAL_SERVER_ERROR:
+                                internalError = true;
+                            default:
+                                break;
+                        }
+                    }
+
+                    if (internalError) {
+                        showConnectionError(true);
+                    } else {
+                        Intent loginIntent = new Intent(LoginActivity.this, MainActivity.class);
+                        LoginActivity.this.startActivity(loginIntent);
+                        finish();
+                    }
+                }
+                showProgress(false);
+            } else {
+                showConnectionError(true);
+            }
         }
     }
 
