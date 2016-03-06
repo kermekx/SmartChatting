@@ -212,6 +212,7 @@ public class RegisterActivity extends AppCompatActivity {
         private static final String USERNAME_ALREADY_USED = "USERNAME ALREADY USED";
         private static final String EMAIL_ALREADY_USED = "EMAIL ALREADY USED";
         private static final String INTERNAL_SERVER_ERROR = "INTERNAL ERROR";
+        private static final String CONNECTION_ERROR_DATA = "CONNECTION ERROR";
 
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -238,6 +239,10 @@ public class RegisterActivity extends AppCompatActivity {
                                 mEmailView.requestFocus();
                                 break;
                             case INTERNAL_SERVER_ERROR:
+                                mConfirmPinView.setError(getString(R.string.error_connection_server));
+                                mConfirmPinView.requestFocus();
+                                break;
+                            case CONNECTION_ERROR_DATA:
                                 mConfirmPinView.setError(getString(R.string.error_connection_server));
                                 mConfirmPinView.requestFocus();
                                 break;
