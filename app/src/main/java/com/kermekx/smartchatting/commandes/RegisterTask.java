@@ -29,6 +29,8 @@ public class RegisterTask extends AsyncTask<Void, Void, Boolean> {
     private static final String REGISTER_ERROR_DATA = "REGISTER ERROR";
     private static final String END_DATA = "END OF DATA";
 
+    private static final String CONNECTION_ERROR_DATA = "CONNECTION ERROR";
+
     private final Context mContext;
     private final TaskListener mListener;
     private final RegisterListener mDataListener;
@@ -74,7 +76,7 @@ public class RegisterTask extends AsyncTask<Void, Void, Boolean> {
             writer.flush();
             writer.close();
 
-            while (mDataListener.data.size() == 0) {
+            if (mDataListener.data.size() == 0) {
                 try {
                     synchronized(mDataListener.data) {
                         mDataListener.data.wait();
@@ -82,6 +84,12 @@ public class RegisterTask extends AsyncTask<Void, Void, Boolean> {
                 } catch (InterruptedException e) {
 
                 }
+            }
+
+            if (mDataListener.data.size() == 0) {
+                if (mListener != null)
+                    mListener.onError(CONNECTION_ERROR_DATA);
+                return false;
             }
 
             if (mDataListener.data.get(0).equals(REGISTERED_DATA)) {

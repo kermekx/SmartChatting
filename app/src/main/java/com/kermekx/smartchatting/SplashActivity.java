@@ -100,17 +100,22 @@ public class SplashActivity extends AppCompatActivity {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    while (ServerService.ready.charAt(0) == 'f') {
+                    if (ServerService.ready.charAt(0) == 'f') {
                         Logger.getLogger(getClass().getName()).log(Level.WARNING, "Waiting!");
                         synchronized (ServerService.ready) {
                             try {
-                                ServerService.ready.wait();
+                                ServerService.ready.wait(10000);
                             } catch (InterruptedException e) {
 
                             }
                         }
                     }
-                    sendBroadcast(loginIntent);
+
+                    if (ServerService.ready.charAt(0) == 'f') {
+                        Logger.getLogger(getClass().getName()).log(Level.WARNING, "Connection Timed out!");
+                    } else {
+                        sendBroadcast(loginIntent);
+                    }
                 }
             }).start();
         }
@@ -153,6 +158,7 @@ public class SplashActivity extends AppCompatActivity {
     public class SplashReceiver extends BroadcastReceiver {
 
         private static final String INTERNAL_SERVER_ERROR = "INTERNAL ERROR";
+        private static final String CONNECTION_ERROR_DATA = "CONNECTION ERROR";
 
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -174,6 +180,10 @@ public class SplashActivity extends AppCompatActivity {
                         switch (error) {
                             case INTERNAL_SERVER_ERROR:
                                 internalError = true;
+                                break;
+                            case CONNECTION_ERROR_DATA:
+                                internalError = true;
+                                break;
                             default:
                                 break;
                         }

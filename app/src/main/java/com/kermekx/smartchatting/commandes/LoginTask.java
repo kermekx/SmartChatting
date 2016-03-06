@@ -63,7 +63,7 @@ public class LoginTask extends AsyncTask<Void, Void, Boolean> {
             writer.flush();
             writer.close();
 
-            while (mDataListener.data.size() == 0) {
+            if (mDataListener.data.size() == 0) {
                 try {
                     synchronized (mDataListener.data) {
                         mDataListener.data.wait();
@@ -71,6 +71,12 @@ public class LoginTask extends AsyncTask<Void, Void, Boolean> {
                 } catch (InterruptedException e) {
 
                 }
+            }
+
+            if (mDataListener.data.size() == 0) {
+                if (mListener != null)
+                    mListener.onError(CONNECTION_ERROR_DATA);
+                return false;
             }
 
             if (mDataListener.data.get(0).equals(CONNECTED_DATA)) {

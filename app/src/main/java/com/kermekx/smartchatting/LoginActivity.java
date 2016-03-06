@@ -31,12 +31,6 @@ public class LoginActivity extends AppCompatActivity {
     private static final String LOGIN_RECEIVER = "LOGIN_RECEIVER";
     private static final String HEADER_CONNECTION = "CONNECTION DATA";
 
-    private static final String BAD_LOGIN = "BAD LOGIN";
-    private static final String UNVERIFIED = "UNVERIFIED";
-    private static final String NO_KEYS = "NO KEYS FOUND";
-    private static final String INCORRECT_PIN = "INCORRECT PIN";
-
-
     private static LoginActivity INSTANCE;
 
     /**
@@ -224,6 +218,11 @@ public class LoginActivity extends AppCompatActivity {
     public class LoginReceiver extends BroadcastReceiver {
 
         private static final String INTERNAL_SERVER_ERROR = "INTERNAL ERROR";
+        private static final String BAD_LOGIN = "BAD LOGIN";
+        private static final String UNVERIFIED = "UNVERIFIED";
+        private static final String NO_KEYS = "NO KEYS FOUND";
+        private static final String INCORRECT_PIN = "INCORRECT PIN";
+        private static final String CONNECTION_ERROR_DATA = "CONNECTION ERROR";
 
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -242,6 +241,9 @@ public class LoginActivity extends AppCompatActivity {
                     for (String error : errors) {
                         switch (error) {
                             case INTERNAL_SERVER_ERROR:
+                                showConnectionError(true);
+                                break;
+                            case CONNECTION_ERROR_DATA:
                                 showConnectionError(true);
                                 break;
                             case BAD_LOGIN:

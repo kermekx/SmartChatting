@@ -196,17 +196,22 @@ public class ServerService extends Service {
                     new Thread(new Runnable() {
                         @Override
                         public void run() {
-                            while (ServerService.ready.charAt(0) == 'f') {
+                            if (ServerService.ready.charAt(0) == 'f') {
                                 Logger.getLogger(getClass().getName()).log(Level.WARNING, "Waiting!");
                                 synchronized (ServerService.ready) {
                                     try {
-                                        ServerService.ready.wait();
+                                        ServerService.ready.wait(10000);
                                     } catch (InterruptedException e) {
 
                                     }
                                 }
                             }
-                            sendBroadcast(loginIntent);
+
+                            if (ServerService.ready.charAt(0) == 'f') {
+                                Logger.getLogger(getClass().getName()).log(Level.WARNING, "Connection Timed out!");
+                            } else {
+                                sendBroadcast(loginIntent);
+                            }
                         }
                     }).start();
                 }
