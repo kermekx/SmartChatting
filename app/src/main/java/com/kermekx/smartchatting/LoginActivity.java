@@ -155,6 +155,7 @@ public class LoginActivity extends AppCompatActivity {
         extras.putString("email", email);
         extras.putString("password", password);
         extras.putString("pin", pin);
+        extras.putBoolean("firstConnection", true);
         Intent toServerService = new Intent(LoginActivity.this, ServerService.class);
         toServerService.putExtras(extras);
         startActivity(toServerService);
