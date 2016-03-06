@@ -1,28 +1,23 @@
 package com.kermekx.smartchatting.commandes;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 
 import com.kermekx.smartchatting.R;
 import com.kermekx.smartchatting.hash.Hasher;
-import com.kermekx.smartchatting.json.JsonManager;
 import com.kermekx.smartchatting.listener.LoginListener;
 import com.kermekx.smartchatting.listener.TaskListener;
-
-import org.json.JSONObject;
+import com.kermekx.smartchatting.pgp.KeyManager;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.net.ssl.SSLSocket;
 
 /**
  * Created by kermekx on 22/02/2016.
- *
+ * <p/>
  * This task is used to log into the server
  */
 public class LoginTask extends AsyncTask<Void, Void, Boolean> {
@@ -32,6 +27,8 @@ public class LoginTask extends AsyncTask<Void, Void, Boolean> {
 
     private static final String CONNECTED_DATA = "CONNECTED";
     private static final String CONNECTION_ERROR_DATA = "CONNECTION ERROR";
+
+    private static final String INCORRECT_PIN = "INCORRECT PIN";
 
     private final Context mContext;
     private final TaskListener mListener;
@@ -67,7 +64,7 @@ public class LoginTask extends AsyncTask<Void, Void, Boolean> {
 
             while (mDataListener.data.size() == 0) {
                 try {
-                    synchronized(mDataListener.data) {
+                    synchronized (mDataListener.data) {
                         mDataListener.data.wait();
                     }
                 } catch (InterruptedException e) {
@@ -76,6 +73,13 @@ public class LoginTask extends AsyncTask<Void, Void, Boolean> {
             }
 
             if (mDataListener.data.get(0).equals(CONNECTED_DATA)) {
+
+                if (KeyManager.readPrivateKey(mDataListener.data.get(3), Hasher.md5(mPassword), Hasher.sha256(mPin)) == null) {
+                    if (mListener != null)
+                        mListener.onError(INCORRECT_PIN);
+                    return false;
+                }
+
                 if (mFirstConnection) {
                     SharedPreferences settings = mContext.getSharedPreferences(mContext.getString(R.string.preference_file_session), 0);
                     SharedPreferences.Editor editor = settings.edit();
@@ -91,8 +95,8 @@ public class LoginTask extends AsyncTask<Void, Void, Boolean> {
                 }
 
                 return true;
-            } else if (mDataListener.data.get(0).equals(CONNECTION_ERROR_DATA)){
-                for (int i = 1; i < mDataListener.data.size(); i ++) {
+            } else if (mDataListener.data.get(0).equals(CONNECTION_ERROR_DATA)) {
+                for (int i = 1; i < mDataListener.data.size(); i++) {
                     if (mListener != null)
                         mListener.onError(mDataListener.data.get(i));
                 }
