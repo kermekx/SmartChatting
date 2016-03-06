@@ -141,4 +141,5 @@
     <string name="prompt_repeat_pin">Comfirm PIN code</string>
     <string name="error_invalid_confirm_pin">PIN don\'t matches</string>
     <string name="error_invalid_pin">The PIN code is invald</string>
+    <string name="action_unlock_short">Unlock</string>
 </resources>

@@ -37,12 +37,29 @@
             android:maxLength="8"
             android:focusable="true"
             android:focusableInTouchMode="true"
+            android:imeActionLabel="@string/action_unlock_short"
+            android:imeOptions="actionUnspecified"
+            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+            android:layout_marginRight="@dimen/activity_horizontal_margin"
             android:layout_below="@+id/welcome"
             android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true" >
 
             <requestFocus />
         </EditText>
+
+        <Button
+            android:id="@+id/unlock_button"
+            style="?android:textAppearanceSmall"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/action_unlock_short"
+            android:background="@drawable/background_button"
+            android:textColor="@color/grayLighter"
+            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+            android:layout_marginRight="@dimen/activity_horizontal_margin"
+            android:textStyle="bold"/>
 
     </android.support.design.widget.TextInputLayout>
 
