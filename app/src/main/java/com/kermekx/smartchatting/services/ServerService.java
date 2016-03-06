@@ -5,12 +5,14 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 
+import com.kermekx.smartchatting.R;
 import com.kermekx.smartchatting.commandes.BaseTaskListener;
 import com.kermekx.smartchatting.commandes.ConnectToServerTask;
 import com.kermekx.smartchatting.commandes.DisconnectTask;
@@ -113,24 +115,24 @@ public class ServerService extends Service {
             Logger.getLogger(getClass().getName()).log(Level.INFO, object.toString());
 
             for (TaskListener listener : dataListeners)
-            listener.onData(object);
+                listener.onData(object);
 
             /**
-            String[] data = (String[]) object;
+             String[] data = (String[]) object;
 
-            NotificationManager mNotificationManager =
-                    (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-            NotificationCompat.Builder builder;
-            String user = data[0];
-            String message = data[1];
+             NotificationManager mNotificationManager =
+             (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+             NotificationCompat.Builder builder;
+             String user = data[0];
+             String message = data[1];
 
-            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1) {
-                builder = new NotificationCompat.Builder(ServerService.this).setAutoCancel(true).setDefaults(Notification.DEFAULT_SOUND | Notification.DEFAULT_VIBRATE).setColor(getColor(R.color.primary)).setLights(getColor(R.color.primary), 300, 1000).setSmallIcon(R.drawable.ic_menu_message).setContentTitle(user).setContentText(message).setGroup("SMART_CHATTING_MESSAGE_KEY").setCategory(Notification.CATEGORY_MESSAGE).setPriority(Notification.PRIORITY_HIGH);
-            } else {
-                builder = new NotificationCompat.Builder(ServerService.this).setAutoCancel(true).setDefaults(Notification.DEFAULT_SOUND | Notification.DEFAULT_VIBRATE).setColor(getResources().getColor(R.color.primary)).setLights(getResources().getColor(R.color.primary), 300, 1000).setSmallIcon(R.drawable.ic_menu_message).setContentTitle(user).setContentText(message).setGroup("SMART_CHATTING_MESSAGE_KEY").setCategory(Notification.CATEGORY_MESSAGE).setPriority(Notification.PRIORITY_HIGH);
-            }
+             if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1) {
+             builder = new NotificationCompat.Builder(ServerService.this).setAutoCancel(true).setDefaults(Notification.DEFAULT_SOUND | Notification.DEFAULT_VIBRATE).setColor(getColor(R.color.primary)).setLights(getColor(R.color.primary), 300, 1000).setSmallIcon(R.drawable.ic_menu_message).setContentTitle(user).setContentText(message).setGroup("SMART_CHATTING_MESSAGE_KEY").setCategory(Notification.CATEGORY_MESSAGE).setPriority(Notification.PRIORITY_HIGH);
+             } else {
+             builder = new NotificationCompat.Builder(ServerService.this).setAutoCancel(true).setDefaults(Notification.DEFAULT_SOUND | Notification.DEFAULT_VIBRATE).setColor(getResources().getColor(R.color.primary)).setLights(getResources().getColor(R.color.primary), 300, 1000).setSmallIcon(R.drawable.ic_menu_message).setContentTitle(user).setContentText(message).setGroup("SMART_CHATTING_MESSAGE_KEY").setCategory(Notification.CATEGORY_MESSAGE).setPriority(Notification.PRIORITY_HIGH);
+             }
 
-            mNotificationManager.notify("SMART_CHATTING_MESSAGE_KEY".hashCode(), builder.build());
+             mNotificationManager.notify("SMART_CHATTING_MESSAGE_KEY".hashCode(), builder.build());
              */
         }
 
@@ -168,6 +170,49 @@ public class ServerService extends Service {
                 broadcast.putExtras(extras);
 
                 sendBroadcast(broadcast);
+
+                stopService(new Intent(context, ServerService.class));
+                startService(new Intent(context, ServerService.class));
+
+                SharedPreferences settings = getSharedPreferences(getString(R.string.preference_file_session), 0);
+
+                String mEmail = settings.getString("email", null);
+                String mPassword = settings.getString("password", null);
+                String mPin = settings.getString("pin", null);
+
+                if (mEmail != null || mPassword != null && mPin != null) {
+                    Bundle extrasToSend = new Bundle();
+
+                    extrasToSend.putString("header", HEADER_CONNECTION);
+                    extrasToSend.putString("filter", "null");
+                    extrasToSend.putString("email", mEmail);
+                    extrasToSend.putString("password", mPassword);
+                    extrasToSend.putString("pin", mPin);
+                    extrasToSend.putBoolean("firstConnection", false);
+
+                    final Intent loginIntent = new Intent(ServerService.SERVER_RECEIVER);
+                    loginIntent.putExtras(extrasToSend);
+
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            while (ServerService.ready.charAt(0) == 'f') {
+                                Logger.getLogger(getClass().getName()).log(Level.WARNING, "Waiting!");
+                                synchronized (ServerService.ready) {
+                                    try {
+                                        ServerService.ready.wait();
+                                    } catch (InterruptedException e) {
+
+                                    }
+                                }
+                            }
+                            sendBroadcast(loginIntent);
+                        }
+                    }).start();
+                }
+
+                startService(new Intent(context, ServerService.class));
+
                 return;
             }
 
@@ -181,7 +226,7 @@ public class ServerService extends Service {
                 case HEADER_CONNECTION:
                     email = intent.getExtras().getString("email");
                     password = intent.getExtras().getString("password");
-                    pin =  intent.getExtras().getString("pin");
+                    pin = intent.getExtras().getString("pin");
                     firstConnection = intent.getExtras().getBoolean("firstConnection");
 
                     listener = new LoginListener();
@@ -193,8 +238,8 @@ public class ServerService extends Service {
                 case HEADER_REGISTER:
                     email = intent.getExtras().getString("email");
                     password = intent.getExtras().getString("password");
-                    username =  intent.getExtras().getString("username");
-                    pin =  intent.getExtras().getString("pin");
+                    username = intent.getExtras().getString("username");
+                    pin = intent.getExtras().getString("pin");
 
                     listener = new RegisterListener();
                     dataListeners.add(listener);
