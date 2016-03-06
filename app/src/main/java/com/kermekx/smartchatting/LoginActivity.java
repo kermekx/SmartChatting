@@ -20,6 +20,7 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.kermekx.smartchatting.commandes.BaseTaskListener;
 import com.kermekx.smartchatting.commandes.LoginTask;
@@ -30,7 +31,7 @@ import java.util.ArrayList;
 public class LoginActivity extends AppCompatActivity {
 
     private static final String LOGIN_RECEIVER = "LOGIN_RECEIVER";
-    private static final String HEADER_REGISTER = "REGISTER DATA";
+    private static final String HEADER_CONNECTION = "CONNECTION DATA";
 
     private static LoginActivity INSTANCE;
 
@@ -170,12 +171,14 @@ public class LoginActivity extends AppCompatActivity {
         extras.putString("email", email);
         extras.putString("password", password);
         extras.putString("pin", pin);
+        extras.putString("filter", LOGIN_RECEIVER);
+        extras.putString("header", HEADER_CONNECTION);
         extras.putBoolean("firstConnection", true);
-        Intent toServerService = new Intent(LoginActivity.this, ServerService.class);
+        Intent toServerService = new Intent(ServerService.SERVER_RECEIVER);
         toServerService.putExtras(extras);
-        startActivity(toServerService);
+        sendBroadcast(toServerService);
         //mAuthTask = new LoginTask(this, new LoginTaskListener(), email, password, pin, hashed);
-        mAuthTask.execute();
+        //mAuthTask.execute();
     }
 
     @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
