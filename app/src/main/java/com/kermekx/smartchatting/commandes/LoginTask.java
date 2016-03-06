@@ -23,6 +23,7 @@ import javax.net.ssl.SSLSocket;
 public class LoginTask extends AsyncTask<Void, Void, Boolean> {
 
     private static final String LOGIN_HEADER = "LOGIN";
+    private static final String DISCONNECT_HEADER = "DISCONNECT";
     private static final String END_DATA = "END OF DATA";
 
     private static final String CONNECTED_DATA = "CONNECTED";
@@ -79,9 +80,16 @@ public class LoginTask extends AsyncTask<Void, Void, Boolean> {
                     if (KeyManager.readPrivateKey(mDataListener.data.get(3), Hasher.md5Byte(mPassword), Hasher.sha256Byte(mPin)) == null) {
                         if (mListener != null)
                             mListener.onError(INCORRECT_PIN);
+
+                        writer = new PrintWriter(mSocket.getOutputStream());
+                        writer.println(DISCONNECT_HEADER);
+                        writer.println(END_DATA);
+                        writer.flush();
+                        writer.close();
+
                         return false;
                     }
-                    
+
                     SharedPreferences settings = mContext.getSharedPreferences(mContext.getString(R.string.preference_file_session), 0);
                     SharedPreferences.Editor editor = settings.edit();
                     editor.clear();
