@@ -21,6 +21,7 @@ import android.widget.TextView;
 
 import com.kermekx.smartchatting.commandes.BaseTaskListener;
 import com.kermekx.smartchatting.commandes.LoginTask;
+import com.kermekx.smartchatting.services.ServerService;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -150,6 +151,13 @@ public class LoginActivity extends AppCompatActivity {
 
         showProgress(true);
         //TODO : Connection
+        Bundle extras = new Bundle();
+        extras.putString("email", email);
+        extras.putString("password", password);
+        extras.putString("pin", pin);
+        Intent toServerService = new Intent(LoginActivity.this, ServerService.class);
+        toServerService.putExtras(extras);
+        startActivity(toServerService);
         //mAuthTask = new LoginTask(this, new LoginTaskListener(), email, password, pin, hashed);
         mAuthTask.execute();
     }
