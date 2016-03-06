@@ -151,13 +151,12 @@ public class KeyManager {
         return null;
     }
 
-    public static PGPPrivateKey readPrivateKey(String privateKey, String md5Password, String sha256Pin) {
+    public static PGPPrivateKey readPrivateKey(String privateKey, byte[] password, byte[] pin) {
         try {
             PGPSecretKeyRing keyRing = getSecreteKeyRing(privateKey);
             PGPSecretKey secretKey = getSecretKey(keyRing);
 
-            BigInteger integer = new BigInteger(md5Password).multiply(new BigInteger(sha256Pin));
-            byte[] pass = integer.toByteArray();
+            byte[] pass = new BigInteger(password).multiply(new BigInteger(pin)).toByteArray();
             PBESecretKeyDecryptor pskd = (new BcPBESecretKeyDecryptorBuilder(new BcPGPDigestCalculatorProvider())).build(new String(pass).toCharArray());
 
             try {

@@ -74,7 +74,7 @@ public class LoginTask extends AsyncTask<Void, Void, Boolean> {
 
             if (mDataListener.data.get(0).equals(CONNECTED_DATA)) {
 
-                if (KeyManager.readPrivateKey(mDataListener.data.get(3), Hasher.md5(mPassword), Hasher.sha256(mPin)) == null) {
+                if (KeyManager.readPrivateKey(mDataListener.data.get(3), Hasher.md5Byte(mPassword), Hasher.sha256Byte(mPin)) == null) {
                     if (mListener != null)
                         mListener.onError(INCORRECT_PIN);
                     return false;

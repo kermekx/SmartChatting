@@ -20,18 +20,24 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.kermekx.smartchatting.commandes.BaseTaskListener;
 import com.kermekx.smartchatting.commandes.LoginTask;
 import com.kermekx.smartchatting.services.ServerService;
 
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class LoginActivity extends AppCompatActivity {
 
     private static final String LOGIN_RECEIVER = "LOGIN_RECEIVER";
     private static final String HEADER_CONNECTION = "CONNECTION DATA";
+
+    private static final String BAD_LOGIN = "BAD LOGIN";
+    private static final String UNVERIFIED = "UNVERIFIED";
+    private static final String NO_KEYS = "NO KEYS FOUND";
+    private static final String INCORRECT_PIN = "INCORRECT PIN";
+
 
     private static LoginActivity INSTANCE;
 
@@ -135,6 +141,8 @@ public class LoginActivity extends AppCompatActivity {
         mPasswordView.setError(null);
         mPinView.setError(null);
 
+        showConnectionError(false);
+
         email = mEmailView.getText().toString();
         password = mPasswordView.getText().toString();
         pin = mPinView.getText().toString();
@@ -177,8 +185,6 @@ public class LoginActivity extends AppCompatActivity {
         Intent toServerService = new Intent(ServerService.SERVER_RECEIVER);
         toServerService.putExtras(extras);
         sendBroadcast(toServerService);
-        //mAuthTask = new LoginTask(this, new LoginTaskListener(), email, password, pin, hashed);
-        //mAuthTask.execute();
     }
 
     @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
@@ -247,89 +253,43 @@ public class LoginActivity extends AppCompatActivity {
 
             if (connected) {
                 Boolean success = intent.getExtras().getBoolean("success");
-
+                Logger.getLogger(getClass().getName()).log(Level.INFO, "success : " + success);
                 if (success) {
                     Intent mainActivity = new Intent(LoginActivity.this, MainActivity.class);
                     LoginActivity.this.startActivity(mainActivity);
                     finish();
                 } else {
-                    boolean internalError = false;
-
                     ArrayList<String> errors = intent.getExtras().getStringArrayList("errors");
 
                     for (String error : errors) {
                         switch (error) {
                             case INTERNAL_SERVER_ERROR:
-                                internalError = true;
+                                showConnectionError(true);
+                                break;
+                            case BAD_LOGIN:
+                                mPasswordView.setError(getString(R.string.error_incorrect_password));
+                                mPasswordView.requestFocus();
+                                break;
+                            case UNVERIFIED:
+                                mEmailView.setError(getString(R.string.error_verify_account));
+                                mEmailView.requestFocus();
+                                break;
+                            case NO_KEYS:
+                                showConnectionError(true);
+                                break;
+                            case INCORRECT_PIN:
+                                mPinView.setError(getString(R.string.error_incorrect_pin));
+                                mPinView.requestFocus();
+                                break;
                             default:
                                 break;
                         }
-                    }
-
-                    if (internalError) {
-                        showConnectionError(true);
-                    } else {
-                        Intent loginIntent = new Intent(LoginActivity.this, MainActivity.class);
-                        LoginActivity.this.startActivity(loginIntent);
-                        finish();
                     }
                 }
                 showProgress(false);
             } else {
                 showConnectionError(true);
             }
-        }
-    }
-
-    private class LoginTaskListener extends BaseTaskListener {
-
-        @Override
-        public void onError(final int error) {
-            LoginActivity.this.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    if (error == R.string.error_invalid_email) {
-                        if (mEmailView.getText().toString().length() == 0) {
-                            mEmailView.setError(getString(R.string.error_field_required));
-                        } else {
-                            mEmailView.setError(getString(error));
-                        }
-                        mEmailView.requestFocus();
-                    } else if (error == R.string.error_invalid_password) {
-                        if (mPasswordView.getText().toString().length() == 0) {
-                            mPasswordView.setError(getString(R.string.error_field_required));
-                        } else {
-                            mPasswordView.setError(getString(error));
-                        }
-                        mPasswordView.requestFocus();
-                    } else {
-                        mPasswordView.setError(getString(error));
-                        mPasswordView.requestFocus();
-                    }
-                }
-            });
-        }
-
-        @Override
-        public void onData(Object... object) {
-
-        }
-
-        @Override
-        public void onPostExecute(Boolean success) {
-            mAuthTask = null;
-            showProgress(false);
-            if (success) {
-                Intent mainActivity = new Intent(LoginActivity.this, MainActivity.class);
-                LoginActivity.this.startActivity(mainActivity);
-                finish();
-            }
-        }
-
-        @Override
-        public void onCancelled() {
-            mAuthTask = null;
-            showProgress(false);
         }
     }
 }
