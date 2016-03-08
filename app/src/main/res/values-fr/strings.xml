@@ -31,8 +31,8 @@
     <string name="action_cancel">Annuler</string>
     <string name="action_add">Ajouter</string>
     <string name="title_activity_main2">Main2Activity</string>
-    <string name="error_already_added">déjà ajouté</string>
-    <string name="error_not_found">introuvable</string>
+    <string name="error_already_added">a déjà ajouté</string>
+    <string name="error_not_found">est introuvable</string>
     <string name="error_yourself">Vous ne pouvez vous ajouter!</string>
     <string name="success_added">a été ajouté</string>
     <string name="error_add_contact_empty">Le contact à ajouter est vide!</string>

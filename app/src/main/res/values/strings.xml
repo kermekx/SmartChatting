@@ -102,8 +102,8 @@
     <string name="action_cancel">Cancel</string>
     <string name="action_add">Add</string>
     <string name="url_add_contact" translatable="false">https://www.smart-chatting.com/commandes/AddContact.php</string>
-    <string name="error_already_added">already added</string>
-    <string name="error_not_found">not found</string>
+    <string name="error_already_added">is already added</string>
+    <string name="error_not_found">isn\'t found</string>
     <string name="error_yourself">Cannot add yourself!</string>
     <string name="success_added">has been added</string>
     <string name="error_add_contact_empty">Contact to add is empty!</string>

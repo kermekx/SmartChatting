@@ -13,12 +13,14 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 
 import com.kermekx.smartchatting.R;
+import com.kermekx.smartchatting.commandes.AddContactTask;
 import com.kermekx.smartchatting.commandes.BaseTaskListener;
 import com.kermekx.smartchatting.commandes.ConnectToServerTask;
 import com.kermekx.smartchatting.commandes.DisconnectTask;
 import com.kermekx.smartchatting.commandes.LoginTask;
 import com.kermekx.smartchatting.commandes.RegisterTask;
 import com.kermekx.smartchatting.commandes.SocketListenerTask;
+import com.kermekx.smartchatting.listener.AddContactListener;
 import com.kermekx.smartchatting.listener.LoginListener;
 import com.kermekx.smartchatting.listener.RegisterListener;
 import com.kermekx.smartchatting.listener.TaskListener;
@@ -152,6 +154,7 @@ public class ServerService extends Service {
         private static final String HEADER_CONNECTION = "CONNECTION DATA";
         private static final String HEADER_REGISTER = "REGISTER DATA";
         private static final String HEADER_DISCONNECT = "DISCONNECT DATA";
+        private static final String HEADER_ADD_CONTACT = "ADD CONTACT DATA";
 
         private TaskListener listener;
 
@@ -253,6 +256,13 @@ public class ServerService extends Service {
                     break;
                 case HEADER_DISCONNECT:
                     new DisconnectTask(context, socket).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                case HEADER_ADD_CONTACT:
+                    username = intent.getExtras().getString("username");
+
+                    listener = new AddContactListener();
+                    dataListeners.add(listener);
+
+                    new AddContactTask(context, new ServiceListener(receiver), (AddContactListener) listener, socket, username).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                 default:
                     break;
             }
