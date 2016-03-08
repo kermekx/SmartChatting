@@ -10,10 +10,12 @@ import android.graphics.drawable.Drawable;
 public class Contact {
 
     private String username;
+    private String email;
     private Drawable icon;
 
-    public Contact(String pseudo, Drawable icon) {
+    public Contact(String pseudo, String email, Drawable icon) {
         this.username = pseudo;
+        this.email = email;
         this.icon = icon;
     }
 
@@ -23,6 +25,14 @@ public class Contact {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public Drawable getIcon() {

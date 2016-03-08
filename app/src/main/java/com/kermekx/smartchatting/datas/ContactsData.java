@@ -22,22 +22,20 @@ public class ContactsData {
                     ContactEntry.COLUMN_NAME_CONTACT_ID + TEXT_TYPE + COMMA_SEP +
                     ContactEntry.COLUMN_NAME_CONTACT_USERNAME + TEXT_TYPE + COMMA_SEP +
                     ContactEntry.COLUMN_NAME_CONTACT_EMAIL + TEXT_TYPE + COMMA_SEP +
-                    ContactEntry.COLUMN_NAME_CONTACT_MODULUD + TEXT_TYPE + COMMA_SEP +
-                    ContactEntry.COLUMN_NAME_CONTACT_PUBLIC_EXPONENT + TEXT_TYPE +
+                    ContactEntry.COLUMN_NAME_CONTACT_PUBLIC_KEY + TEXT_TYPE +
             " )";
 
     public static final String SQL_DELETE_CONTACTS =
             "DROP TABLE IF EXISTS " + ContactEntry.TABLE_NAME;
 
-    public static long insertContact(Context context, String userID, String username, String email, String modulus, String publicExponent) {
+    public static long insertContact(Context context, String userID, String username, String email, String publicKey) {
         SQLiteDatabase db = SmartChattingBdHelper.getInstance(context).getWritableDatabase();
 
         ContentValues values = new ContentValues();
         values.put(ContactEntry.COLUMN_NAME_CONTACT_ID, userID);
         values.put(ContactEntry.COLUMN_NAME_CONTACT_USERNAME, username);
         values.put(ContactEntry.COLUMN_NAME_CONTACT_EMAIL, email);
-        values.put(ContactEntry.COLUMN_NAME_CONTACT_MODULUD, modulus);
-        values.put(ContactEntry.COLUMN_NAME_CONTACT_PUBLIC_EXPONENT, publicExponent);
+        values.put(ContactEntry.COLUMN_NAME_CONTACT_PUBLIC_KEY, publicKey);
 
         return db.insert(ContactEntry.TABLE_NAME, null, values);
     }
@@ -49,8 +47,7 @@ public class ContactsData {
                 ContactEntry.COLUMN_NAME_CONTACT_ID,
                 ContactEntry.COLUMN_NAME_CONTACT_USERNAME,
                 ContactEntry.COLUMN_NAME_CONTACT_EMAIL,
-                ContactEntry.COLUMN_NAME_CONTACT_MODULUD,
-                ContactEntry.COLUMN_NAME_CONTACT_PUBLIC_EXPONENT
+                ContactEntry.COLUMN_NAME_CONTACT_PUBLIC_KEY
         };
 
         String sortOrder =
@@ -76,7 +73,6 @@ public class ContactsData {
         public static final String COLUMN_NAME_CONTACT_ID = "userID";
         public static final String COLUMN_NAME_CONTACT_USERNAME = "username";
         public static final String COLUMN_NAME_CONTACT_EMAIL = "email";
-        public static final String COLUMN_NAME_CONTACT_MODULUD = "modulus";
-        public static final String COLUMN_NAME_CONTACT_PUBLIC_EXPONENT = "publicExponent";
+        public static final String COLUMN_NAME_CONTACT_PUBLIC_KEY = "publickey";
     }
 }

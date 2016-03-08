@@ -6,64 +6,93 @@ import android.os.AsyncTask;
 import com.kermekx.smartchatting.R;
 import com.kermekx.smartchatting.datas.ContactsData;
 import com.kermekx.smartchatting.json.JsonManager;
+import com.kermekx.smartchatting.listener.GetContactsListener;
 import com.kermekx.smartchatting.listener.TaskListener;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.net.ssl.SSLSocket;
+
 /**
  * Created by kermekx on 23/02/2016.
- *
+ * <p/>
  * This task is used to sync contact database from the server
  */
 public class UpdateContactsTask extends AsyncTask<Void, Void, Boolean> {
 
+    private static final String GET_CONTACTS_HEADER = "GET CONTACTS";
+
+    private static final String CONTACTS_DATA = "CONTACTS ADDED";
+    private static final String GET_CONTACTS_ERROR_DATA = "GET CONTACTS ERROR";
+    private static final String END_DATA = "END OF DATA";
+
+    private static final String CONNECTION_ERROR_DATA = "CONNECTION ERROR";
+
     private final Context mContext;
     private final TaskListener mListener;
-    private final String mEmail;
-    private final String mPassword;
+    private final GetContactsListener mDataListener;
+    private final SSLSocket mSocket;
 
-    public UpdateContactsTask(Context context, TaskListener listener, String email, String password) {
+    public UpdateContactsTask(Context context, TaskListener listener, GetContactsListener dataListener, SSLSocket socket) {
         mContext = context;
         mListener = listener;
-        mEmail = email;
-        mPassword = password;
+        mDataListener = dataListener;
+        mSocket = socket;
     }
 
     @Override
     protected Boolean doInBackground(Void... params) {
-        Map<String, String> values = new HashMap<String, String>();
-
-        values.put("email", mEmail);
-        values.put("password", mPassword);
-
-        String json = JsonManager.getJSON(mContext.getString(R.string.url_get_contact), values);
-
-        if (json == null) {
-            if (mListener != null)
-                mListener.onError(R.string.error_connection_server);
-            return false;
-        }
 
         try {
-            JSONObject result = new JSONObject(json);
-            if (result.getBoolean("signed")) {
-                JSONArray contacts = result.getJSONArray("contacts");
+            PrintWriter writer = new PrintWriter(mSocket.getOutputStream());
+
+            writer.println(GET_CONTACTS_HEADER);
+            writer.println(END_DATA);
+            writer.flush();
+            writer.close();
+
+            if (mDataListener.data.size() == 0) {
+                try {
+                    synchronized (mDataListener.data) {
+                        mDataListener.data.wait();
+                    }
+                } catch (InterruptedException e) {
+
+                }
+            }
+
+            if (mDataListener.data.size() == 0) {
+                if (mListener != null)
+                    mListener.onError(CONNECTION_ERROR_DATA);
+                return false;
+            }
+
+            if (mDataListener.data.get(0).equals(CONTACTS_DATA)) {
+                mDataListener.data.remove(0);
+
                 ContactsData.removeContacts(mContext);
-                for (int i = 0; i < contacts.length() / 5; i ++) {
-                    ContactsData.insertContact(mContext, contacts.getString(i * 5), contacts.getString(i * 5 + 1), contacts.getString(i * 5 + 2), contacts.getString(i * 5 + 3), contacts.getString(i * 5 + 4));
+                for (int i = 0; i < mDataListener.data.size() / 4; i++) {
+                    ContactsData.insertContact(mContext, mDataListener.data.get(i * 4), mDataListener.data.get(i * 4 + 1), mDataListener.data.get(i * 4 + 2), mDataListener.data.get(i * 4 + 3));
                 }
                 return true;
+            } else if (mDataListener.data.get(0).equals(GET_CONTACTS_ERROR_DATA)) {
+                for (int i = 1; i < mDataListener.data.size(); i++) {
+                    if (mListener != null)
+                        mListener.onError(mDataListener.data.get(i));
+                }
+
+                return false;
             }
-            if (mListener != null)
-                mListener.onError(R.string.error_connection_server);
+
             return false;
-        } catch (Exception e) {
-            if (mListener != null)
-                mListener.onError(R.string.error_connection_server);
+
+        } catch (IOException e) {
             return false;
         }
     }

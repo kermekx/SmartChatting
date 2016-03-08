@@ -54,6 +54,7 @@ public class ContactActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayShowHomeEnabled(true);
 
         username = extras.getString("username");
+        email = extras.getString("email");
 
         ImageView sendMail = (ImageView) findViewById(R.id.send_mail);
 

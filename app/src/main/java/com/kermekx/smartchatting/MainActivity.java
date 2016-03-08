@@ -58,6 +58,7 @@ public class MainActivity extends AppCompatActivity
 
     private static final String HEADER_DISCONNECT = "DISCONNECT DATA";
     private static final String HEADER_ADD_CONTACT = "ADD CONTACT DATA";
+    private static final String HEADER_GET_CONTACTS = "GET CONTACTS DATA";
 
     private ListView mListView;
 
@@ -71,7 +72,10 @@ public class MainActivity extends AppCompatActivity
 
     private static final String ADD_CONTACT_RECEIVER = "ADD_CONTACT_RECEIVER";
     private BroadcastReceiver addContactReceiver;
-    private String mCurentlyAdding;
+    private String mCurrentlyAdding;
+
+    private static final String GET_CONTACTS_RECEIVER = "GET_CONTACTS_RECEIVER";
+    private BroadcastReceiver getContactsReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,11 +99,21 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onRefresh() {
                 if (menuId == R.id.nav_message) {
+                    mRefresh.setRefreshing(true);
                     SharedPreferences settings = getSharedPreferences(getString(R.string.preference_file_session), 0);
                     new UpdateMessagesTask(MainActivity.this, new UpdateMessagesTaskListener(), settings.getString("email", ""), settings.getString("password", "")).execute();
                 } else if (menuId == R.id.nav_contact) {
-                    SharedPreferences settings = getSharedPreferences(getString(R.string.preference_file_session), 0);
-                    new UpdateContactsTask(MainActivity.this, new UpdateContactsTaskListener(), settings.getString("email", ""), settings.getString("password", "")).execute();
+                    mRefresh.setRefreshing(true);
+
+                    Bundle extras = new Bundle();
+
+                    extras.putString("header", HEADER_GET_CONTACTS);
+                    extras.putString("filter", GET_CONTACTS_RECEIVER);
+
+                    Intent service = new Intent(ServerService.SERVER_RECEIVER);
+                    service.putExtras(extras);
+
+                    sendBroadcast(service);
                 }
             }
         });
@@ -159,6 +173,9 @@ public class MainActivity extends AppCompatActivity
 
         addContactReceiver = new AddContactReceiver();
         registerReceiver(addContactReceiver, new IntentFilter(ADD_CONTACT_RECEIVER));
+
+        getContactsReceiver = new GetContactsReceiver();
+        registerReceiver(getContactsReceiver, new IntentFilter(GET_CONTACTS_RECEIVER));
     }
 
     @Override
@@ -185,6 +202,8 @@ public class MainActivity extends AppCompatActivity
         super.onPause();
 
         unregisterReceiver(addContactReceiver);
+        unregisterReceiver(getContactsReceiver);
+
     }
 
     @Override
@@ -261,6 +280,7 @@ public class MainActivity extends AppCompatActivity
             Intent contactActivity = new Intent(MainActivity.this, ContactActivity.class);
             Bundle extra = new Bundle();
             extra.putString("username", "Team Smart Chatting");
+            extra.putString("email", "contact@smart-chatting.com");
             contactActivity.putExtras(extra);
             MainActivity.this.startActivity(contactActivity);
         } else if (id == R.id.nav_disconnect) {
@@ -275,7 +295,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void addContact(String contact) {
-        mCurentlyAdding = contact;
+        mCurrentlyAdding = contact;
 
         if (contact.isEmpty()) {
             Snackbar.make(mListView, getString(R.string.error_add_contact_empty), Snackbar.LENGTH_LONG)
@@ -285,7 +305,7 @@ public class MainActivity extends AppCompatActivity
 
             extras.putString("header", HEADER_ADD_CONTACT);
             extras.putString("filter", ADD_CONTACT_RECEIVER);
-            extras.putString("username", mCurentlyAdding);
+            extras.putString("username", mCurrentlyAdding);
 
             Intent service = new Intent(ServerService.SERVER_RECEIVER);
             service.putExtras(extras);
@@ -407,7 +427,7 @@ public class MainActivity extends AppCompatActivity
         @Override
         public void onData(Object... object) {
             String[] data = (String[]) object;
-            Contact contact = new Contact(data[1], null);
+            Contact contact = new Contact(data[1], data[2], null);
             contacts.add(contact);
             tasks.add(new LoadIconTask(MainActivity.this, new LoadIconTaskListener(contact), data[1], 48));
         }
@@ -488,39 +508,17 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void updateContacts() {
-        SharedPreferences settings = getSharedPreferences(getString(R.string.preference_file_session), 0);
-        new UpdateContactsTask(this, new UpdateContactsTaskListener(), settings.getString("email", ""), settings.getString("password", "")).execute();
         mRefresh.setRefreshing(true);
-    }
 
-    public class UpdateContactsTaskListener extends BaseTaskListener {
+        Bundle extras = new Bundle();
 
-        @Override
-        public void onError(int error) {
+        extras.putString("header", HEADER_GET_CONTACTS);
+        extras.putString("filter", GET_CONTACTS_RECEIVER);
 
-        }
+        Intent service = new Intent(ServerService.SERVER_RECEIVER);
+        service.putExtras(extras);
 
-        @Override
-        public void onData(Object... object) {
-
-        }
-
-        @Override
-        public void onPostExecute(Boolean success) {
-            if (success) {
-                new GetContactsTask(MainActivity.this, new GetContactsTaskListener()).execute();
-                mRefresh.setRefreshing(false);
-            } else {
-                Snackbar.make(mListView, getString(R.string.error_connection_server), Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-                mRefresh.setRefreshing(false);
-            }
-        }
-
-        @Override
-        public void onCancelled() {
-
-        }
+        sendBroadcast(service);
     }
 
     private class GetPrivateKeyTaskListener extends BaseTaskListener {
@@ -625,7 +623,7 @@ public class MainActivity extends AppCompatActivity
 
                                 extras.putString("header", HEADER_ADD_CONTACT);
                                 extras.putString("filter", ADD_CONTACT_RECEIVER);
-                                extras.putString("username", mCurentlyAdding);
+                                extras.putString("username", mCurrentlyAdding);
 
                                 Intent service = new Intent(ServerService.SERVER_RECEIVER);
                                 service.putExtras(extras);
@@ -665,9 +663,10 @@ public class MainActivity extends AppCompatActivity
             TextView username = (TextView) view.findViewById(R.id.username);
 
             Intent contactActivity = new Intent(MainActivity.this, ContactActivity.class);
-            Bundle extra = new Bundle();
-            extra.putString("username", username.getText().toString());
-            contactActivity.putExtras(extra);
+            Bundle extras = new Bundle();
+            extras.putString("username", username.getText().toString());
+            extras.putString("email", ((Contact) fragment.getContactAdapter().getItem(position)).getEmail());
+            contactActivity.putExtras(extras);
             MainActivity.this.startActivity(contactActivity);
         }
     };
@@ -792,27 +791,78 @@ public class MainActivity extends AppCompatActivity
                 Boolean success = intent.getExtras().getBoolean("success");
 
                 if (success) {
-                    SharedPreferences settings = getSharedPreferences(getString(R.string.preference_file_session), 0);
-                    new UpdateContactsTask(MainActivity.this, new UpdateContactsTaskListener(), settings.getString("email", ""), settings.getString("password", "")).execute();
-                    Snackbar.make(mListView, mCurentlyAdding + " " + getString(R.string.success_added), Snackbar.LENGTH_LONG)
+                    Snackbar.make(mListView, mCurrentlyAdding + " " + getString(R.string.success_added), Snackbar.LENGTH_LONG)
                             .setAction("Action", null).show();
+
+                    Bundle extras = new Bundle();
+
+                    extras.putString("header", HEADER_GET_CONTACTS);
+                    extras.putString("filter", GET_CONTACTS_RECEIVER);
+
+                    Intent service = new Intent(ServerService.SERVER_RECEIVER);
+                    service.putExtras(extras);
+
+                    sendBroadcast(service);
                 } else {
                     ArrayList<String> errors = intent.getExtras().getStringArrayList("errors");
 
                     for (String error : errors) {
                         switch (error) {
                             case USER_NOT_FOUND_ERROR:
-                                Snackbar.make(mListView, mCurentlyAdding + " " + getString(R.string.error_not_found), Snackbar.LENGTH_LONG)
+                                Snackbar.make(mListView, mCurrentlyAdding + " " + getString(R.string.error_not_found), Snackbar.LENGTH_LONG)
                                         .setAction("Action", null).show();
                                 break;
                             case USER_ALREADY_ADDED_ERROR:
-                                Snackbar.make(mListView, mCurentlyAdding + " " + getString(R.string.error_already_added), Snackbar.LENGTH_LONG)
+                                Snackbar.make(mListView, mCurrentlyAdding + " " + getString(R.string.error_already_added), Snackbar.LENGTH_LONG)
                                         .setAction("Action", null).show();
                                 break;
                             case CANNOT_ADD_YOURSELF_ERROR:
                                 Snackbar.make(mListView, getString(R.string.error_yourself), Snackbar.LENGTH_LONG)
                                         .setAction("Action", null).show();
                                 break;
+                            case INTERNAL_SERVER_ERROR:
+                                Snackbar.make(mListView, getString(R.string.error_connection_server), Snackbar.LENGTH_LONG)
+                                        .setAction("Action", null).show();
+                                break;
+                            case CONNECTION_ERROR_DATA:
+                                Snackbar.make(mListView, getString(R.string.error_connection_server), Snackbar.LENGTH_LONG)
+                                        .setAction("Action", null).show();
+                                break;
+                            default:
+                                break;
+                        }
+
+                        mRefresh.setRefreshing(false);
+                    }
+                }
+            } else {
+                Snackbar.make(mListView, getString(R.string.error_connection_server), Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();
+                mRefresh.setRefreshing(false);
+            }
+        }
+    }
+
+    public class GetContactsReceiver extends BroadcastReceiver {
+
+        private static final String INTERNAL_SERVER_ERROR = "INTERNAL ERROR";
+        private static final String CONNECTION_ERROR_DATA = "CONNECTION ERROR";
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Boolean connected = intent.getExtras().getBoolean("connected");
+
+            if (connected) {
+                Boolean success = intent.getExtras().getBoolean("success");
+
+                if (success) {
+                    new GetContactsTask(MainActivity.this, new GetContactsTaskListener()).execute();
+                    mRefresh.setRefreshing(false);
+                } else {
+                    ArrayList<String> errors = intent.getExtras().getStringArrayList("errors");
+
+                    for (String error : errors) {
+                        switch (error) {
                             case INTERNAL_SERVER_ERROR:
                                 Snackbar.make(mListView, getString(R.string.error_connection_server), Snackbar.LENGTH_LONG)
                                         .setAction("Action", null).show();
