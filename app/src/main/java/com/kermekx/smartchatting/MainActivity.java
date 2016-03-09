@@ -52,6 +52,8 @@ import com.wdullaer.swipeactionadapter.SwipeDirection;
 import java.security.Key;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {

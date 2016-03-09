@@ -230,7 +230,6 @@ public class LoginActivity extends AppCompatActivity {
 
             if (connected) {
                 Boolean success = intent.getExtras().getBoolean("success");
-                Logger.getLogger(getClass().getName()).log(Level.INFO, "success : " + success);
                 if (success) {
                     Intent mainActivity = new Intent(LoginActivity.this, MainActivity.class);
                     LoginActivity.this.startActivity(mainActivity);

@@ -166,7 +166,6 @@ public class ServerService extends Service {
             String header = intent.getExtras().getString("header");
 
             String receiver = intent.getExtras().getString("filter");
-
             if (!connected) {
                 Bundle extras = new Bundle();
 
