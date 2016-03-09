@@ -11,13 +11,15 @@ public class GetContactsListener extends DataListener {
     private static final String CONTACTS_DATA = "CONTACTS ADDED";
     private static final String GET_CONTACTS_ERROR_DATA = "GET CONTACTS ERROR";
 
+    private boolean added = false;
     public volatile List<String> data = new ArrayList<>();
 
     @Override
     public void onData(Object... object) {
         List<String> data = (List<String>) object[0];
 
-        if (data.get(0).equals(CONTACTS_DATA) || data.get(0).equals(GET_CONTACTS_ERROR_DATA)) {
+        if (!added && data.get(0).equals(CONTACTS_DATA) || data.get(0).equals(GET_CONTACTS_ERROR_DATA)) {
+            added = true;
             synchronized(this.data) {
                 for (String d : data)
                     this.data.add(d);
