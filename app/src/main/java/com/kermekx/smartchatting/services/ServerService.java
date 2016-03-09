@@ -258,6 +258,7 @@ public class ServerService extends Service {
                     break;
                 case HEADER_DISCONNECT:
                     new DisconnectTask(context, socket).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                    break;
                 case HEADER_ADD_CONTACT:
                     username = intent.getExtras().getString("username");
 
@@ -265,11 +266,13 @@ public class ServerService extends Service {
                     dataListeners.add(listener);
 
                     new AddContactTask(context, new ServiceListener(receiver), (AddContactListener) listener, socket, username).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                    break;
                 case HEADER_GET_CONTACTS:
                     listener = new GetContactsListener();
                     dataListeners.add(listener);
 
                     new UpdateContactsTask(context, new ServiceListener(receiver), (GetContactsListener) listener, socket).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                    break;
                 default:
                     break;
             }
