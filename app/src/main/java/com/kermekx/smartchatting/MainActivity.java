@@ -429,7 +429,7 @@ public class MainActivity extends AppCompatActivity
             String[] data = (String[]) object;
             Contact contact = new Contact(data[1], data[2], null);
             contacts.add(contact);
-            tasks.add(new LoadIconTask(MainActivity.this, new LoadIconTaskListener(contact), data[1], 48));
+            //tasks.add(new LoadIconTask(MainActivity.this, new LoadIconTaskListener(contact), data[1], 48));
         }
 
         @Override

@@ -28,7 +28,7 @@ public class UpdateContactsTask extends AsyncTask<Void, Void, Boolean> {
 
     private static final String GET_CONTACTS_HEADER = "GET CONTACTS";
 
-    private static final String CONTACTS_DATA = "CONTACTS ADDED";
+    private static final String CONTACTS_DATA = "GET CONTACTS";
     private static final String GET_CONTACTS_ERROR_DATA = "GET CONTACTS ERROR";
     private static final String END_DATA = "END OF DATA";
 

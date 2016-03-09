@@ -8,7 +8,7 @@ import java.util.List;
  */
 public class GetContactsListener extends DataListener {
 
-    private static final String CONTACTS_DATA = "CONTACTS ADDED";
+    private static final String CONTACTS_DATA = "GET CONTACTS";
     private static final String GET_CONTACTS_ERROR_DATA = "GET CONTACTS ERROR";
 
     private boolean added = false;
