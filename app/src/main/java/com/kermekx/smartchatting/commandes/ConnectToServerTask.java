@@ -8,6 +8,7 @@ import com.kermekx.smartchatting.R;
 import com.kermekx.smartchatting.listener.TaskListener;
 
 import java.io.InputStream;
+import java.net.Socket;
 import java.security.KeyStore;
 import java.security.SecureRandom;
 import java.util.logging.Level;
@@ -15,6 +16,7 @@ import java.util.logging.Logger;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManagerFactory;
 
@@ -51,13 +53,16 @@ public class ConnectToServerTask extends AsyncTask<Void, Void, Boolean> {
             sslcontext.init(null, tmf.getTrustManagers(), new SecureRandom());
 
             SSLSocketFactory ssf = sslcontext.getSocketFactory();
-            mListener.onData(ssf.createSocket("51.255.107.101", 26042));
+            Socket sock = ssf.createSocket("51.255.107.101", 26042);
+            mListener.onData(sock);
 
             Logger.getLogger(getClass().getName()).log(Level.INFO, "connected!");
 
             return true;
         } catch (Exception e) {
             Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, e);
+            Logger.getLogger(getClass().getName()).log(Level.SEVERE, "catch");
+
             mListener.onError(0);
 
             return false;
