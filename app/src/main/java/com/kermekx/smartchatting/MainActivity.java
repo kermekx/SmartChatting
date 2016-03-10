@@ -696,13 +696,15 @@ public class MainActivity extends AppCompatActivity
                 String username = ((Contact) fragment.getContactAdapter().getItem(position)).getUsername();
 
                 if (direction == SwipeDirection.DIRECTION_FAR_LEFT) {
+                    mCurrentlyRemoving = username;
+
                     mRefresh.setRefreshing(true);
 
                     Bundle extras = new Bundle();
 
                     extras.putString("header", HEADER_REMOVE_CONTACT);
                     extras.putString("filter", REMOVE_CONTACT_RECEIVER);
-                    extras.putString("username", username);
+                    extras.putString("username", mCurrentlyRemoving);
 
                     Intent service = new Intent(ServerService.SERVER_RECEIVER);
                     service.putExtras(extras);
@@ -830,7 +832,7 @@ public class MainActivity extends AppCompatActivity
 
                                     extras.putString("header", HEADER_ADD_CONTACT);
                                     extras.putString("filter", ADD_CONTACT_RECEIVER);
-                                    extras.putString("username", mCurrentlyAdding);
+                                    extras.putString("username", mCurrentlyRemoving);
 
                                     Intent service = new Intent(ServerService.SERVER_RECEIVER);
                                     service.putExtras(extras);
@@ -838,6 +840,7 @@ public class MainActivity extends AppCompatActivity
                                     sendBroadcast(service);
                                 }
                             }).show();
+                    mRefresh.setRefreshing(false);
                 } else {
                     ArrayList<String> errors = intent.getExtras().getStringArrayList("errors");
 
