@@ -303,7 +303,7 @@ public class ServerService extends Service {
 
                     listener = new SendMessageListener();
                     dataListeners.add(listener);
-                    
+
                     new SendMessageTask(context, new ServiceListener(receiver), (SendMessageListener) listener, socket, username, email, senderPublicKey, receiverPublicKey).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                     break;
                 default:

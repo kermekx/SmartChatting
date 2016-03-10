@@ -3,12 +3,15 @@ package com.kermekx.smartchatting.commandes;
 import android.content.Context;
 import android.os.AsyncTask;
 
+import com.kermekx.smartchatting.datas.ContactsData;
 import com.kermekx.smartchatting.listener.AddContactListener;
 import com.kermekx.smartchatting.listener.RemoveContactListener;
 import com.kermekx.smartchatting.listener.TaskListener;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.net.ssl.SSLSocket;
 
@@ -45,6 +48,8 @@ public class RemoveContactTask extends AsyncTask<Void, Void, Boolean> {
         try {
             PrintWriter writer = new PrintWriter(mSocket.getOutputStream());
 
+
+            Logger.getLogger(getClass().getName()).log(Level.WARNING, "removing...");
             writer.println(REMOVE_CONTACT_HEADER);
             writer.println(mUsername);
             writer.println(END_DATA);
@@ -68,6 +73,7 @@ public class RemoveContactTask extends AsyncTask<Void, Void, Boolean> {
             }
 
             if (mDataListener.data.get(0).equals(CONTACT_REMOVED_DATA)) {
+                ContactsData.removeContact(mContext, mUsername);
                 return true;
             } else if (mDataListener.data.get(0).equals(REMOVE_CONTACT_ERROR_DATA)){
                 for (int i = 1; i < mDataListener.data.size(); i ++) {

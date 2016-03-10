@@ -19,7 +19,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -31,12 +30,10 @@ import android.widget.TextView;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.kermekx.smartchatting.commandes.BaseTaskListener;
-import com.kermekx.smartchatting.commandes.DeleteContactTask;
 import com.kermekx.smartchatting.commandes.GetContactsTask;
 import com.kermekx.smartchatting.commandes.GetMessagesTask;
 import com.kermekx.smartchatting.commandes.GetPrivateKeyTask;
 import com.kermekx.smartchatting.commandes.LoadIconTask;
-import com.kermekx.smartchatting.commandes.UpdateContactsTask;
 import com.kermekx.smartchatting.commandes.UpdateMessagesTask;
 import com.kermekx.smartchatting.contact.Contact;
 import com.kermekx.smartchatting.contact.ContactAdapter;
@@ -53,14 +50,13 @@ import com.wdullaer.swipeactionadapter.SwipeDirection;
 import java.security.Key;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     private static final String HEADER_DISCONNECT = "DISCONNECT DATA";
     private static final String HEADER_ADD_CONTACT = "ADD CONTACT DATA";
+    private static final String HEADER_REMOVE_CONTACT = "REMOVE CONTACT DATA";
     private static final String HEADER_GET_CONTACTS = "GET CONTACTS DATA";
 
     private ListView mListView;
@@ -76,6 +72,10 @@ public class MainActivity extends AppCompatActivity
     private static final String ADD_CONTACT_RECEIVER = "ADD_CONTACT_RECEIVER";
     private BroadcastReceiver addContactReceiver;
     private String mCurrentlyAdding;
+
+    private static final String REMOVE_CONTACT_RECEIVER = "REMOVE_CONTACT_RECEIVER";
+    private BroadcastReceiver removeContactReceiver;
+    private String mCurrentlyRemoving;
 
     private static final String GET_CONTACTS_RECEIVER = "GET_CONTACTS_RECEIVER";
     private BroadcastReceiver getContactsReceiver;
@@ -177,6 +177,9 @@ public class MainActivity extends AppCompatActivity
         addContactReceiver = new AddContactReceiver();
         registerReceiver(addContactReceiver, new IntentFilter(ADD_CONTACT_RECEIVER));
 
+        removeContactReceiver = new RemoveContactReceiver();
+        registerReceiver(removeContactReceiver, new IntentFilter(REMOVE_CONTACT_RECEIVER));
+
         getContactsReceiver = new GetContactsReceiver();
         registerReceiver(getContactsReceiver, new IntentFilter(GET_CONTACTS_RECEIVER));
     }
@@ -205,8 +208,8 @@ public class MainActivity extends AppCompatActivity
         super.onPause();
 
         unregisterReceiver(addContactReceiver);
+        unregisterReceiver(removeContactReceiver);
         unregisterReceiver(getContactsReceiver);
-
     }
 
     @Override
@@ -595,58 +598,6 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    private class DeleteContactTaskListener extends BaseTaskListener {
-
-        private final String mUsername;
-        int error = -1;
-
-        public DeleteContactTaskListener(String username) {
-            mUsername = username;
-        }
-
-        @Override
-        public void onError(int error) {
-            this.error = error;
-        }
-
-        @Override
-        public void onData(Object... object) {
-
-        }
-
-        @Override
-        public void onPostExecute(Boolean success) {
-            if (success) {
-                new GetContactsTask(MainActivity.this, new GetContactsTaskListener()).execute();
-                Snackbar.make(mListView, mUsername + " " + getString(R.string.success_contact_deleted), Snackbar.LENGTH_LONG)
-                        .setAction(getString(R.string.action_cancel), new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                Bundle extras = new Bundle();
-
-                                extras.putString("header", HEADER_ADD_CONTACT);
-                                extras.putString("filter", ADD_CONTACT_RECEIVER);
-                                extras.putString("username", mCurrentlyAdding);
-
-                                Intent service = new Intent(ServerService.SERVER_RECEIVER);
-                                service.putExtras(extras);
-
-                                sendBroadcast(service);
-                            }
-                        }).show();
-            } else {
-                Snackbar.make(mListView, getString(error), Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-            mRefresh.setRefreshing(false);
-        }
-
-        @Override
-        public void onCancelled() {
-
-        }
-    }
-
     AdapterView.OnItemClickListener selectConversation = new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -746,8 +697,17 @@ public class MainActivity extends AppCompatActivity
 
                 if (direction == SwipeDirection.DIRECTION_FAR_LEFT) {
                     mRefresh.setRefreshing(true);
-                    SharedPreferences settings = getSharedPreferences(getString(R.string.preference_file_session), 0);
-                    new DeleteContactTask(MainActivity.this, new DeleteContactTaskListener(username), settings.getString("email", ""), settings.getString("password", ""), username).execute();
+
+                    Bundle extras = new Bundle();
+
+                    extras.putString("header", HEADER_REMOVE_CONTACT);
+                    extras.putString("filter", REMOVE_CONTACT_RECEIVER);
+                    extras.putString("username", username);
+
+                    Intent service = new Intent(ServerService.SERVER_RECEIVER);
+                    service.putExtras(extras);
+
+                    sendBroadcast(service);
                 } else if (direction.isRight()) {
                     Intent conversationActivity = new Intent(MainActivity.this, ConversationActivity.class);
                     Bundle extra = new Bundle();
@@ -821,6 +781,74 @@ public class MainActivity extends AppCompatActivity
                                 break;
                             case CANNOT_ADD_YOURSELF_ERROR:
                                 Snackbar.make(mListView, getString(R.string.error_yourself), Snackbar.LENGTH_LONG)
+                                        .setAction("Action", null).show();
+                                break;
+                            case INTERNAL_SERVER_ERROR:
+                                Snackbar.make(mListView, getString(R.string.error_connection_server), Snackbar.LENGTH_LONG)
+                                        .setAction("Action", null).show();
+                                break;
+                            case CONNECTION_ERROR_DATA:
+                                Snackbar.make(mListView, getString(R.string.error_connection_server), Snackbar.LENGTH_LONG)
+                                        .setAction("Action", null).show();
+                                break;
+                            default:
+                                break;
+                        }
+
+                        mRefresh.setRefreshing(false);
+                    }
+                }
+            } else {
+                Snackbar.make(mListView, getString(R.string.error_connection_server), Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();
+                mRefresh.setRefreshing(false);
+            }
+        }
+    }
+
+    public class RemoveContactReceiver extends BroadcastReceiver {
+
+        private static final String USER_NOT_FOUND_ERROR = "USER NOT FOUND";
+        private static final String NOT_FRIEND_ERROR = "NOT FRIEND";
+        private static final String INTERNAL_SERVER_ERROR = "INTERNAL ERROR";
+        private static final String CONNECTION_ERROR_DATA = "CONNECTION ERROR";
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Boolean connected = intent.getExtras().getBoolean("connected");
+
+            if (connected) {
+                Boolean success = intent.getExtras().getBoolean("success");
+
+                if (success) {
+                    new GetContactsTask(MainActivity.this, new GetContactsTaskListener()).execute();
+                    Snackbar.make(mListView, mCurrentlyRemoving + " " + getString(R.string.success_contact_deleted), Snackbar.LENGTH_LONG)
+                            .setAction(getString(R.string.action_cancel), new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    Bundle extras = new Bundle();
+
+                                    extras.putString("header", HEADER_ADD_CONTACT);
+                                    extras.putString("filter", ADD_CONTACT_RECEIVER);
+                                    extras.putString("username", mCurrentlyAdding);
+
+                                    Intent service = new Intent(ServerService.SERVER_RECEIVER);
+                                    service.putExtras(extras);
+
+                                    sendBroadcast(service);
+                                }
+                            }).show();
+                } else {
+                    ArrayList<String> errors = intent.getExtras().getStringArrayList("errors");
+
+                    for (String error : errors) {
+                        switch (error) {
+                            case USER_NOT_FOUND_ERROR:
+                                Snackbar.make(mListView, mCurrentlyRemoving + " " + getString(R.string.error_not_found), Snackbar.LENGTH_LONG)
+                                        .setAction("Action", null).show();
+                                break;
+                            case NOT_FRIEND_ERROR:
+                                Snackbar.make(mListView, mCurrentlyRemoving + " " + getString(R.string.error_not_found), Snackbar.LENGTH_LONG)
                                         .setAction("Action", null).show();
                                 break;
                             case INTERNAL_SERVER_ERROR:
