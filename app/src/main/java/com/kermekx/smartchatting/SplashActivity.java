@@ -113,6 +113,7 @@ public class SplashActivity extends AppCompatActivity {
 
                     if (ServerService.ready.charAt(0) == 'f') {
                         Logger.getLogger(getClass().getName()).log(Level.WARNING, "Connection Timed out!");
+                        showConnectionError(true);
                     } else {
                         sendBroadcast(loginIntent);
                     }
@@ -163,6 +164,8 @@ public class SplashActivity extends AppCompatActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
             Boolean connected = intent.getExtras().getBoolean("connected");
+
+            Logger.getLogger(getClass().getName()).log(Level.INFO, "connected : " + connected);
 
             if (connected) {
                 Boolean success = intent.getExtras().getBoolean("success");

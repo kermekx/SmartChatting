@@ -43,7 +43,7 @@ public class ServerService extends Service {
     public static String SERVER_RECEIVER = "SERVER_RECEIVER";
 
     public static volatile StringBuilder ready = new StringBuilder("f");
-    private boolean connected = true;
+    private boolean connected = false;
     private List<TaskListener> dataListeners = new ArrayList<>();
 
     public class LocalBinder extends Binder {
@@ -95,10 +95,12 @@ public class ServerService extends Service {
 
         @Override
         public void onPostExecute(Boolean success) {
-            if (!success)
+            if (!success) {
                 connected = false;
-            else
+            } else {
+                connected = true;
                 new SocketListenerTask(new SocketListener(), socket).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            }
 
             synchronized (ready) {
                 ready.setCharAt(0, 't');
