@@ -45,7 +45,7 @@ public class GetContactsTask extends AsyncTask<Void, Void, Boolean> {
             return true;
         } else {
             cursor.close();
-            return false;
+            return true;
         }
     }
 
