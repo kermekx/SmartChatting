@@ -13,7 +13,6 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.TypedValue;
@@ -24,6 +23,7 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.kermekx.smartchatting.dialog.ConfirmRemoveContactDialog;
 import com.kermekx.smartchatting.icon.IconManager;
@@ -87,13 +87,7 @@ public class ContactActivity extends AppCompatActivity {
         super.onResume();
 
         setTitle(username);
-
-        if (email == null) {
-            showProgress(true);
-            new GetContactInfoTask(username).execute();
-        } else {
-            ((TextView) findViewById(R.id.email)).setText(email);
-        }
+        ((TextView) findViewById(R.id.email)).setText(email);
 
         new LoadContactIconTask(username).execute();
     }
@@ -114,7 +108,10 @@ public class ContactActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.contact, menu);
+        if ("contact@smart-chatting.com".equals(email))
+            getMenuInflater().inflate(R.menu.contact_us, menu);
+        else
+            getMenuInflater().inflate(R.menu.contact, menu);
         return true;
     }
 
@@ -129,7 +126,7 @@ public class ContactActivity extends AppCompatActivity {
         if (id == R.id.remove_contact) {
             DialogFragment confirmRemoveContactDialog = new ConfirmRemoveContactDialog();
             confirmRemoveContactDialog.onAttach(ContactActivity.this);
-            confirmRemoveContactDialog.show(getFragmentManager(), "Remonve Contact");
+            confirmRemoveContactDialog.show(getFragmentManager(), "Remove Contact");
             return true;
         }
 
