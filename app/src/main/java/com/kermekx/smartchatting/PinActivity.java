@@ -71,6 +71,7 @@ public class PinActivity extends AppCompatActivity {
             Intent mainActivity = new Intent(PinActivity.this, MainActivity.class);
             mainActivity.putExtras(extras);
             PinActivity.this.startActivity(mainActivity);
+            finish();
         } else {
             mPinView.setError(getString(R.string.error_incorrect_pin));
             mPinView.requestFocus();

@@ -4,7 +4,9 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.DialogFragment;
+import android.content.BroadcastReceiver;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
@@ -28,6 +30,7 @@ import android.widget.Toast;
 import com.kermekx.smartchatting.dialog.ConfirmRemoveContactDialog;
 import com.kermekx.smartchatting.icon.IconManager;
 import com.kermekx.smartchatting.json.JsonManager;
+import com.kermekx.smartchatting.services.ServerService;
 
 import org.json.JSONObject;
 
@@ -37,6 +40,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class ContactActivity extends AppCompatActivity {
+
+    private static final String HEADER_REMOVE_CONTACT = "REMOVE CONTACT DATA";
+    private static final String REMOVE_CONTACT_RECEIVER = "REMOVE_CONTACT_RECEIVER";
 
     private String username;
     private String email;
@@ -93,6 +99,11 @@ public class ContactActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onPause() {
+        super.onPause();
+    }
+
+    @Override
     protected void onSaveInstanceState(Bundle outState) {
         outState.putString("email", email);
         super.onSaveInstanceState(outState);
@@ -117,12 +128,8 @@ public class ContactActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if (id == R.id.remove_contact) {
             DialogFragment confirmRemoveContactDialog = new ConfirmRemoveContactDialog();
             confirmRemoveContactDialog.onAttach(ContactActivity.this);
@@ -131,101 +138,6 @@ public class ContactActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    public class GetContactInfoTask extends AsyncTask<Void, Void, Boolean> {
-
-        private String mEmail;
-        private final String mUsername;
-
-        GetContactInfoTask(String username) {
-            mUsername = username;
-        }
-
-        @Override
-        protected Boolean doInBackground(Void... params) {
-            // TODO: attempt authentication against a network service.
-
-            SharedPreferences settings = getSharedPreferences(getString(R.string.preference_file_session), 0);
-            String email = settings.getString("email", "");
-            String password = settings.getString("password", "");
-
-            Map<String, String> values = new HashMap<String, String>();
-
-            values.put("email", email);
-            values.put("password", password);
-            values.put("username", mUsername);
-
-            String json = JsonManager.getJSON(getString(R.string.url_get_contact_info), values);
-
-            if (json == null) {
-                Logger.getLogger(getClass().getName()).log(Level.SEVERE, getString(R.string.error_connection_server) + " : null JSON");
-                return false;
-            }
-
-            try {
-                JSONObject result = new JSONObject(json);
-                if (result.getBoolean("signed") && result.getBoolean("found")) {
-                    mEmail = result.getString("email");
-                    return true;
-                }
-                Logger.getLogger(getClass().getName()).log(Level.SEVERE, getString(R.string.error_connection_server) + " : " + result.toString());
-            } catch (Exception e) {
-                Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, e);
-                return false;
-            }
-            return false;
-
-        }
-
-        @Override
-        protected void onPostExecute(final Boolean success) {
-            if (success) {
-                TextView emailView = (TextView) findViewById(R.id.email);
-                emailView.setText(mEmail);
-                email = mEmail;
-                showProgress(false);
-            } else {
-                finish();
-            }
-        }
-
-        @Override
-        protected void onCancelled() {
-
-        }
-    }
-
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
-    private void showProgress(final boolean show) {
-
-        final RelativeLayout content = (RelativeLayout) findViewById(R.id.content);
-        final ProgressBar progress = (ProgressBar) findViewById(R.id.register_progress);
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
-            int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
-
-            content.setVisibility(show ? View.GONE : View.VISIBLE);
-            content.animate().setDuration(shortAnimTime).alpha(
-                    show ? 0 : 1).setListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    content.setVisibility(show ? View.GONE : View.VISIBLE);
-                }
-            });
-
-            progress.setVisibility(show ? View.VISIBLE : View.GONE);
-            progress.animate().setDuration(shortAnimTime).alpha(
-                    show ? 1 : 0).setListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    progress.setVisibility(show ? View.VISIBLE : View.GONE);
-                }
-            });
-        } else {
-            content.setVisibility(show ? View.VISIBLE : View.GONE);
-            progress.setVisibility(show ? View.GONE : View.VISIBLE);
-        }
     }
 
     public class LoadContactIconTask extends AsyncTask<Void, Void, Boolean> {
@@ -243,10 +155,7 @@ public class ContactActivity extends AppCompatActivity {
 
             mIcon = IconManager.getIcon(ContactActivity.this, mUsername);
 
-            if (mIcon != null)
-                return true;
-
-            return false;
+            return mIcon != null;
 
         }
 
@@ -268,62 +177,17 @@ public class ContactActivity extends AppCompatActivity {
     }
 
     public void removeContact() {
-        new RemoveContactTask(username).execute();
+        Bundle extras = new Bundle();
+
+        extras.putString("header", HEADER_REMOVE_CONTACT);
+        extras.putString("filter", REMOVE_CONTACT_RECEIVER);
+        extras.putString("username", username);
+
+        Intent service = new Intent(ServerService.SERVER_RECEIVER);
+        service.putExtras(extras);
+
+        sendBroadcast(service);
+
+        finish();
     }
-
-    public class RemoveContactTask extends AsyncTask<Void, Void, Boolean> {
-
-        private final String mUsername;
-
-        RemoveContactTask(String contact) {
-            mUsername = contact;
-        }
-
-        @Override
-        protected Boolean doInBackground(Void... params) {
-
-            SharedPreferences settings = getSharedPreferences(getString(R.string.preference_file_session), 0);
-            String email = settings.getString("email", "");
-            String password = settings.getString("password", "");
-
-            Map<String, String> values = new HashMap<String, String>();
-
-            values.put("email", email);
-            values.put("password", password);
-            values.put("username", mUsername);
-
-            String json = JsonManager.getJSON(getString(R.string.url_remove_contact), values);
-
-            if (json == null) {
-                Logger.getLogger(getClass().getName()).log(Level.SEVERE, getString(R.string.error_connection_server) + " : null JSON");
-                return false;
-            }
-
-            try {
-                JSONObject result = new JSONObject(json);
-                if (result.getBoolean("signed") && !result.getBoolean("notFriend")) {
-                    return true;
-                }
-                Logger.getLogger(getClass().getName()).log(Level.SEVERE, getString(R.string.error_connection_server) + " : " + result.toString());
-            } catch (Exception e) {
-                Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, e);
-                return false;
-            }
-            return false;
-
-        }
-
-        @Override
-        protected void onPostExecute(final Boolean success) {
-            if (success) {
-                finish();
-            }
-        }
-
-        @Override
-        protected void onCancelled() {
-
-        }
-    }
-
 }

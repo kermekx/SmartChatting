@@ -71,11 +71,9 @@ public class MainActivity extends AppCompatActivity
 
     private static final String ADD_CONTACT_RECEIVER = "ADD_CONTACT_RECEIVER";
     private BroadcastReceiver addContactReceiver;
-    private String mCurrentlyAdding;
 
     private static final String REMOVE_CONTACT_RECEIVER = "REMOVE_CONTACT_RECEIVER";
     private BroadcastReceiver removeContactReceiver;
-    private String mCurrentlyRemoving;
 
     private static final String GET_CONTACTS_RECEIVER = "GET_CONTACTS_RECEIVER";
     private BroadcastReceiver getContactsReceiver;
@@ -301,8 +299,6 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void addContact(String contact) {
-        mCurrentlyAdding = contact;
-
         if (contact.isEmpty()) {
             Snackbar.make(mListView, getString(R.string.error_add_contact_empty), Snackbar.LENGTH_LONG)
                     .setAction("Action", null).show();
@@ -311,7 +307,7 @@ public class MainActivity extends AppCompatActivity
 
             extras.putString("header", HEADER_ADD_CONTACT);
             extras.putString("filter", ADD_CONTACT_RECEIVER);
-            extras.putString("username", mCurrentlyAdding);
+            extras.putString("username", contact);
 
             Intent service = new Intent(ServerService.SERVER_RECEIVER);
             service.putExtras(extras);
@@ -696,15 +692,13 @@ public class MainActivity extends AppCompatActivity
                 String username = ((Contact) fragment.getContactAdapter().getItem(position)).getUsername();
 
                 if (direction == SwipeDirection.DIRECTION_FAR_LEFT) {
-                    mCurrentlyRemoving = username;
-
                     mRefresh.setRefreshing(true);
 
                     Bundle extras = new Bundle();
 
                     extras.putString("header", HEADER_REMOVE_CONTACT);
                     extras.putString("filter", REMOVE_CONTACT_RECEIVER);
-                    extras.putString("username", mCurrentlyRemoving);
+                    extras.putString("username", username);
 
                     Intent service = new Intent(ServerService.SERVER_RECEIVER);
                     service.putExtras(extras);
@@ -754,9 +748,10 @@ public class MainActivity extends AppCompatActivity
 
             if (connected) {
                 Boolean success = intent.getExtras().getBoolean("success");
+                String adding = intent.getExtras().getString("username");
 
                 if (success) {
-                    Snackbar.make(mListView, mCurrentlyAdding + " " + getString(R.string.success_added), Snackbar.LENGTH_LONG)
+                    Snackbar.make(mListView, adding + " " + getString(R.string.success_added), Snackbar.LENGTH_LONG)
                             .setAction("Action", null).show();
 
                     Bundle extras = new Bundle();
@@ -774,11 +769,11 @@ public class MainActivity extends AppCompatActivity
                     for (String error : errors) {
                         switch (error) {
                             case USER_NOT_FOUND_ERROR:
-                                Snackbar.make(mListView, mCurrentlyAdding + " " + getString(R.string.error_not_found), Snackbar.LENGTH_LONG)
+                                Snackbar.make(mListView, adding + " " + getString(R.string.error_not_found), Snackbar.LENGTH_LONG)
                                         .setAction("Action", null).show();
                                 break;
                             case USER_ALREADY_ADDED_ERROR:
-                                Snackbar.make(mListView, mCurrentlyAdding + " " + getString(R.string.error_already_added), Snackbar.LENGTH_LONG)
+                                Snackbar.make(mListView, adding + " " + getString(R.string.error_already_added), Snackbar.LENGTH_LONG)
                                         .setAction("Action", null).show();
                                 break;
                             case CANNOT_ADD_YOURSELF_ERROR:
@@ -821,10 +816,11 @@ public class MainActivity extends AppCompatActivity
 
             if (connected) {
                 Boolean success = intent.getExtras().getBoolean("success");
+                final String removed = intent.getExtras().getString("username");
 
                 if (success) {
                     new GetContactsTask(MainActivity.this, new GetContactsTaskListener()).execute();
-                    Snackbar.make(mListView, mCurrentlyRemoving + " " + getString(R.string.success_contact_deleted), Snackbar.LENGTH_LONG)
+                    Snackbar.make(mListView, removed + " " + getString(R.string.success_contact_deleted), Snackbar.LENGTH_LONG)
                             .setAction(getString(R.string.action_cancel), new View.OnClickListener() {
                                 @Override
                                 public void onClick(View v) {
@@ -832,7 +828,7 @@ public class MainActivity extends AppCompatActivity
 
                                     extras.putString("header", HEADER_ADD_CONTACT);
                                     extras.putString("filter", ADD_CONTACT_RECEIVER);
-                                    extras.putString("username", mCurrentlyRemoving);
+                                    extras.putString("username", removed);
 
                                     Intent service = new Intent(ServerService.SERVER_RECEIVER);
                                     service.putExtras(extras);
@@ -847,11 +843,11 @@ public class MainActivity extends AppCompatActivity
                     for (String error : errors) {
                         switch (error) {
                             case USER_NOT_FOUND_ERROR:
-                                Snackbar.make(mListView, mCurrentlyRemoving + " " + getString(R.string.error_not_found), Snackbar.LENGTH_LONG)
+                                Snackbar.make(mListView, removed + " " + getString(R.string.error_not_found), Snackbar.LENGTH_LONG)
                                         .setAction("Action", null).show();
                                 break;
                             case NOT_FRIEND_ERROR:
-                                Snackbar.make(mListView, mCurrentlyRemoving + " " + getString(R.string.error_not_found), Snackbar.LENGTH_LONG)
+                                Snackbar.make(mListView, removed + " " + getString(R.string.error_not_found), Snackbar.LENGTH_LONG)
                                         .setAction("Action", null).show();
                                 break;
                             case INTERNAL_SERVER_ERROR:

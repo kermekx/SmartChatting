@@ -256,7 +256,7 @@ public class ServerService extends Service {
                     listener = new LoginListener();
                     dataListeners.add(listener);
 
-                    new LoginTask(context, new ServiceListener(receiver), (LoginListener) listener, socket, email, password, pin, firstConnection).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                    new LoginTask(context, new ServiceListener(receiver, intent.getExtras()), (LoginListener) listener, socket, email, password, pin, firstConnection).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
                     break;
                 case HEADER_REGISTER:
@@ -268,7 +268,7 @@ public class ServerService extends Service {
                     listener = new RegisterListener();
                     dataListeners.add(listener);
 
-                    new RegisterTask(context, new ServiceListener(receiver), (RegisterListener) listener, socket, email, username, password, pin).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                    new RegisterTask(context, new ServiceListener(receiver, intent.getExtras()), (RegisterListener) listener, socket, email, username, password, pin).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                     break;
                 case HEADER_DISCONNECT:
                     new DisconnectTask(context, socket).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
@@ -279,7 +279,7 @@ public class ServerService extends Service {
                     listener = new AddContactListener();
                     dataListeners.add(listener);
 
-                    new AddContactTask(context, new ServiceListener(receiver), (AddContactListener) listener, socket, username).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                    new AddContactTask(context, new ServiceListener(receiver, intent.getExtras()), (AddContactListener) listener, socket, username).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                     break;
                 case HEADER_REMOVE_CONTACT:
                     username = intent.getExtras().getString("username");
@@ -287,13 +287,15 @@ public class ServerService extends Service {
                     listener = new RemoveContactListener();
                     dataListeners.add(listener);
 
-                    new RemoveContactTask(context, new ServiceListener(receiver), (RemoveContactListener) listener, socket, username).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                    Bundle extras = new Bundle();
+
+                    new RemoveContactTask(context, new ServiceListener(receiver, intent.getExtras()), (RemoveContactListener) listener, socket, username).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                     break;
                 case HEADER_GET_CONTACTS:
                     listener = new GetContactsListener();
                     dataListeners.add(listener);
 
-                    new UpdateContactsTask(context, new ServiceListener(receiver), (GetContactsListener) listener, socket).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                    new UpdateContactsTask(context, new ServiceListener(receiver, intent.getExtras()), (GetContactsListener) listener, socket).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                     break;
                 case HEADER_SEND_MESSAGE:
                     email = intent.getExtras().getString("email");
@@ -304,7 +306,7 @@ public class ServerService extends Service {
                     listener = new SendMessageListener();
                     dataListeners.add(listener);
 
-                    new SendMessageTask(context, new ServiceListener(receiver), (SendMessageListener) listener, socket, username, email, senderPublicKey, receiverPublicKey).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                    new SendMessageTask(context, new ServiceListener(receiver, intent.getExtras()), (SendMessageListener) listener, socket, username, email, senderPublicKey, receiverPublicKey).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                     break;
                 default:
                     break;
@@ -314,11 +316,13 @@ public class ServerService extends Service {
         private class ServiceListener extends BaseTaskListener {
 
             final String mReceiver;
+            final Bundle mExtras;
             ArrayList<String> errors = new ArrayList<>();
             ArrayList<String> data = new ArrayList<>();
 
-            public ServiceListener(String receiver) {
+            public ServiceListener(String receiver, Bundle extras) {
                 mReceiver = receiver;
+                mExtras = extras;
             }
 
             @Override
@@ -335,15 +339,13 @@ public class ServerService extends Service {
             public void onPostExecute(Boolean success) {
                 dataListeners.remove(listener);
 
-                Bundle extras = new Bundle();
-
-                extras.putBoolean("connected", true);
-                extras.putBoolean("success", success);
-                extras.putStringArrayList("errors", errors);
-                extras.putStringArrayList("data", data);
+                mExtras.putBoolean("connected", true);
+                mExtras.putBoolean("success", success);
+                mExtras.putStringArrayList("errors", errors);
+                mExtras.putStringArrayList("data", data);
 
                 Intent broadcast = new Intent(mReceiver);
-                broadcast.putExtras(extras);
+                broadcast.putExtras(mExtras);
 
                 sendBroadcast(broadcast);
             }
