@@ -19,14 +19,19 @@ import com.kermekx.smartchatting.commandes.ConnectToServerTask;
 import com.kermekx.smartchatting.commandes.DisconnectTask;
 import com.kermekx.smartchatting.commandes.LoginTask;
 import com.kermekx.smartchatting.commandes.RegisterTask;
+import com.kermekx.smartchatting.commandes.RemoveContactTask;
+import com.kermekx.smartchatting.commandes.SendMessageTask;
 import com.kermekx.smartchatting.commandes.SocketListenerTask;
 import com.kermekx.smartchatting.commandes.UpdateContactsTask;
 import com.kermekx.smartchatting.listener.AddContactListener;
 import com.kermekx.smartchatting.listener.GetContactsListener;
 import com.kermekx.smartchatting.listener.LoginListener;
 import com.kermekx.smartchatting.listener.RegisterListener;
+import com.kermekx.smartchatting.listener.RemoveContactListener;
+import com.kermekx.smartchatting.listener.SendMessageListener;
 import com.kermekx.smartchatting.listener.TaskListener;
 
+import java.security.Key;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -159,7 +164,10 @@ public class ServerService extends Service {
         private static final String HEADER_REGISTER = "REGISTER DATA";
         private static final String HEADER_DISCONNECT = "DISCONNECT DATA";
         private static final String HEADER_ADD_CONTACT = "ADD CONTACT DATA";
+        private static final String HEADER_REMOVE_CONTACT = "REMOVE CONTACT DATA";
         private static final String HEADER_GET_CONTACTS = "GET CONTACTS DATA";
+        private static final String HEADER_SEND_MESSAGE = "SEND MESSAGE DATA";
+
         // Use to send a message
         private static final String MESSAGE = "SEND";
 
@@ -273,11 +281,30 @@ public class ServerService extends Service {
 
                     new AddContactTask(context, new ServiceListener(receiver), (AddContactListener) listener, socket, username).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                     break;
+                case HEADER_REMOVE_CONTACT:
+                    username = intent.getExtras().getString("username");
+
+                    listener = new RemoveContactListener();
+                    dataListeners.add(listener);
+
+                    new RemoveContactTask(context, new ServiceListener(receiver), (RemoveContactListener) listener, socket, username).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                    break;
                 case HEADER_GET_CONTACTS:
                     listener = new GetContactsListener();
                     dataListeners.add(listener);
 
                     new UpdateContactsTask(context, new ServiceListener(receiver), (GetContactsListener) listener, socket).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                    break;
+                case HEADER_SEND_MESSAGE:
+                    email = intent.getExtras().getString("email");
+                    username = intent.getExtras().getString("email");
+                    Key senderPublicKey = (Key) intent.getExtras().getSerializable("senderPublicKey");
+                    Key receiverPublicKey =(Key) intent.getExtras().getSerializable("receiverPublicKey");
+
+                    listener = new SendMessageListener();
+                    dataListeners.add(listener);
+                    
+                    new SendMessageTask(context, new ServiceListener(receiver), (SendMessageListener) listener, socket, username, email, senderPublicKey, receiverPublicKey).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                     break;
                 default:
                     break;
