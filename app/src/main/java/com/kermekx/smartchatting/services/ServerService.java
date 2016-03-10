@@ -158,6 +158,8 @@ public class ServerService extends Service {
         private static final String HEADER_DISCONNECT = "DISCONNECT DATA";
         private static final String HEADER_ADD_CONTACT = "ADD CONTACT DATA";
         private static final String HEADER_GET_CONTACTS = "GET CONTACTS DATA";
+        // Use to send a message
+        private static final String MESSAGE = "SEND";
 
         private TaskListener listener;
 
@@ -224,6 +226,8 @@ public class ServerService extends Service {
                 startService(new Intent(context, ServerService.class));
 
                 return;
+            } else {
+                Bundle messagesSend = new Bundle();
             }
 
             String email;
