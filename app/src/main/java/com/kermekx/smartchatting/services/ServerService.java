@@ -26,6 +26,7 @@ import com.kermekx.smartchatting.commandes.UpdateContactsTask;
 import com.kermekx.smartchatting.listener.AddContactListener;
 import com.kermekx.smartchatting.listener.GetContactsListener;
 import com.kermekx.smartchatting.listener.LoginListener;
+import com.kermekx.smartchatting.listener.NotificationListener;
 import com.kermekx.smartchatting.listener.RegisterListener;
 import com.kermekx.smartchatting.listener.RemoveContactListener;
 import com.kermekx.smartchatting.listener.SendMessageListener;
@@ -104,6 +105,7 @@ public class ServerService extends Service {
                 connected = false;
             } else {
                 connected = true;
+                dataListeners.add(new NotificationListener(ServerService.this));
                 new SocketListenerTask(new SocketListener(), socket).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
             }
 
@@ -127,24 +129,6 @@ public class ServerService extends Service {
 
             for (TaskListener listener : dataListeners)
                 listener.onData(object);
-
-            /**
-             String[] data = (String[]) object;
-
-             NotificationManager mNotificationManager =
-             (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-             NotificationCompat.Builder builder;
-             String user = data[0];
-             String message = data[1];
-
-             if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1) {
-             builder = new NotificationCompat.Builder(ServerService.this).setAutoCancel(true).setDefaults(Notification.DEFAULT_SOUND | Notification.DEFAULT_VIBRATE).setColor(getColor(R.color.primary)).setLights(getColor(R.color.primary), 300, 1000).setSmallIcon(R.drawable.ic_menu_message).setContentTitle(user).setContentText(message).setGroup("SMART_CHATTING_MESSAGE_KEY").setCategory(Notification.CATEGORY_MESSAGE).setPriority(Notification.PRIORITY_HIGH);
-             } else {
-             builder = new NotificationCompat.Builder(ServerService.this).setAutoCancel(true).setDefaults(Notification.DEFAULT_SOUND | Notification.DEFAULT_VIBRATE).setColor(getResources().getColor(R.color.primary)).setLights(getResources().getColor(R.color.primary), 300, 1000).setSmallIcon(R.drawable.ic_menu_message).setContentTitle(user).setContentText(message).setGroup("SMART_CHATTING_MESSAGE_KEY").setCategory(Notification.CATEGORY_MESSAGE).setPriority(Notification.PRIORITY_HIGH);
-             }
-
-             mNotificationManager.notify("SMART_CHATTING_MESSAGE_KEY".hashCode(), builder.build());
-             */
         }
 
         @Override

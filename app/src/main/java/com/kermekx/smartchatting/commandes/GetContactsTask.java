@@ -32,7 +32,7 @@ public class GetContactsTask extends AsyncTask<Void, Void, Boolean> {
                 //0 : contact ID
                 //1 : username
                 //2 : email
-                //3 : privateKey
+                //3 : publicKey
                 mListener.onData(new String[]{
                         cursor.getString(0),
                         cursor.getString(1),
