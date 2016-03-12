@@ -168,6 +168,27 @@ public class KeyManager {
         return null;
     }
 
+    public static PGPSecretKeyRing readSecreteKeyRing(String secreteKey) {
+        try {
+            return getSecreteKeyRing(secreteKey);
+        } catch (IOException e) {
+            //bad key block (corrupted, network error, ...)
+            return null;
+        }
+    }
+
+    public static char[] generateKeyPassword(byte[] password, byte[] pin) {
+        byte[] pass = new BigInteger(password).multiply(new BigInteger(pin)).toByteArray();
+        return new String(pass).toCharArray();
+    }
+
+    /**
+     * Used to verify username and pin, to decrypt messages, use readSecreteKeyRing(generateKeyPassword(password, pin))
+     * @param privateKey
+     * @param password
+     * @param pin
+     * @return
+     */
     public static PGPPrivateKey readPrivateKey(String privateKey, byte[] password, byte[] pin) {
         try {
             PGPSecretKeyRing keyRing = getSecreteKeyRing(privateKey);

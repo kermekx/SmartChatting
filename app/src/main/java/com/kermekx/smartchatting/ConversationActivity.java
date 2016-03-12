@@ -22,13 +22,12 @@ import com.kermekx.smartchatting.commandes.BaseTaskListener;
 import com.kermekx.smartchatting.commandes.GetMessagesTask;
 import com.kermekx.smartchatting.commandes.GetPrivateKeyTask;
 import com.kermekx.smartchatting.commandes.LoadIconTask;
-import com.kermekx.smartchatting.commandes.SendMessageTask;
-import com.kermekx.smartchatting.listener.TaskListener;
 import com.kermekx.smartchatting.commandes.UpdateMessagesTask;
 import com.kermekx.smartchatting.conversation.Conversation;
 import com.kermekx.smartchatting.conversation.ConversationAdapter;
 import com.kermekx.smartchatting.fragment.ConversationFragment;
 import com.kermekx.smartchatting.json.JsonManager;
+import com.kermekx.smartchatting.listener.TaskListener;
 import com.kermekx.smartchatting.rsa.RSA;
 
 import org.json.JSONObject;
