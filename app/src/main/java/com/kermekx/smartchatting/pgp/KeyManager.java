@@ -8,10 +8,15 @@ import org.bouncycastle.bcpg.sig.Features;
 import org.bouncycastle.bcpg.sig.KeyFlags;
 import org.bouncycastle.crypto.generators.RSAKeyPairGenerator;
 import org.bouncycastle.crypto.params.RSAKeyGenerationParameters;
+import org.bouncycastle.openpgp.PGPCompressedData;
+import org.bouncycastle.openpgp.PGPCompressedDataGenerator;
 import org.bouncycastle.openpgp.PGPEncryptedData;
+import org.bouncycastle.openpgp.PGPEncryptedDataGenerator;
 import org.bouncycastle.openpgp.PGPException;
 import org.bouncycastle.openpgp.PGPKeyPair;
 import org.bouncycastle.openpgp.PGPKeyRingGenerator;
+import org.bouncycastle.openpgp.PGPLiteralData;
+import org.bouncycastle.openpgp.PGPLiteralDataGenerator;
 import org.bouncycastle.openpgp.PGPObjectFactory;
 import org.bouncycastle.openpgp.PGPPrivateKey;
 import org.bouncycastle.openpgp.PGPPublicKey;
@@ -22,17 +27,21 @@ import org.bouncycastle.openpgp.PGPSignature;
 import org.bouncycastle.openpgp.PGPSignatureSubpacketGenerator;
 import org.bouncycastle.openpgp.operator.PBESecretKeyDecryptor;
 import org.bouncycastle.openpgp.operator.PBESecretKeyEncryptor;
+import org.bouncycastle.openpgp.operator.PGPDataEncryptorBuilder;
 import org.bouncycastle.openpgp.operator.PGPDigestCalculator;
 import org.bouncycastle.openpgp.operator.bc.BcKeyFingerprintCalculator;
 import org.bouncycastle.openpgp.operator.bc.BcPBESecretKeyDecryptorBuilder;
 import org.bouncycastle.openpgp.operator.bc.BcPBESecretKeyEncryptorBuilder;
 import org.bouncycastle.openpgp.operator.bc.BcPGPContentSignerBuilder;
+import org.bouncycastle.openpgp.operator.bc.BcPGPDataEncryptorBuilder;
 import org.bouncycastle.openpgp.operator.bc.BcPGPDigestCalculatorProvider;
 import org.bouncycastle.openpgp.operator.bc.BcPGPKeyPair;
+import org.bouncycastle.openpgp.operator.bc.BcPublicKeyKeyEncryptionMethodGenerator;
 import org.bouncycastle.util.encoders.Base64Encoder;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.Date;
@@ -197,5 +206,37 @@ public class KeyManager {
             return key;
         }
         return null;
+    }
+
+    public static boolean encode(PGPPublicKey key, byte[] message, ByteArrayOutputStream output) {
+        try {
+            PGPLiteralDataGenerator lData = new PGPLiteralDataGenerator();
+            ByteArrayOutputStream ldOut = new ByteArrayOutputStream();
+            OutputStream pOut = lData.open(ldOut, PGPLiteralDataGenerator.UTF8, PGPLiteralData.CONSOLE, message.length,
+                    new Date());
+
+            pOut.write(message);
+            pOut.close();
+
+            byte[] data = ldOut.toByteArray();
+
+            PGPDataEncryptorBuilder encryptBuilder = new BcPGPDataEncryptorBuilder(PGPEncryptedData.AES_256);
+
+            PGPEncryptedDataGenerator encryptGen = new PGPEncryptedDataGenerator(encryptBuilder);
+            encryptGen.addMethod(new BcPublicKeyKeyEncryptionMethodGenerator(key));
+
+            OutputStream encryptedOut = encryptGen.open(output, data.length + 128);
+
+            PGPCompressedDataGenerator compressor = new PGPCompressedDataGenerator(PGPCompressedData.ZIP);
+            OutputStream compressedOut = compressor.open(encryptedOut);
+
+            compressedOut.write(data);
+            compressedOut.close();
+            encryptedOut.close();
+
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 }
