@@ -12,19 +12,24 @@ import org.bouncycastle.openpgp.PGPCompressedData;
 import org.bouncycastle.openpgp.PGPCompressedDataGenerator;
 import org.bouncycastle.openpgp.PGPEncryptedData;
 import org.bouncycastle.openpgp.PGPEncryptedDataGenerator;
+import org.bouncycastle.openpgp.PGPEncryptedDataList;
 import org.bouncycastle.openpgp.PGPException;
 import org.bouncycastle.openpgp.PGPKeyPair;
 import org.bouncycastle.openpgp.PGPKeyRingGenerator;
 import org.bouncycastle.openpgp.PGPLiteralData;
 import org.bouncycastle.openpgp.PGPLiteralDataGenerator;
 import org.bouncycastle.openpgp.PGPObjectFactory;
+import org.bouncycastle.openpgp.PGPOnePassSignatureList;
 import org.bouncycastle.openpgp.PGPPrivateKey;
 import org.bouncycastle.openpgp.PGPPublicKey;
+import org.bouncycastle.openpgp.PGPPublicKeyEncryptedData;
 import org.bouncycastle.openpgp.PGPPublicKeyRing;
 import org.bouncycastle.openpgp.PGPSecretKey;
 import org.bouncycastle.openpgp.PGPSecretKeyRing;
 import org.bouncycastle.openpgp.PGPSignature;
 import org.bouncycastle.openpgp.PGPSignatureSubpacketGenerator;
+import org.bouncycastle.openpgp.PGPUtil;
+import org.bouncycastle.openpgp.bc.BcPGPObjectFactory;
 import org.bouncycastle.openpgp.operator.PBESecretKeyDecryptor;
 import org.bouncycastle.openpgp.operator.PBESecretKeyEncryptor;
 import org.bouncycastle.openpgp.operator.PGPDataEncryptorBuilder;
@@ -36,11 +41,14 @@ import org.bouncycastle.openpgp.operator.bc.BcPGPContentSignerBuilder;
 import org.bouncycastle.openpgp.operator.bc.BcPGPDataEncryptorBuilder;
 import org.bouncycastle.openpgp.operator.bc.BcPGPDigestCalculatorProvider;
 import org.bouncycastle.openpgp.operator.bc.BcPGPKeyPair;
+import org.bouncycastle.openpgp.operator.bc.BcPublicKeyDataDecryptorFactory;
 import org.bouncycastle.openpgp.operator.bc.BcPublicKeyKeyEncryptionMethodGenerator;
 import org.bouncycastle.util.encoders.Base64Encoder;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.math.BigInteger;
 import java.security.SecureRandom;
@@ -225,7 +233,7 @@ public class KeyManager {
             PGPEncryptedDataGenerator encryptGen = new PGPEncryptedDataGenerator(encryptBuilder);
             encryptGen.addMethod(new BcPublicKeyKeyEncryptionMethodGenerator(key));
 
-            OutputStream encryptedOut = encryptGen.open(output, data.length + 128);
+            OutputStream encryptedOut = encryptGen.open(output, new byte[data.length + 128]);
 
             PGPCompressedDataGenerator compressor = new PGPCompressedDataGenerator(PGPCompressedData.ZIP);
             OutputStream compressedOut = compressor.open(encryptedOut);
@@ -236,6 +244,73 @@ public class KeyManager {
 
             return true;
         } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public static boolean decode(PGPSecretKeyRing secretKeyRing, char[] password, byte[] message, ByteArrayOutputStream output) {
+
+        PGPPublicKeyEncryptedData encryptedData;
+
+        try {
+            InputStream is = PGPUtil.getDecoderStream(new ByteArrayInputStream(message));
+
+            PGPObjectFactory pgpF = new BcPGPObjectFactory(is);
+            Object o = pgpF.nextObject();
+            PGPEncryptedDataList enc = (o instanceof PGPEncryptedDataList) ? (PGPEncryptedDataList) o
+                    : (PGPEncryptedDataList) pgpF.nextObject();
+            encryptedData = null;
+            PGPPrivateKey privateKey = null;
+            for (Iterator<PGPPublicKeyEncryptedData> iterator = enc.getEncryptedDataObjects(); iterator.hasNext(); ) {
+                encryptedData = iterator.next();
+                PBESecretKeyDecryptor decryptor = new BcPBESecretKeyDecryptorBuilder(
+                        new BcPGPDigestCalculatorProvider()).build(password);
+                PGPSecretKey secretKey = secretKeyRing.getSecretKey(encryptedData.getKeyID());
+                if (secretKey != null) {
+                    privateKey = secretKey.extractPrivateKey(decryptor);
+                    continue;
+                }
+            }
+            if (privateKey == null) {
+                throw new IllegalArgumentException("Unable to find secret key to decrypt the message");
+            }
+
+            PGPObjectFactory plainFact = new BcPGPObjectFactory(
+                    encryptedData.getDataStream(new BcPublicKeyDataDecryptorFactory(privateKey)));
+            Object compressed = plainFact.nextObject();
+            if (compressed instanceof PGPCompressedData) {
+                PGPCompressedData cData = (PGPCompressedData) compressed;
+                PGPObjectFactory pgpFact = new BcPGPObjectFactory(cData.getDataStream());
+                compressed = pgpFact.nextObject();
+            }
+
+            if (compressed instanceof PGPLiteralData) {
+                PGPLiteralData ld = (PGPLiteralData) compressed;
+                InputStream unc = ld.getInputStream();
+                int ch;
+                while ((ch = unc.read()) >= 0) {
+                    output.write(ch);
+                }
+            } else if (compressed instanceof PGPOnePassSignatureList) {
+                throw new PGPException("encrypted message contains a signed message - not literal data.");
+            } else {
+                throw new PGPException("message is not a simple encrypted file - type unknown.");
+            }
+
+            if (encryptedData.isIntegrityProtected()) {
+                if (!encryptedData.verify()) {
+                    System.err.println("message failed integrity check");
+                }
+            } else {
+                System.err.println("no message integrity check");
+            }
+            return true;
+        } catch (PGPException e) {
+            e.printStackTrace();
+            return false;
+        } catch (Exception e) {
+            System.out.println();
+            e.printStackTrace();
             return false;
         }
     }
