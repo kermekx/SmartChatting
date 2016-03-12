@@ -143,4 +143,5 @@
     <string name="error_invalid_pin">The PIN code is invald</string>
     <string name="action_unlock_short">Unlock</string>
     <string name="error_incorrect_pin">This PIN code in incorrect</string>
+    <string name="title_activity_camera">CameraActivity</string>
 </resources>

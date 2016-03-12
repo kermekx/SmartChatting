@@ -17,7 +17,6 @@ import com.kermekx.smartchatting.R;
 import com.kermekx.smartchatting.commandes.BaseTaskListener;
 import com.kermekx.smartchatting.commandes.GetPrivateKeyTask;
 import com.kermekx.smartchatting.commandes.UpdateMessagesTask;
-import com.kermekx.smartchatting.rsa.RSA;
 
 import java.security.Key;
 import java.util.ArrayList;
@@ -94,7 +93,7 @@ public class NewMessage extends BroadcastReceiver {
                 NotificationCompat.Builder builder;
 
                 String user = data[1];
-                String message = RSA.decrypt(data[3], mKey);
+                String message = ""; //RSA.decrypt(data[3], mKey);
 
                 if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1) {
                     builder = new NotificationCompat.Builder(mContext).setAutoCancel(true).setDefaults(Notification.DEFAULT_SOUND | Notification.DEFAULT_VIBRATE).setColor(mContext.getColor(R.color.primary)).setLights(mContext.getColor(R.color.primary), 300, 1000).setSmallIcon(R.drawable.ic_menu_message).setContentTitle(user).setContentText(message).setGroup("SMART_CHATTING_MESSAGE_KEY").setCategory(Notification.CATEGORY_MESSAGE).setPriority(Notification.PRIORITY_HIGH);

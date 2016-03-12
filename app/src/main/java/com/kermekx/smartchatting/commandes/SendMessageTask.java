@@ -8,7 +8,6 @@ import com.kermekx.smartchatting.R;
 import com.kermekx.smartchatting.json.JsonManager;
 import com.kermekx.smartchatting.listener.SendMessageListener;
 import com.kermekx.smartchatting.listener.TaskListener;
-import com.kermekx.smartchatting.rsa.RSA;
 
 import org.json.JSONObject;
 
@@ -47,8 +46,8 @@ public class SendMessageTask extends AsyncTask<Void, Void, Boolean> {
         mDataListener = messageListener;
         mSocket = socket;
 
-        mMessage = RSA.encrypt(message, receiverPublicKey);
-        mBackupMessage = RSA.encrypt(message, senderPublicKey);
+        mMessage = ""; //RSA.encrypt(message, receiverPublicKey);
+        mBackupMessage = ""; //RSA.encrypt(message, senderPublicKey);
     }
 
     @Override
