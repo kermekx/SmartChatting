@@ -13,25 +13,24 @@ import android.provider.BaseColumns;
  */
 public class MessagesData {
     private static final String TEXT_TYPE = " TEXT";
+    private static final String BINARY_TYPE = " BLOB";
     private static final String COMMA_SEP = ",";
 
     public static final String SQL_CREATE_MESSAGES =
             "CREATE TABLE " + MessageEntry.TABLE_NAME + " (" +
                     MessageEntry._ID + " INTEGER PRIMARY KEY," +
-                    MessageEntry.COLUMN_NAME_MESSAGE_ID + TEXT_TYPE + COMMA_SEP +
                     MessageEntry.COLUMN_NAME_CONTACT + TEXT_TYPE + COMMA_SEP +
                     MessageEntry.COLUMN_NAME_MESSAGE_SENT + TEXT_TYPE + COMMA_SEP +
-                    MessageEntry.COLUMN_NAME_MESSAGE_CONTENT + TEXT_TYPE +
+                    MessageEntry.COLUMN_NAME_MESSAGE_CONTENT + BINARY_TYPE +
                     " )";
 
     public static final String SQL_DELETE_MESSAGES =
             "DROP TABLE IF EXISTS " + MessageEntry.TABLE_NAME;
 
-    public static long insertMessage(Context context, String messageID, String contact, String isSent, String content) {
+    public static long insertMessage(Context context, String contact, String isSent, byte[] content) {
         SQLiteDatabase db = SmartChattingBdHelper.getInstance(context).getWritableDatabase();
 
         ContentValues values = new ContentValues();
-        values.put(MessageEntry.COLUMN_NAME_MESSAGE_ID, messageID);
         values.put(MessageEntry.COLUMN_NAME_CONTACT, contact);
         values.put(MessageEntry.COLUMN_NAME_MESSAGE_SENT, isSent);
         values.put(MessageEntry.COLUMN_NAME_MESSAGE_CONTENT, content);
@@ -43,14 +42,14 @@ public class MessagesData {
         SQLiteDatabase db = SmartChattingBdHelper.getInstance(context).getReadableDatabase();
 
         String[] projections = {
-                MessageEntry.COLUMN_NAME_MESSAGE_ID,
+                MessageEntry._ID,
                 MessageEntry.COLUMN_NAME_CONTACT,
                 MessageEntry.COLUMN_NAME_MESSAGE_SENT,
                 MessageEntry.COLUMN_NAME_MESSAGE_CONTENT
         };
 
         String sortOrder =
-                MessageEntry.COLUMN_NAME_MESSAGE_ID + " ASC";
+                MessageEntry._ID + " ASC";
 
         return db.query(MessageEntry.TABLE_NAME, projections, null, null, null, null, sortOrder);
     }
@@ -63,7 +62,6 @@ public class MessagesData {
 
     public static abstract class MessageEntry implements BaseColumns {
         public static final String TABLE_NAME = "Messages";
-        public static final String COLUMN_NAME_MESSAGE_ID = "messageID";
         public static final String COLUMN_NAME_CONTACT = "username";
         public static final String COLUMN_NAME_MESSAGE_SENT = "isSent";
         public static final String COLUMN_NAME_MESSAGE_CONTENT = "content";

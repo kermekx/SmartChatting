@@ -292,14 +292,13 @@ public class ConversationActivity extends AppCompatActivity {
 
         boolean send = true;
 
-        if (TextUtils.isEmpty(message) || message.length() > 1024) {
+        if (TextUtils.isEmpty(message.trim()) || message.length() > 1024) {
             send = false;
         }
 
         if (senderPublicKey == null || receiverPublicKey == null) {
             Snackbar.make(mMessagesView, "Cannot send message due without public keys!", Snackbar.LENGTH_LONG)
                     .setAction("Action", null).show();
-
             send = false;
         }
 

@@ -70,7 +70,7 @@ public class UpdateMessagesTask extends AsyncTask<Void, Void, Boolean> {
                 JSONArray messages = result.getJSONArray("messages");
 
                 for (int i = 0; i < messages.length() / 4; i ++) {
-                    MessagesData.insertMessage(mContext, messages.getString(i * 4), messages.getString(i * 4 + 1), messages.getString(i * 4 + 2), messages.getString(i * 4 + 3));
+                    //MessagesData.insertMessage(mContext, messages.getString(i * 4), messages.getString(i * 4 + 1), messages.getString(i * 4 + 2), messages.getString(i * 4 + 3));
                     if (mListener != null)
                         mListener.onData(new String[]{
                                 messages.getString(i * 4),

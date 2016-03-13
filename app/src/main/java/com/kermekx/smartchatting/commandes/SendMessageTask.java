@@ -5,14 +5,23 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 
 import com.kermekx.smartchatting.R;
+import com.kermekx.smartchatting.datas.ContactsData;
+import com.kermekx.smartchatting.datas.MessagesData;
+import com.kermekx.smartchatting.hash.Hasher;
 import com.kermekx.smartchatting.json.JsonManager;
 import com.kermekx.smartchatting.listener.SendMessageListener;
 import com.kermekx.smartchatting.listener.TaskListener;
+import com.kermekx.smartchatting.pgp.KeyManager;
 
+import org.bouncycastle.openpgp.PGPPublicKey;
 import org.json.JSONObject;
 
+import java.io.BufferedOutputStream;
+import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.security.Key;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -25,69 +34,98 @@ import javax.net.ssl.SSLSocket;
  */
 public class SendMessageTask extends AsyncTask<Void, Void, Boolean> {
 
-    private final String mEmail;
-    private final String mPassword;
-    private final String mUsername;
-    private final String mMessage;
+    private static final String SEND_MESSAGE_HEADER = "SEND MESSAGE";
+    private static final String MESSAGE_SENT_DATA = "MESSAGE SENT";
+    private static final String SEND_MESSAGE_ERROR_DATA = "SEND MESSAGE ERROR";
+    private static final String END_DATA = "END OF DATA";
+
+    private static final String CONNECTION_ERROR_DATA = "CONNECTION ERROR";
 
     private final Context mContext;
-    private final String mBackupMessage;
     private final TaskListener mListener;
     private final SendMessageListener mDataListener;
     private final SSLSocket mSocket;
+    private final String mUsername;
+    private final byte[] mMessage;
+    private final PGPPublicKey mReceiverPublicKey;
+    private final PGPPublicKey mSenderPublicKey;
 
-    public SendMessageTask(Context context, TaskListener taskListen, SendMessageListener messageListener, SSLSocket socket, String username, String message, Key senderPublicKey, Key receiverPublicKey) {
+    public SendMessageTask(Context context, TaskListener taskListen, SendMessageListener messageListener, SSLSocket socket, String username, String message, PGPPublicKey receiverPublicKey, PGPPublicKey senderPublicKey) {
         mContext = context;
-        SharedPreferences settings = mContext.getSharedPreferences(mContext.getString(R.string.preference_file_session), 0);
-        mEmail = settings.getString("email", "");
-        mPassword = settings.getString("password", "");
-        mUsername = username;
         mListener = taskListen;
         mDataListener = messageListener;
         mSocket = socket;
-        mMessage = message;
-        mBackupMessage = message;
-        /**
-        mMessage = RSA.encrypt(message, receiverPublicKey);
-        mBackupMessage = RSA.encrypt(message, senderPublicKey);
-         */
+        mUsername = username;
+        mMessage = message.getBytes();
+        mReceiverPublicKey = receiverPublicKey;
+        mSenderPublicKey = senderPublicKey;
     }
 
     @Override
     protected Boolean doInBackground(Void... params) {
         try {
-            PrintWriter write = new PrintWriter(String.valueOf(mSocket.getInputStream()));
-            write.println();
+            ByteArrayOutputStream data = new ByteArrayOutputStream();
+            ByteArrayOutputStream backupData = new ByteArrayOutputStream();
 
-        } catch (Exception e){
-
-        }
-        Map<String, String> values = new HashMap<String, String>();
-
-        values.put("email", mEmail);
-        values.put("password", mPassword);
-        values.put("username", mUsername);
-        values.put("message", mMessage);
-        values.put("message_backup", mBackupMessage);
-
-        String json = JsonManager.getJSON(mContext.getString(R.string.url_send_message), values);
-
-        if (json == null) {
-            return false;
-        }
-
-        try {
-            JSONObject result = new JSONObject(json);
-            if (result.getBoolean("signed") && result.getBoolean("sent")) {
-                return true;
+            if (!KeyManager.encode(mReceiverPublicKey, mMessage, data) || !KeyManager.encode(mSenderPublicKey, mMessage, backupData)) {
+                return false;
             }
+
+            BufferedOutputStream output = new BufferedOutputStream(mSocket.getOutputStream());
+
+            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+            buffer.write(SEND_MESSAGE_HEADER.getBytes());
+            buffer.write("\r\n".getBytes());
+            buffer.write(mUsername.getBytes());
+            buffer.write("\r\n".getBytes());
+            buffer.write(String.valueOf(data.size()).getBytes());
+            buffer.write("\r\n".getBytes());
+            buffer.write(data.toByteArray());
+            buffer.write(END_DATA.getBytes());
+            buffer.write("\r\n".getBytes());
+
+            output.write(buffer.toByteArray());
+            output.flush();
+            data.close();
+            buffer.close();
+            output.close();
+
+            byte[] backupMessage = backupData.toByteArray();
+            backupData.close();
+
+            if (mDataListener.data.size() == 0) {
+                try {
+                    synchronized (mDataListener.data) {
+                        mDataListener.data.wait();
+                    }
+                } catch (InterruptedException e) {
+
+                }
+            }
+
+            if (mDataListener.data.size() == 0) {
+                if (mListener != null)
+                    mListener.onError(CONNECTION_ERROR_DATA);
+                return false;
+            }
+
+            if (mDataListener.data.get(0).equals(MESSAGE_SENT_DATA)) {
+                MessagesData.insertMessage(mContext, mUsername, "true", backupMessage);
+
+                return true;
+            } else if (mDataListener.data.get(0).equals(SEND_MESSAGE_ERROR_DATA)) {
+                for (int i = 1; i < mDataListener.data.size(); i++) {
+                    if (mListener != null)
+                        mListener.onError(mDataListener.data.get(i));
+                }
+
+                return false;
+            }
+            return false;
         } catch (Exception e) {
             Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, e);
             return false;
         }
-
-        return false;
-
     }
 
     @Override
