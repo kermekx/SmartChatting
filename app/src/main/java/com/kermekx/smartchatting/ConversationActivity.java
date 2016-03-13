@@ -1,10 +1,12 @@
 package com.kermekx.smartchatting;
 
 import android.app.FragmentManager;
+import android.content.BroadcastReceiver;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -36,6 +38,7 @@ import com.kermekx.smartchatting.conversation.ConversationAdapter;
 import com.kermekx.smartchatting.fragment.ConversationFragment;
 import com.kermekx.smartchatting.listener.TaskListener;
 import com.kermekx.smartchatting.pgp.KeyManager;
+import com.kermekx.smartchatting.services.ServerService;
 
 import org.bouncycastle.openpgp.PGPPublicKey;
 
@@ -51,11 +54,11 @@ import java.util.List;
 
 public class ConversationActivity extends AppCompatActivity {
 
+    private static final String HEADER_SEND_MESSAGE = "SEND MESSAGE DATA";
+
     private String username;
     private String receiverPublicKeyBlock;
-    private PGPPublicKey receiverPublicKey;
     private String senderPublicKeyBlock;
-    private PGPPublicKey senderPublicKey;
 
     private EditText mMessageView;
     private ListView mMessagesView;
@@ -67,6 +70,9 @@ public class ConversationActivity extends AppCompatActivity {
     private List<LoadIconTask> mTasks = new ArrayList<>();
 
     private File f;
+
+    private static final String SEND_MESSAGE_RECEIVER = "SEND_MESSAGE_RECEIVER";
+    private BroadcastReceiver sendMessageReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -120,6 +126,8 @@ public class ConversationActivity extends AppCompatActivity {
     protected void onPause() {
         fragment.setState(mMessagesView.onSaveInstanceState());
 
+        unregisterReceiver(sendMessageReceiver);
+
         super.onPause();
     }
 
@@ -139,10 +147,10 @@ public class ConversationActivity extends AppCompatActivity {
             fm.beginTransaction().add(fragment, "ConversationFragment").commit();
 
             /**
-            TaskListener listener = new GetMessagesTaskListener();
-            AsyncTask<Void, Void, Boolean> task = new GetMessagesTask(ConversationActivity.this, listener);
-            new GetPrivateKeyTask(ConversationActivity.this, new GetPrivateKeyTaskListener(task, listener), settings.getString("email", ""), settings.getString("password", "")).execute();
-            */
+             TaskListener listener = new GetMessagesTaskListener();
+             AsyncTask<Void, Void, Boolean> task = new GetMessagesTask(ConversationActivity.this, listener);
+             new GetPrivateKeyTask(ConversationActivity.this, new GetPrivateKeyTaskListener(task, listener), settings.getString("email", ""), settings.getString("password", "")).execute();
+             */
 
         } else if (fragment.getConversationAdapter() != null) {
             mMessagesView.setAdapter(fragment.getConversationAdapter());
@@ -150,9 +158,10 @@ public class ConversationActivity extends AppCompatActivity {
             mMessagesView.onRestoreInstanceState(fragment.getState());
         }
 
-        senderPublicKeyBlock = settings.getString("publicKey", "");
+        sendMessageReceiver = new SendMessageReceiver();
+        registerReceiver(sendMessageReceiver, new IntentFilter(SEND_MESSAGE_RECEIVER));
 
-        new GetPublicKeyTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        senderPublicKeyBlock = settings.getString("publicKey", "");
     }
 
     @Override
@@ -264,29 +273,6 @@ public class ConversationActivity extends AppCompatActivity {
         }
     }
 
-
-    public class GetPublicKeyTask extends AsyncTask<Void, Void, Boolean> {
-        @Override
-        protected Boolean doInBackground(Void... params) {
-            if (senderPublicKeyBlock == null || receiverPublicKeyBlock == null)
-                return false;
-
-            if ((senderPublicKey = KeyManager.readPublicKey(senderPublicKeyBlock)) == null
-                    || (receiverPublicKey = KeyManager.readPublicKey(receiverPublicKeyBlock)) == null)
-                return false;
-
-            return true;
-        }
-
-        @Override
-        protected void onPostExecute(Boolean success) {
-            if (!success) {
-                Snackbar.make(mMessagesView, "Cannot read public key!", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        }
-    }
-
     public void sendMessage() {
         String message = mMessageView.getText().toString();
 
@@ -296,14 +282,27 @@ public class ConversationActivity extends AppCompatActivity {
             send = false;
         }
 
-        if (senderPublicKey == null || receiverPublicKey == null) {
-            Snackbar.make(mMessagesView, "Cannot send message due without public keys!", Snackbar.LENGTH_LONG)
+        if (senderPublicKeyBlock == null || receiverPublicKeyBlock == null) {
+            Snackbar.make(mMessagesView, "Cannot send message without public keys!", Snackbar.LENGTH_LONG)
                     .setAction("Action", null).show();
             send = false;
         }
 
         if (send) {
-            //new SendMessageTask(username, message, senderPublicKey, receiverPublicKey).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            Bundle extras = new Bundle();
+
+            extras.putString("header", HEADER_SEND_MESSAGE);
+            extras.putString("filter", SEND_MESSAGE_RECEIVER);
+            extras.putString("username", username);
+            extras.putString("message", message.trim());
+            extras.putSerializable("senderPublicKey", senderPublicKeyBlock);
+            extras.putSerializable("receiverPublicKey", receiverPublicKeyBlock);
+
+            Intent service = new Intent(ServerService.SERVER_RECEIVER);
+            service.putExtras(extras);
+
+            sendBroadcast(service);
+
             mMessageView.setText("");
         }
     }
@@ -488,6 +487,50 @@ public class ConversationActivity extends AppCompatActivity {
         @Override
         public void onCancelled() {
 
+        }
+    }
+
+    public class SendMessageReceiver extends BroadcastReceiver {
+
+        private static final String USER_NOT_FOUND_ERROR = "USER NOT FOUND";
+        private static final String INTERNAL_SERVER_ERROR = "INTERNAL ERROR";
+        private static final String CONNECTION_ERROR_DATA = "CONNECTION ERROR";
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Boolean connected = intent.getExtras().getBoolean("connected");
+
+            if (connected) {
+                Boolean success = intent.getExtras().getBoolean("success");
+
+                if (success) {
+
+                } else {
+                    ArrayList<String> errors = intent.getExtras().getStringArrayList("errors");
+
+                    for (String error : errors) {
+                        switch (error) {
+                            case USER_NOT_FOUND_ERROR:
+                                Snackbar.make(mMessagesView, username + " " + getString(R.string.error_not_found), Snackbar.LENGTH_LONG)
+                                        .setAction("Action", null).show();
+                                break;
+                            case INTERNAL_SERVER_ERROR:
+                                Snackbar.make(mMessagesView, getString(R.string.error_connection_server), Snackbar.LENGTH_LONG)
+                                        .setAction("Action", null).show();
+                                break;
+                            case CONNECTION_ERROR_DATA:
+                                Snackbar.make(mMessagesView, getString(R.string.error_connection_server), Snackbar.LENGTH_LONG)
+                                        .setAction("Action", null).show();
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                }
+            } else {
+                Snackbar.make(mMessagesView, getString(R.string.error_connection_server), Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();
+            }
         }
     }
 }

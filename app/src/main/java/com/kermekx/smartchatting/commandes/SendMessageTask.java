@@ -1,29 +1,17 @@
 package com.kermekx.smartchatting.commandes;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.AsyncTask;
 
-import com.kermekx.smartchatting.R;
-import com.kermekx.smartchatting.datas.ContactsData;
 import com.kermekx.smartchatting.datas.MessagesData;
-import com.kermekx.smartchatting.hash.Hasher;
-import com.kermekx.smartchatting.json.JsonManager;
 import com.kermekx.smartchatting.listener.SendMessageListener;
 import com.kermekx.smartchatting.listener.TaskListener;
 import com.kermekx.smartchatting.pgp.KeyManager;
 
 import org.bouncycastle.openpgp.PGPPublicKey;
-import org.json.JSONObject;
 
 import java.io.BufferedOutputStream;
-import java.io.BufferedWriter;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -47,10 +35,10 @@ public class SendMessageTask extends AsyncTask<Void, Void, Boolean> {
     private final SSLSocket mSocket;
     private final String mUsername;
     private final byte[] mMessage;
-    private final PGPPublicKey mReceiverPublicKey;
-    private final PGPPublicKey mSenderPublicKey;
+    private final String mReceiverPublicKey;
+    private final String mSenderPublicKey;
 
-    public SendMessageTask(Context context, TaskListener taskListen, SendMessageListener messageListener, SSLSocket socket, String username, String message, PGPPublicKey receiverPublicKey, PGPPublicKey senderPublicKey) {
+    public SendMessageTask(Context context, TaskListener taskListen, SendMessageListener messageListener, SSLSocket socket, String username, String message, String receiverPublicKey, String senderPublicKey) {
         mContext = context;
         mListener = taskListen;
         mDataListener = messageListener;

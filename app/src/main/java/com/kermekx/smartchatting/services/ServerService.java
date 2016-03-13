@@ -32,6 +32,7 @@ import com.kermekx.smartchatting.listener.RemoveContactListener;
 import com.kermekx.smartchatting.listener.SendMessageListener;
 import com.kermekx.smartchatting.listener.TaskListener;
 
+import org.bouncycastle.openpgp.PGPPublicKey;
 import org.bouncycastle.openpgp.PGPSecretKeyRing;
 
 import java.security.Key;
@@ -239,6 +240,7 @@ public class ServerService extends Service {
             String password;
             String username;
             String pin;
+            String message;
             boolean firstConnection;
 
             switch (header) {
@@ -303,17 +305,17 @@ public class ServerService extends Service {
                     new UpdateContactsTask(context, new ServiceListener(receiver, intent.getExtras()), (GetContactsListener) listener, socket).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                     break;
                 case HEADER_SEND_MESSAGE:
-                    email = intent.getExtras().getString("email");
-                    username = intent.getExtras().getString("email");
-                    Key senderPublicKey = (Key) intent.getExtras().getSerializable("senderPublicKey");
-                    Key receiverPublicKey =(Key) intent.getExtras().getSerializable("receiverPublicKey");
+                    username = intent.getExtras().getString("username");
+                    message = intent.getExtras().getString("message");
+                    String senderPublicKey = intent.getExtras().getString("senderPublicKey");
+                    String receiverPublicKey = intent.getExtras().getString("receiverPublicKey");
 
                     listener = new SendMessageListener();
                     synchronized (dataListeners) {
                         dataListeners.add(listener);
                     }
 
-                    new SendMessageTask(context, new ServiceListener(receiver, intent.getExtras()), (SendMessageListener) listener, socket, username, email, senderPublicKey, receiverPublicKey).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                    new SendMessageTask(context, new ServiceListener(receiver, intent.getExtras()), (SendMessageListener) listener, socket, username, message, senderPublicKey, receiverPublicKey).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                     break;
                 default:
                     break;

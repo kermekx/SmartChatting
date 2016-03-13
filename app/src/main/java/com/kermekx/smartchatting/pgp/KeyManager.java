@@ -237,8 +237,10 @@ public class KeyManager {
         return null;
     }
 
-    public static boolean encode(PGPPublicKey key, byte[] message, ByteArrayOutputStream output) {
+    public static boolean encode(String keyBlock, byte[] message, ByteArrayOutputStream output) {
         try {
+            PGPPublicKey key = readPublicKey(keyBlock);
+
             PGPLiteralDataGenerator lData = new PGPLiteralDataGenerator();
             ByteArrayOutputStream ldOut = new ByteArrayOutputStream();
             OutputStream pOut = lData.open(ldOut, PGPLiteralDataGenerator.UTF8, PGPLiteralData.CONSOLE, message.length,
