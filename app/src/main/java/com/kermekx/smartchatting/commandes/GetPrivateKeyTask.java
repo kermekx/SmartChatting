@@ -19,7 +19,7 @@ import java.util.logging.Logger;
 
 /**
  * Created by kermekx on 23/02/2016.
- *
+ * <p/>
  * This task is used to get the private key
  */
 public class GetPrivateKeyTask extends AsyncTask<Void, Void, Boolean> {
@@ -56,7 +56,7 @@ public class GetPrivateKeyTask extends AsyncTask<Void, Void, Boolean> {
                 String secure = settings.getString("secure", "");
 
                 BigInteger modulus = new BigInteger(result.getString("modulus"));
-                BigInteger exponent = new BigInteger(Hasher.aesDecrypt(result.getString("exponent"), secure).replaceAll("[^0-9]",""));
+                BigInteger exponent = new BigInteger(Hasher.aesDecrypt(result.getString("exponent"), secure).replaceAll("[^0-9]", ""));
 
                 /**
                 if (mListener != null)

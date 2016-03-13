@@ -50,7 +50,7 @@ public class Conversation implements Comparable<Conversation> {
     }
 
     public void decrypt(Key key) {
-        /**setMessage(RSA.decrypt(cryptedMessage, key))*/;
+        /**setMessage(RSA.decrypt(cryptedMessage, key))*/
     }
 
     @Override

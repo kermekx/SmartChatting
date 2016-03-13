@@ -3,14 +3,28 @@ package com.kermekx.smartchatting;
 import android.app.FragmentManager;
 import android.content.ClipData;
 import android.content.ClipboardManager;
+import android.content.ContentValues;
+import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.EditText;
@@ -31,10 +45,17 @@ import com.kermekx.smartchatting.listener.TaskListener;
 
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.math.BigInteger;
 import java.security.Key;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,10 +72,14 @@ public class ConversationActivity extends AppCompatActivity {
 
     private EditText mMessageView;
     private ListView mMessagesView;
+    private ImageView sendView;
+    private ImageView mImageView;
 
     private ConversationFragment fragment;
 
     private List<LoadIconTask> mTasks = new ArrayList<>();
+
+    private File f;
 
     private Timer timer = new Timer();
     private TimerTask updateTask = new TimerTask() {
@@ -80,7 +105,9 @@ public class ConversationActivity extends AppCompatActivity {
 
         mMessagesView = (ListView) findViewById(R.id.messages);
 
-        ImageView sendView = (ImageView) findViewById(R.id.send_message);
+        mImageView = (ImageView) findViewById(R.id.viewImage);
+
+        sendView = (ImageView) findViewById(R.id.send_message);
 
         sendView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -181,6 +208,103 @@ public class ConversationActivity extends AppCompatActivity {
         NavUtils.navigateUpFromSameTask(ConversationActivity.this);
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.conversation, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.action_photo) {
+            mImageView.setVisibility(View.VISIBLE);
+            /*mMessagesView.setVisibility(View.GONE);
+            mMessageView.setVisibility(View.GONE);
+            sendView.setVisibility(View.GONE);*/
+
+            Context context = getApplicationContext();
+            PackageManager packageManager = context.getPackageManager();
+            if (!packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
+                Toast.makeText(getApplicationContext(), "This device does not have a camera.", Toast.LENGTH_LONG).show();
+                return false;
+            } else {
+                openCamera();
+            }
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void openCamera() {
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        f = new File(android.os.Environment.getExternalStorageDirectory(), "temp.jpg");
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(f));
+        startActivityForResult(intent, 1);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK) {
+            if (requestCode == 1) {
+                File f = new File(Environment.getExternalStorageDirectory().toString());
+                for (File temp : f.listFiles()) {
+                    if (temp.getName().equals("temp.jpg")) {
+                        f = temp;
+                        break;
+                    }
+                }
+                try {
+                    Bitmap bitmap;
+                    BitmapFactory.Options bitmapOptions = new BitmapFactory.Options();
+
+                    bitmap = BitmapFactory.decodeFile(f.getAbsolutePath(),
+                            bitmapOptions);
+
+                    mImageView.setImageBitmap(bitmap);
+
+                    String path = android.os.Environment
+                            .getExternalStorageDirectory()
+                            + File.separator
+                            + "Phoenix" + File.separator + "default";
+                    f.delete();
+                    OutputStream outFile = null;
+                    File file = new File(path, String.valueOf(System.currentTimeMillis()) + ".jpg");
+                    try {
+                        outFile = new FileOutputStream(file);
+                        bitmap.compress(Bitmap.CompressFormat.JPEG, 85, outFile);
+                        outFile.flush();
+                        outFile.close();
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            } else if (requestCode == 2) {
+
+                Uri selectedImage = data.getData();
+                String[] filePath = {MediaStore.Images.Media.DATA};
+                Cursor c = getContentResolver().query(selectedImage, filePath, null, null, null);
+                c.moveToFirst();
+                int columnIndex = c.getColumnIndex(filePath[0]);
+                String picturePath = c.getString(columnIndex);
+                c.close();
+                Bitmap thumbnail = (BitmapFactory.decodeFile(picturePath));
+                //Log.w("path of image from gallery", picturePath+"");
+                mImageView.setImageBitmap(thumbnail);
+            }
+        }
+    }
+
+
     public class GetPublicKeyTask extends AsyncTask<Void, Void, Boolean> {
 
         private final String mEmail;
@@ -219,9 +343,9 @@ public class ConversationActivity extends AppCompatActivity {
 
                     /**
                     if (isSenderKey) {
-                        senderPublicKey = RSA.recreatePublicKey(exponent, modulus);
+                        //senderPublicKey = RSA.recreatePublicKey(exponent, modulus);
                     } else {
-                        receiverPublicKey = RSA.recreatePublicKey(exponent, modulus);
+                        //receiverPublicKey = RSA.recreatePublicKey(exponent, modulus);
                     }
                      */
 
@@ -403,11 +527,11 @@ public class ConversationActivity extends AppCompatActivity {
                 Drawable drawable = (Drawable) object[0];
                 if (mItem instanceof Conversation) {
                     ((Conversation) mItem).setIcon(drawable);
-                    ((Conversation) mItem).decrypt(mKey);
+                    //((Conversation) mItem).decrypt(mKey);
                 }
             } else {
                 if (mItem instanceof Conversation) {
-                    ((Conversation) mItem).decrypt(mKey);
+                    //((Conversation) mItem).decrypt(mKey);
                 }
             }
         }

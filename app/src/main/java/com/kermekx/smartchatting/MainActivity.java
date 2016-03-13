@@ -387,9 +387,9 @@ public class MainActivity extends AppCompatActivity
 
                 for (int i = mMessages.size() - 1; i >= 0; i--) {
                     /**
-                    Message message = new Message(mContacts.get(i), RSA.decrypt(mMessages.get(i), mKey));
-                    new LoadIconTask(MainActivity.this, new LoadIconTaskListener(message), mContacts.get(i), 48).execute();
-                    messages.add(message);
+                     Message message = new Message(mContacts.get(i), RSA.decrypt(mMessages.get(i), mKey));
+                     new LoadIconTask(MainActivity.this, new LoadIconTaskListener(message), mContacts.get(i), 48).execute();
+                     messages.add(message);
                      */
                 }
 
