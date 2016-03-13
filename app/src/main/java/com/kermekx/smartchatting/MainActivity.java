@@ -284,6 +284,8 @@ public class MainActivity extends AppCompatActivity
             Bundle extra = new Bundle();
             extra.putString("username", "Team Smart Chatting");
             extra.putString("email", "contact@smart-chatting.com");
+            //TODO : put publicKey
+            extra.putString("publicKey", "null");
             contactActivity.putExtras(extra);
             MainActivity.this.startActivity(contactActivity);
         } else if (id == R.id.nav_disconnect) {
@@ -430,7 +432,7 @@ public class MainActivity extends AppCompatActivity
         @Override
         public void onData(Object... object) {
             String[] data = (String[]) object;
-            Contact contact = new Contact(data[1], data[2], null);
+            Contact contact = new Contact(data[1], data[2], data[3], null);
             contacts.add(contact);
             //tasks.add(new LoadIconTask(MainActivity.this, new LoadIconTaskListener(contact), data[1], 48));
         }
@@ -617,6 +619,7 @@ public class MainActivity extends AppCompatActivity
             Bundle extras = new Bundle();
             extras.putString("username", username.getText().toString());
             extras.putString("email", ((Contact) fragment.getContactAdapter().getItem(position)).getEmail());
+            extras.putString("publicKey", ((Contact) fragment.getContactAdapter().getItem(position)).getPublicKey());
             contactActivity.putExtras(extras);
             MainActivity.this.startActivity(contactActivity);
         }
@@ -691,6 +694,8 @@ public class MainActivity extends AppCompatActivity
                 int position = positions[i];
 
                 String username = ((Contact) fragment.getContactAdapter().getItem(position)).getUsername();
+                String email = ((Contact) fragment.getContactAdapter().getItem(position)).getEmail();
+                String publicKey = ((Contact) fragment.getContactAdapter().getItem(position)).getPublicKey();
 
                 if (direction == SwipeDirection.DIRECTION_FAR_LEFT) {
                     mRefresh.setRefreshing(true);
@@ -709,6 +714,8 @@ public class MainActivity extends AppCompatActivity
                     Intent conversationActivity = new Intent(MainActivity.this, ConversationActivity.class);
                     Bundle extra = new Bundle();
                     extra.putString("username", username);
+                    extra.putString("email", email);
+                    extra.putString("publicKey", publicKey);
                     conversationActivity.putExtras(extra);
                     MainActivity.this.startActivity(conversationActivity);
                 }

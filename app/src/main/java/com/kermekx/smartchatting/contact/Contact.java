@@ -11,11 +11,13 @@ public class Contact {
 
     private String username;
     private String email;
+    private String publicKey;
     private Drawable icon;
 
-    public Contact(String pseudo, String email, Drawable icon) {
+    public Contact(String pseudo, String email, String publicKey, Drawable icon) {
         this.username = pseudo;
         this.email = email;
+        this.publicKey = publicKey;
         this.icon = icon;
     }
 
@@ -33,6 +35,14 @@ public class Contact {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getPublicKey() {
+        return publicKey;
+    }
+
+    public void setPublicKey(String publicKey) {
+        this.publicKey = publicKey;
     }
 
     public Drawable getIcon() {

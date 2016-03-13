@@ -32,6 +32,8 @@ import com.kermekx.smartchatting.listener.RemoveContactListener;
 import com.kermekx.smartchatting.listener.SendMessageListener;
 import com.kermekx.smartchatting.listener.TaskListener;
 
+import org.bouncycastle.openpgp.PGPSecretKeyRing;
+
 import java.security.Key;
 import java.util.ArrayList;
 import java.util.List;
@@ -51,6 +53,8 @@ public class ServerService extends Service {
     public static volatile StringBuilder ready = new StringBuilder("f");
     private boolean connected = false;
     private List<TaskListener> dataListeners = new ArrayList<>();
+
+    private static char[] password;
 
     public class LocalBinder extends Binder {
         ServerService getService() {
@@ -358,5 +362,9 @@ public class ServerService extends Service {
                 dataListeners.remove(listener);
             }
         }
+    }
+
+    public static void setPassword(char[] password) {
+        ServerService.password = password;
     }
 }

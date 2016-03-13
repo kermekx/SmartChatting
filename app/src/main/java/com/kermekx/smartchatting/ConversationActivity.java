@@ -3,13 +3,11 @@ package com.kermekx.smartchatting;
 import android.app.FragmentManager;
 import android.content.ClipData;
 import android.content.ClipboardManager;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
@@ -22,7 +20,6 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -33,42 +30,32 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.kermekx.smartchatting.commandes.BaseTaskListener;
-import com.kermekx.smartchatting.commandes.GetMessagesTask;
-import com.kermekx.smartchatting.commandes.GetPrivateKeyTask;
 import com.kermekx.smartchatting.commandes.LoadIconTask;
-import com.kermekx.smartchatting.commandes.UpdateMessagesTask;
 import com.kermekx.smartchatting.conversation.Conversation;
 import com.kermekx.smartchatting.conversation.ConversationAdapter;
 import com.kermekx.smartchatting.fragment.ConversationFragment;
-import com.kermekx.smartchatting.json.JsonManager;
 import com.kermekx.smartchatting.listener.TaskListener;
+import com.kermekx.smartchatting.pgp.KeyManager;
 
-import org.json.JSONObject;
+import org.bouncycastle.openpgp.PGPPublicKey;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.math.BigInteger;
 import java.security.Key;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class ConversationActivity extends AppCompatActivity {
 
     private String username;
-    private Key receiverPublicKey;
-    private Key senderPublicKey;
+    private String receiverPublicKeyBlock;
+    private PGPPublicKey receiverPublicKey;
+    private String senderPublicKeyBlock;
+    private PGPPublicKey senderPublicKey;
 
     private EditText mMessageView;
     private ListView mMessagesView;
@@ -81,17 +68,6 @@ public class ConversationActivity extends AppCompatActivity {
 
     private File f;
 
-    private Timer timer = new Timer();
-    private TimerTask updateTask = new TimerTask() {
-        @Override
-        public void run() {
-            SharedPreferences settings = getSharedPreferences(getString(R.string.preference_file_session), 0);
-            TaskListener listener = new UpdateMessagesTaskListener();
-            AsyncTask<Void, Void, Boolean> task = new UpdateMessagesTask(ConversationActivity.this, listener, settings.getString("email", ""), settings.getString("password", ""));
-            new GetPrivateKeyTask(ConversationActivity.this, new GetPrivateKeyTaskListener(task, listener), settings.getString("email", ""), settings.getString("password", "")).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-        }
-    };
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -100,6 +76,7 @@ public class ConversationActivity extends AppCompatActivity {
         setContentView(R.layout.activity_conversation);
 
         username = extras.getString("username");
+        receiverPublicKeyBlock = extras.getString("publicKey");
 
         mMessageView = (EditText) findViewById(R.id.typed_message);
 
@@ -137,23 +114,11 @@ public class ConversationActivity extends AppCompatActivity {
                 return true;
             }
         });
-
-        try {
-            timer.schedule(updateTask, 2000, 2000);
-        } catch (Exception e) {
-
-        }
     }
 
     @Override
     protected void onPause() {
-
         fragment.setState(mMessagesView.onSaveInstanceState());
-
-        SharedPreferences settings = getSharedPreferences(getString(R.string.preference_file_session), 0);
-        SharedPreferences.Editor editor = settings.edit();
-        editor.putBoolean("notify_" + username, true);
-        editor.commit();
 
         super.onPause();
     }
@@ -173,9 +138,11 @@ public class ConversationActivity extends AppCompatActivity {
             fragment = new ConversationFragment();
             fm.beginTransaction().add(fragment, "ConversationFragment").commit();
 
+            /**
             TaskListener listener = new GetMessagesTaskListener();
             AsyncTask<Void, Void, Boolean> task = new GetMessagesTask(ConversationActivity.this, listener);
             new GetPrivateKeyTask(ConversationActivity.this, new GetPrivateKeyTaskListener(task, listener), settings.getString("email", ""), settings.getString("password", "")).execute();
+            */
 
         } else if (fragment.getConversationAdapter() != null) {
             mMessagesView.setAdapter(fragment.getConversationAdapter());
@@ -183,21 +150,14 @@ public class ConversationActivity extends AppCompatActivity {
             mMessagesView.onRestoreInstanceState(fragment.getState());
         }
 
-        String user = settings.getString("username", "");
+        senderPublicKeyBlock = settings.getString("publicKey", "");
 
-        new GetPublicKeyTask(username, false).execute();
-        new GetPublicKeyTask(user, true).execute();
-
-        SharedPreferences.Editor editor = settings.edit();
-        editor.putBoolean("notify_" + username, false);
-        editor.commit();
+        new GetPublicKeyTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-
-        timer.cancel();
 
         for (LoadIconTask task : mTasks)
             task.cancel(true);
@@ -306,66 +266,24 @@ public class ConversationActivity extends AppCompatActivity {
 
 
     public class GetPublicKeyTask extends AsyncTask<Void, Void, Boolean> {
-
-        private final String mEmail;
-        private final String mPassword;
-        private final String mUsername;
-        private final boolean isSenderKey;
-
-        GetPublicKeyTask(String username, boolean sender) {
-            SharedPreferences settings = getSharedPreferences(getString(R.string.preference_file_session), 0);
-            mEmail = settings.getString("email", "");
-            mPassword = settings.getString("password", "");
-            mUsername = username;
-            isSenderKey = sender;
-        }
-
         @Override
         protected Boolean doInBackground(Void... params) {
-            Map<String, String> values = new HashMap<String, String>();
-
-            values.put("email", mEmail);
-            values.put("password", mPassword);
-            values.put("username", mUsername);
-
-            String json = JsonManager.getJSON(getString(R.string.url_get_public_key), values);
-
-            if (json == null) {
+            if (senderPublicKeyBlock == null || receiverPublicKeyBlock == null)
                 return false;
-            }
 
-            try {
-                JSONObject result = new JSONObject(json);
-                if (result.getBoolean("signed") && result.getBoolean("found") && result.getBoolean("key")) {
-
-                    BigInteger modulus = new BigInteger(result.getString("modulus"));
-                    BigInteger exponent = new BigInteger(result.getString("exponent"));
-
-                    /**
-                    if (isSenderKey) {
-                        //senderPublicKey = RSA.recreatePublicKey(exponent, modulus);
-                    } else {
-                        //receiverPublicKey = RSA.recreatePublicKey(exponent, modulus);
-                    }
-                     */
-
-                    return true;
-                }
-            } catch (Exception e) {
-                Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, e);
+            if ((senderPublicKey = KeyManager.readPublicKey(senderPublicKeyBlock)) == null
+                    || (receiverPublicKey = KeyManager.readPublicKey(receiverPublicKeyBlock)) == null)
                 return false;
-            }
 
-            return false;
-
+            return true;
         }
 
         @Override
-        protected void onPostExecute(final Boolean success) {
-        }
-
-        @Override
-        protected void onCancelled() {
+        protected void onPostExecute(Boolean success) {
+            if (!success) {
+                Snackbar.make(mMessagesView, "Cannot read public key!", Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();
+            }
         }
     }
 
@@ -378,17 +296,9 @@ public class ConversationActivity extends AppCompatActivity {
             send = false;
         }
 
-        if (senderPublicKey == null) {
-            SharedPreferences settings = getSharedPreferences(getString(R.string.preference_file_session), 0);
-            String user = settings.getString("username", "");
-
-            new GetPublicKeyTask(user, true).execute();
-
-            send = false;
-        }
-
-        if (receiverPublicKey == null) {
-            new GetPublicKeyTask(username, false).execute();
+        if (senderPublicKey == null || receiverPublicKey == null) {
+            Snackbar.make(mMessagesView, "Cannot send message due without public keys!", Snackbar.LENGTH_LONG)
+                    .setAction("Action", null).show();
 
             send = false;
         }

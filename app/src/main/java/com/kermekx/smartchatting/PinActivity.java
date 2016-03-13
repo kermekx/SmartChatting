@@ -13,6 +13,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.kermekx.smartchatting.hash.Hasher;
+import com.kermekx.smartchatting.pgp.KeyManager;
+import com.kermekx.smartchatting.services.ServerService;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -65,11 +67,9 @@ public class PinActivity extends AppCompatActivity {
         mPinView.setError(null);
 
         if (Hasher.md5(pin).equals(pinBackup)) {
-            Bundle extras = new Bundle();
-            extras.putByteArray("pin", Hasher.sha256Byte(pin));
+            ServerService.setPassword(KeyManager.generateKeyPassword(settings.getString("secure", "").getBytes(), Hasher.sha256Byte(pin)));
 
             Intent mainActivity = new Intent(PinActivity.this, MainActivity.class);
-            mainActivity.putExtras(extras);
             PinActivity.this.startActivity(mainActivity);
             finish();
         } else {

@@ -46,6 +46,7 @@ public class ContactActivity extends AppCompatActivity {
 
     private String username;
     private String email;
+    private String publicKey;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +62,7 @@ public class ContactActivity extends AppCompatActivity {
 
         username = extras.getString("username");
         email = extras.getString("email");
+        publicKey = extras.getString("publicKey");
 
         ImageView sendMail = (ImageView) findViewById(R.id.send_mail);
 
@@ -82,6 +84,8 @@ public class ContactActivity extends AppCompatActivity {
                 Intent conversationActivity = new Intent(ContactActivity.this, ConversationActivity.class);
                 Bundle extra = new Bundle();
                 extra.putString("username", username);
+                extra.putString("email", email);
+                extra.putString("publicKey", publicKey);
                 conversationActivity.putExtras(extra);
                 ContactActivity.this.startActivity(conversationActivity);
             }
