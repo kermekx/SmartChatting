@@ -12,6 +12,7 @@ import org.bouncycastle.openpgp.PGPPublicKey;
 
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.PrintWriter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -59,24 +60,15 @@ public class SendMessageTask extends AsyncTask<Void, Void, Boolean> {
                 return false;
             }
 
-            BufferedOutputStream output = new BufferedOutputStream(mSocket.getOutputStream());
+            PrintWriter writer = new PrintWriter(mSocket.getOutputStream());
 
-            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-            buffer.write(SEND_MESSAGE_HEADER.getBytes());
-            buffer.write("\r\n".getBytes());
-            buffer.write(mUsername.getBytes());
-            buffer.write("\r\n".getBytes());
-            buffer.write(String.valueOf(data.size()).getBytes());
-            buffer.write("\r\n".getBytes());
-            buffer.write(data.toByteArray());
-            buffer.write(END_DATA.getBytes());
-            buffer.write("\r\n".getBytes());
-
-            output.write(buffer.toByteArray());
-            output.flush();
+            writer.println(SEND_MESSAGE_HEADER);
+            writer.println(mUsername);
+            writer.println(new String(data.toByteArray()));
+            writer.println(END_DATA);
+            writer.flush();
             data.close();
-            buffer.close();
-            output.close();
+            writer.close();
 
             byte[] backupMessage = backupData.toByteArray();
             backupData.close();

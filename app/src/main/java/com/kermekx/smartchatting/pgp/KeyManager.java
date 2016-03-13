@@ -256,7 +256,8 @@ public class KeyManager {
             PGPEncryptedDataGenerator encryptGen = new PGPEncryptedDataGenerator(encryptBuilder);
             encryptGen.addMethod(new BcPublicKeyKeyEncryptionMethodGenerator(key));
 
-            OutputStream encryptedOut = encryptGen.open(output, new byte[data.length + 128]);
+            ByteArrayOutputStream edOut = new ByteArrayOutputStream();
+            OutputStream encryptedOut = encryptGen.open(edOut, new byte[data.length + 128]);
 
             PGPCompressedDataGenerator compressor = new PGPCompressedDataGenerator(PGPCompressedData.ZIP);
             OutputStream compressedOut = compressor.open(encryptedOut);
@@ -264,6 +265,11 @@ public class KeyManager {
             compressedOut.write(data);
             compressedOut.close();
             encryptedOut.close();
+
+            byte[] bytes = edOut.toByteArray();
+
+            Base64Encoder encoder = new Base64Encoder();
+            encoder.encode(bytes, 0, bytes.length, output);
 
             return true;
         } catch (Exception e) {
