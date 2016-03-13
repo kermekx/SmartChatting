@@ -1,5 +1,6 @@
 package com.kermekx.smartchatting;
 
+import android.annotation.TargetApi;
 import android.app.FragmentManager;
 import android.content.BroadcastReceiver;
 import android.content.ClipData;
@@ -8,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -15,11 +17,14 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NavUtils;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.Menu;
@@ -51,6 +56,7 @@ import java.security.Key;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.jar.Manifest;
 
 public class ConversationActivity extends AppCompatActivity {
 
@@ -70,6 +76,8 @@ public class ConversationActivity extends AppCompatActivity {
     private List<LoadIconTask> mTasks = new ArrayList<>();
 
     private File f;
+
+    final private int REQUEST_CODE_ASK_PERMISSIONS = 123;
 
     private static final String SEND_MESSAGE_RECEIVER = "SEND_MESSAGE_RECEIVER";
     private BroadcastReceiver sendMessageReceiver;
@@ -189,22 +197,52 @@ public class ConversationActivity extends AppCompatActivity {
 
         if (id == R.id.action_photo) {
             mImageView.setVisibility(View.VISIBLE);
-            /*mMessagesView.setVisibility(View.GONE);
-            mMessageView.setVisibility(View.GONE);
-            sendView.setVisibility(View.GONE);*/
 
-            Context context = getApplicationContext();
-            PackageManager packageManager = context.getPackageManager();
-            if (!packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
-                Toast.makeText(getApplicationContext(), "This device does not have a camera.", Toast.LENGTH_LONG).show();
-                return false;
+            if (Build.VERSION.SDK_INT >= 23) {
+                String permission = android.Manifest.permission.CAMERA;
+                if (checkSelfPermission(permission) != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(ConversationActivity.this, new String[]{android.Manifest.permission.CAMERA}, REQUEST_CODE_ASK_PERMISSIONS);
+                } else {
+                    Context context = getApplicationContext();
+                    PackageManager packageManager = context.getPackageManager();
+                    if (!packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
+                        Toast.makeText(getApplicationContext(), "This device does not have a camera.", Toast.LENGTH_LONG).show();
+                        return false;
+                    } else {
+                        openCamera();
+                    }
+                }
             } else {
-                openCamera();
+                Context context = getApplicationContext();
+                PackageManager packageManager = context.getPackageManager();
+                if (!packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
+                    Toast.makeText(getApplicationContext(), "This device does not have a camera.", Toast.LENGTH_LONG).show();
+                    return false;
+                } else {
+                    openCamera();
+                }
             }
+
             return true;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode) {
+            case REQUEST_CODE_ASK_PERMISSIONS: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                } else {
+                    Toast.makeText(getApplication(), "Permission required", Toast.LENGTH_LONG).show();
+                }
+                return;
+            }
+        }
     }
 
     private void openCamera() {
