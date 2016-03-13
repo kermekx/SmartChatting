@@ -42,7 +42,6 @@ import com.kermekx.smartchatting.dialog.ConfirmLogoutDialog;
 import com.kermekx.smartchatting.fragment.MainActivityFragment;
 import com.kermekx.smartchatting.message.Message;
 import com.kermekx.smartchatting.message.MessageAdapter;
-import com.kermekx.smartchatting.rsa.RSA;
 import com.kermekx.smartchatting.services.ServerService;
 import com.wdullaer.swipeactionadapter.SwipeActionAdapter;
 import com.wdullaer.swipeactionadapter.SwipeDirection;
@@ -387,9 +386,11 @@ public class MainActivity extends AppCompatActivity
                 List<Message> messages = new ArrayList<>();
 
                 for (int i = mMessages.size() - 1; i >= 0; i--) {
+                    /**
                     Message message = new Message(mContacts.get(i), RSA.decrypt(mMessages.get(i), mKey));
                     new LoadIconTask(MainActivity.this, new LoadIconTaskListener(message), mContacts.get(i), 48).execute();
                     messages.add(message);
+                     */
                 }
 
                 SwipeActionAdapter mMessageAdapter = new SwipeActionAdapter(new MessageAdapter(MainActivity.this, messages));

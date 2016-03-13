@@ -2,8 +2,6 @@ package com.kermekx.smartchatting.conversation;
 
 import android.graphics.drawable.Drawable;
 
-import com.kermekx.smartchatting.rsa.RSA;
-
 import java.security.Key;
 
 /**
@@ -52,7 +50,7 @@ public class Conversation implements Comparable<Conversation> {
     }
 
     public void decrypt(Key key) {
-        setMessage(RSA.decrypt(cryptedMessage, key));
+        /**setMessage(RSA.decrypt(cryptedMessage, key))*/;
     }
 
     @Override

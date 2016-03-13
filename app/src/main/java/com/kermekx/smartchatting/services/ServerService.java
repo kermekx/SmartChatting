@@ -65,10 +65,11 @@ public class ServerService extends Service {
     public void onCreate() {
         super.onCreate();
 
+        Logger.getLogger(getClass().getName()).log(Level.WARNING, "service created");
+
         synchronized (ready) {
             ready.setCharAt(0, 'f');
         }
-
         new ConnectToServerTask(this, new ConnectToServerTaskListener()).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
         receiver = new ServerReceiver();
@@ -82,8 +83,9 @@ public class ServerService extends Service {
 
     @Override
     public void onDestroy() {
-
         super.onDestroy();
+        Logger.getLogger(getClass().getName()).log(Level.WARNING, "service destroyed");
+        unregisterReceiver(receiver);
     }
 
     @Nullable
@@ -127,8 +129,13 @@ public class ServerService extends Service {
         public void onData(Object... object) {
             Logger.getLogger(getClass().getName()).log(Level.INFO, object.toString());
 
-            for (TaskListener listener : dataListeners)
-                listener.onData(object);
+            synchronized (dataListeners) {
+                for (TaskListener listener : dataListeners) {
+                    synchronized (listener) {
+                        listener.onData(object);
+                    }
+                }
+            }
         }
 
         @Override
@@ -162,6 +169,8 @@ public class ServerService extends Service {
             String header = intent.getExtras().getString("header");
 
             String receiver = intent.getExtras().getString("filter");
+
+            Logger.getLogger(getClass().getName()).log(Level.WARNING, receiver + " asking to " + header + " - status : " + connected);
             if (!connected) {
                 Bundle extras = new Bundle();
 
@@ -220,8 +229,6 @@ public class ServerService extends Service {
                 startService(new Intent(context, ServerService.class));
 
                 return;
-            } else {
-                Bundle messagesSend = new Bundle();
             }
 
             String email;
@@ -238,7 +245,9 @@ public class ServerService extends Service {
                     firstConnection = intent.getExtras().getBoolean("firstConnection");
 
                     listener = new LoginListener();
-                    dataListeners.add(listener);
+                    synchronized (dataListeners) {
+                        dataListeners.add(listener);
+                    }
 
                     new LoginTask(context, new ServiceListener(receiver, intent.getExtras()), (LoginListener) listener, socket, email, password, pin, firstConnection).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
@@ -250,7 +259,9 @@ public class ServerService extends Service {
                     pin = intent.getExtras().getString("pin");
 
                     listener = new RegisterListener();
-                    dataListeners.add(listener);
+                    synchronized (dataListeners) {
+                        dataListeners.add(listener);
+                    }
 
                     new RegisterTask(context, new ServiceListener(receiver, intent.getExtras()), (RegisterListener) listener, socket, email, username, password, pin).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                     break;
@@ -261,7 +272,9 @@ public class ServerService extends Service {
                     username = intent.getExtras().getString("username");
 
                     listener = new AddContactListener();
-                    dataListeners.add(listener);
+                    synchronized (dataListeners) {
+                        dataListeners.add(listener);
+                    }
 
                     new AddContactTask(context, new ServiceListener(receiver, intent.getExtras()), (AddContactListener) listener, socket, username).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                     break;
@@ -269,7 +282,9 @@ public class ServerService extends Service {
                     username = intent.getExtras().getString("username");
 
                     listener = new RemoveContactListener();
-                    dataListeners.add(listener);
+                    synchronized (dataListeners) {
+                        dataListeners.add(listener);
+                    }
 
                     Bundle extras = new Bundle();
 
@@ -277,7 +292,9 @@ public class ServerService extends Service {
                     break;
                 case HEADER_GET_CONTACTS:
                     listener = new GetContactsListener();
-                    dataListeners.add(listener);
+                    synchronized (dataListeners) {
+                        dataListeners.add(listener);
+                    }
 
                     new UpdateContactsTask(context, new ServiceListener(receiver, intent.getExtras()), (GetContactsListener) listener, socket).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                     break;
@@ -288,7 +305,9 @@ public class ServerService extends Service {
                     Key receiverPublicKey =(Key) intent.getExtras().getSerializable("receiverPublicKey");
 
                     listener = new SendMessageListener();
-                    dataListeners.add(listener);
+                    synchronized (dataListeners) {
+                        dataListeners.add(listener);
+                    }
 
                     new SendMessageTask(context, new ServiceListener(receiver, intent.getExtras()), (SendMessageListener) listener, socket, username, email, senderPublicKey, receiverPublicKey).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                     break;

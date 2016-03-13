@@ -51,6 +51,7 @@ public class SocketListenerTask extends AsyncTask<Void, Void, Boolean> {
                     data.add(line);
                 }
             }
+            Logger.getLogger(getClass().getName()).log(Level.INFO, "read : " + data);
         } catch (IOException e) {
             Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, e);
 
@@ -61,12 +62,15 @@ public class SocketListenerTask extends AsyncTask<Void, Void, Boolean> {
 
     @Override
     protected void onPostExecute(Boolean success) {
+        Logger.getLogger(getClass().getName()).log(Level.WARNING, "End of connection");
         if (mListener != null)
             mListener.onPostExecute(success);
     }
 
     @Override
     protected void onCancelled() {
+        Logger.getLogger(getClass().getName()).log(Level.WARNING, "connection cancelled");
+
         if (mListener != null)
             mListener.onCancelled();
     }

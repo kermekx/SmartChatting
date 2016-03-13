@@ -28,7 +28,6 @@ import com.kermekx.smartchatting.conversation.ConversationAdapter;
 import com.kermekx.smartchatting.fragment.ConversationFragment;
 import com.kermekx.smartchatting.json.JsonManager;
 import com.kermekx.smartchatting.listener.TaskListener;
-import com.kermekx.smartchatting.rsa.RSA;
 
 import org.json.JSONObject;
 
@@ -218,11 +217,13 @@ public class ConversationActivity extends AppCompatActivity {
                     BigInteger modulus = new BigInteger(result.getString("modulus"));
                     BigInteger exponent = new BigInteger(result.getString("exponent"));
 
+                    /**
                     if (isSenderKey) {
                         senderPublicKey = RSA.recreatePublicKey(exponent, modulus);
                     } else {
                         receiverPublicKey = RSA.recreatePublicKey(exponent, modulus);
                     }
+                     */
 
                     return true;
                 }

@@ -8,7 +8,6 @@ import com.kermekx.smartchatting.R;
 import com.kermekx.smartchatting.hash.Hasher;
 import com.kermekx.smartchatting.json.JsonManager;
 import com.kermekx.smartchatting.listener.TaskListener;
-import com.kermekx.smartchatting.rsa.RSA;
 
 import org.json.JSONObject;
 
@@ -59,8 +58,10 @@ public class GetPrivateKeyTask extends AsyncTask<Void, Void, Boolean> {
                 BigInteger modulus = new BigInteger(result.getString("modulus"));
                 BigInteger exponent = new BigInteger(Hasher.aesDecrypt(result.getString("exponent"), secure).replaceAll("[^0-9]",""));
 
+                /**
                 if (mListener != null)
                     mListener.onData(RSA.recreatePrivateKey(exponent, modulus));
+                 */
 
                 return true;
             }
