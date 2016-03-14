@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
@@ -32,7 +33,6 @@ import com.google.android.gms.ads.AdView;
 import com.kermekx.smartchatting.commandes.BaseTaskListener;
 import com.kermekx.smartchatting.commandes.GetContactsTask;
 import com.kermekx.smartchatting.commandes.GetMessagesTask;
-import com.kermekx.smartchatting.commandes.GetPrivateKeyTask;
 import com.kermekx.smartchatting.commandes.LoadIconTask;
 import com.kermekx.smartchatting.commandes.UpdateMessagesTask;
 import com.kermekx.smartchatting.contact.Contact;
@@ -42,11 +42,14 @@ import com.kermekx.smartchatting.dialog.ConfirmLogoutDialog;
 import com.kermekx.smartchatting.fragment.MainActivityFragment;
 import com.kermekx.smartchatting.message.Message;
 import com.kermekx.smartchatting.message.MessageAdapter;
+import com.kermekx.smartchatting.pgp.KeyManager;
 import com.kermekx.smartchatting.services.ServerService;
 import com.wdullaer.swipeactionadapter.SwipeActionAdapter;
 import com.wdullaer.swipeactionadapter.SwipeDirection;
 
-import java.security.Key;
+import org.bouncycastle.openpgp.PGPSecretKeyRing;
+
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -67,6 +70,8 @@ public class MainActivity extends AppCompatActivity
     private SwipeRefreshLayout mRefresh;
 
     private AdView mAdView;
+
+    String secretKeyRingBlock;
 
     private static final String ADD_CONTACT_RECEIVER = "ADD_CONTACT_RECEIVER";
     private BroadcastReceiver addContactReceiver;
@@ -101,7 +106,7 @@ public class MainActivity extends AppCompatActivity
                 if (menuId == R.id.nav_message) {
                     mRefresh.setRefreshing(true);
                     SharedPreferences settings = getSharedPreferences(getString(R.string.preference_file_session), 0);
-                    new UpdateMessagesTask(MainActivity.this, new UpdateMessagesTaskListener(), settings.getString("email", ""), settings.getString("password", "")).execute();
+                    new UpdateMessagesTask(MainActivity.this, new UpdateMessagesTaskListener(), settings.getString("email", ""), settings.getString("password", "")).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                 } else if (menuId == R.id.nav_contact) {
                     mRefresh.setRefreshing(true);
 
@@ -119,6 +124,8 @@ public class MainActivity extends AppCompatActivity
         });
 
         SharedPreferences settings = getSharedPreferences(getString(R.string.preference_file_session), 0);
+
+        secretKeyRingBlock = settings.getString("privateKey", null);
 
         TextView email = (TextView) navigationView.getHeaderView(0).findViewById(R.id.header_email);
         TextView username = (TextView) navigationView.getHeaderView(0).findViewById(R.id.header_username);
@@ -150,10 +157,8 @@ public class MainActivity extends AppCompatActivity
             fragment = new MainActivityFragment();
             fm.beginTransaction().add(fragment, "MainActivityFragment").commit();
 
-            SharedPreferences settings = getSharedPreferences(getString(R.string.preference_file_session), 0);
-
-            new GetPrivateKeyTask(this, new GetPrivateKeyTaskListener(), settings.getString("email", ""), settings.getString("password", "")).execute();
-            new GetContactsTask(this, new GetContactsTaskListener()).execute();
+            new GetMessagesTask(this, new GetMessagesTaskListener()).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            new GetContactsTask(this, new GetContactsTaskListener()).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         }
 
         if (menuId == R.id.nav_message && fragment.getMessageAdapter() != null) {
@@ -341,21 +346,15 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void loadIcon(String username, ImageView imageView) {
-        new LoadIconTask(this, new LoadIconTaskListener(imageView), username, 48).execute();
+        new LoadIconTask(this, new LoadIconTaskListener(imageView), username, 48).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     private class GetMessagesTaskListener extends BaseTaskListener {
-
-        private final Key mKey;
 
         List<Integer> mId = new ArrayList<>();
         List<String> mContacts = new ArrayList<>();
         List<String> mIsSent = new ArrayList<>();
         List<String> mMessages = new ArrayList<>();
-
-        public GetMessagesTaskListener(Key key) {
-            mKey = key;
-        }
 
         @Override
         public void onError(int error) {
@@ -387,12 +386,16 @@ public class MainActivity extends AppCompatActivity
             if (success) {
                 List<Message> messages = new ArrayList<>();
 
+                PGPSecretKeyRing secretKeyRing = KeyManager.readSecreteKeyRing(secretKeyRingBlock);
+
                 for (int i = mMessages.size() - 1; i >= 0; i--) {
-                    /**
-                     Message message = new Message(mContacts.get(i), RSA.decrypt(mMessages.get(i), mKey));
-                     new LoadIconTask(MainActivity.this, new LoadIconTaskListener(message), mContacts.get(i), 48).execute();
-                     messages.add(message);
-                     */
+                    ByteArrayOutputStream data = new ByteArrayOutputStream();
+
+                    KeyManager.decode(secretKeyRing, ServerService.getPassword(), mMessages.get(i), data);
+
+                    Message message = new Message(mContacts.get(i), new String(data.toByteArray()));
+                    new LoadIconTask(MainActivity.this, new LoadIconTaskListener(message), mContacts.get(i), 48).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                    messages.add(message);
                 }
 
                 SwipeActionAdapter mMessageAdapter = new SwipeActionAdapter(new MessageAdapter(MainActivity.this, messages));
@@ -457,7 +460,7 @@ public class MainActivity extends AppCompatActivity
                 }
 
                 for (LoadIconTask task : tasks)
-                    task.execute();
+                    task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
             }
         }
 
@@ -469,7 +472,7 @@ public class MainActivity extends AppCompatActivity
 
     public void updateMessages() {
         SharedPreferences settings = getSharedPreferences(getString(R.string.preference_file_session), 0);
-        new UpdateMessagesTask(this, new UpdateMessagesTaskListener(), settings.getString("email", ""), settings.getString("password", "")).execute();
+        new UpdateMessagesTask(this, new UpdateMessagesTaskListener(), settings.getString("email", ""), settings.getString("password", "")).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         mRefresh.setRefreshing(true);
     }
 
@@ -496,8 +499,7 @@ public class MainActivity extends AppCompatActivity
         @Override
         public void onPostExecute(Boolean success) {
             if (success) {
-                SharedPreferences settings = getSharedPreferences(getString(R.string.preference_file_session), 0);
-                new GetPrivateKeyTask(MainActivity.this, new GetPrivateKeyTaskListener(), settings.getString("email", ""), settings.getString("password", "")).execute();
+                new GetMessagesTask(MainActivity.this, new GetMessagesTaskListener());
                 mRefresh.setRefreshing(false);
             } else {
                 Snackbar.make(mListView, getString(R.string.error_connection_server), Snackbar.LENGTH_LONG)
@@ -524,33 +526,6 @@ public class MainActivity extends AppCompatActivity
         service.putExtras(extras);
 
         sendBroadcast(service);
-    }
-
-    private class GetPrivateKeyTaskListener extends BaseTaskListener {
-
-        @Override
-        public void onError(int error) {
-
-        }
-
-        @Override
-        public void onData(Object... object) {
-            new GetMessagesTask(MainActivity.this, new GetMessagesTaskListener((Key) object[0])).execute();
-        }
-
-        @Override
-        public void onPostExecute(Boolean success) {
-            if (!success) {
-                Snackbar.make(mListView, getString(R.string.error_connection_server), Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-                mRefresh.setRefreshing(false);
-            }
-        }
-
-        @Override
-        public void onCancelled() {
-
-        }
     }
 
     private class LoadIconTaskListener extends BaseTaskListener {
@@ -827,7 +802,7 @@ public class MainActivity extends AppCompatActivity
                 final String removed = intent.getExtras().getString("username");
 
                 if (success) {
-                    new GetContactsTask(MainActivity.this, new GetContactsTaskListener()).execute();
+                    new GetContactsTask(MainActivity.this, new GetContactsTaskListener()).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                     Snackbar.make(mListView, removed + " " + getString(R.string.success_contact_deleted), Snackbar.LENGTH_LONG)
                             .setAction(getString(R.string.action_cancel), new View.OnClickListener() {
                                 @Override
@@ -894,7 +869,7 @@ public class MainActivity extends AppCompatActivity
                 Boolean success = intent.getExtras().getBoolean("success");
 
                 if (success) {
-                    new GetContactsTask(MainActivity.this, new GetContactsTaskListener()).execute();
+                    new GetContactsTask(MainActivity.this, new GetContactsTaskListener()).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                     mRefresh.setRefreshing(false);
                 } else {
                     ArrayList<String> errors = intent.getExtras().getStringArrayList("errors");

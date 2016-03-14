@@ -332,7 +332,7 @@ public class ConversationActivity extends AppCompatActivity {
             extras.putString("header", HEADER_SEND_MESSAGE);
             extras.putString("filter", SEND_MESSAGE_RECEIVER);
             extras.putString("username", username);
-            extras.putString("message", "MESSAGE:" + message.trim());
+            extras.putString("message", "M" + message.trim());
             extras.putSerializable("senderPublicKey", senderPublicKeyBlock);
             extras.putSerializable("receiverPublicKey", receiverPublicKeyBlock);
 

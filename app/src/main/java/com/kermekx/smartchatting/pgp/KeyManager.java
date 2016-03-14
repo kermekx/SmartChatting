@@ -277,12 +277,16 @@ public class KeyManager {
         }
     }
 
-    public static boolean decode(PGPSecretKeyRing secretKeyRing, char[] password, byte[] message, ByteArrayOutputStream output) {
+    public static boolean decode(PGPSecretKeyRing secretKeyRing, char[] password, String message, ByteArrayOutputStream output) {
 
         PGPPublicKeyEncryptedData encryptedData;
 
         try {
-            InputStream is = PGPUtil.getDecoderStream(new ByteArrayInputStream(message));
+            Base64Encoder decoder = new Base64Encoder();
+            ByteArrayOutputStream decoded = new ByteArrayOutputStream();
+            decoder.decode(message, decoded);
+
+            InputStream is = PGPUtil.getDecoderStream(new ByteArrayInputStream(decoded.toByteArray()));
 
             PGPObjectFactory pgpF = new BcPGPObjectFactory(is);
             Object o = pgpF.nextObject();
@@ -301,7 +305,7 @@ public class KeyManager {
                 }
             }
             if (privateKey == null) {
-                throw new IllegalArgumentException("Unable to find secret key to decrypt the message");
+                throw new IllegalArgumentException("Unable to find secret key to decrypt the message : " + new String(message));
             }
 
             PGPObjectFactory plainFact = new BcPGPObjectFactory(

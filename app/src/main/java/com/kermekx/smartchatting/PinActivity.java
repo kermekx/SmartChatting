@@ -67,7 +67,7 @@ public class PinActivity extends AppCompatActivity {
         mPinView.setError(null);
 
         if (Hasher.md5(pin).equals(pinBackup)) {
-            ServerService.setPassword(KeyManager.generateKeyPassword(settings.getString("secure", "").getBytes(), Hasher.sha256Byte(pin)));
+            ServerService.setPassword(KeyManager.generateKeyPassword(Hasher.hexStringToByteArray(settings.getString("secure", "")), Hasher.sha256Byte(pin)));
 
             Intent mainActivity = new Intent(PinActivity.this, MainActivity.class);
             PinActivity.this.startActivity(mainActivity);

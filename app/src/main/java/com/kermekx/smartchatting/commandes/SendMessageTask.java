@@ -90,7 +90,7 @@ public class SendMessageTask extends AsyncTask<Void, Void, Boolean> {
             }
 
             if (mDataListener.data.get(0).equals(MESSAGE_SENT_DATA)) {
-                MessagesData.insertMessage(mContext, mUsername, "true", backupMessage);
+                MessagesData.insertMessage(mContext, mUsername, "true", new String(backupMessage));
 
                 return true;
             } else if (mDataListener.data.get(0).equals(SEND_MESSAGE_ERROR_DATA)) {

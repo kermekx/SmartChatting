@@ -9,7 +9,7 @@ import com.kermekx.smartchatting.listener.TaskListener;
 
 /**
  * Created by kermekx on 23/02/2016.
- *
+ * <p/>
  * This task is to get messages from the in the internal database ordered by messageID (sent time too)
  * You should execute UpdateMessagesTask if you want to sync the internal database with the server database
  */
@@ -29,6 +29,10 @@ public class GetMessagesTask extends AsyncTask<Void, Void, Boolean> {
 
         if (cursor.moveToFirst()) {
             do {
+                //0 : Message ID
+                //1 : Contact name
+                //2 : is sent
+                //3 : message
                 mListener.onData(new String[]{
                         cursor.getString(0),
                         cursor.getString(1),

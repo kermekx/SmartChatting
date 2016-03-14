@@ -6,6 +6,9 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.provider.BaseColumns;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  * Created by kermekx on 23/02/2016.
  *
@@ -13,7 +16,6 @@ import android.provider.BaseColumns;
  */
 public class MessagesData {
     private static final String TEXT_TYPE = " TEXT";
-    private static final String BINARY_TYPE = " BLOB";
     private static final String COMMA_SEP = ",";
 
     public static final String SQL_CREATE_MESSAGES =
@@ -21,13 +23,13 @@ public class MessagesData {
                     MessageEntry._ID + " INTEGER PRIMARY KEY," +
                     MessageEntry.COLUMN_NAME_CONTACT + TEXT_TYPE + COMMA_SEP +
                     MessageEntry.COLUMN_NAME_MESSAGE_SENT + TEXT_TYPE + COMMA_SEP +
-                    MessageEntry.COLUMN_NAME_MESSAGE_CONTENT + BINARY_TYPE +
+                    MessageEntry.COLUMN_NAME_MESSAGE_CONTENT + TEXT_TYPE +
                     " )";
 
     public static final String SQL_DELETE_MESSAGES =
             "DROP TABLE IF EXISTS " + MessageEntry.TABLE_NAME;
 
-    public static long insertMessage(Context context, String contact, String isSent, byte[] content) {
+    public static long insertMessage(Context context, String contact, String isSent, String content) {
         SQLiteDatabase db = SmartChattingBdHelper.getInstance(context).getWritableDatabase();
 
         ContentValues values = new ContentValues();

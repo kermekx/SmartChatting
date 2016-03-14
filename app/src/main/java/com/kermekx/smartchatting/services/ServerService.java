@@ -315,7 +315,7 @@ public class ServerService extends Service {
                         dataListeners.add(listener);
                     }
 
-                    new SendMessageTask(context, new ServiceListener(receiver, intent.getExtras()), (SendMessageListener) listener, socket, username, message, senderPublicKey, receiverPublicKey).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                    new SendMessageTask(context, new ServiceListener(receiver, intent.getExtras()), (SendMessageListener) listener, socket, username, message, receiverPublicKey, senderPublicKey).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                     break;
                 default:
                     break;
@@ -368,5 +368,9 @@ public class ServerService extends Service {
 
     public static void setPassword(char[] password) {
         ServerService.password = password;
+    }
+
+    public static char[] getPassword() {
+        return password;
     }
 }
