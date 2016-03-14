@@ -3,6 +3,7 @@ package com.kermekx.smartchatting.commandes;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.support.v4.app.NotificationCompat;
@@ -23,11 +24,12 @@ public class NotificationTask extends AsyncTask<Void, Void, Boolean> {
     private final String mSecretKeyRingBlock;
     private final char[] mPassword;
 
-    public NotificationTask(Context context, String username, String message, String secretKeyRingBlock, char[] password) {
+    public NotificationTask(Context context, String username, String message, char[] password) {
         mContext = context;
         mUsername = username;
         mMessage = message;
-        mSecretKeyRingBlock = secretKeyRingBlock;
+        SharedPreferences settings = mContext.getSharedPreferences(mContext.getString(R.string.preference_file_session), 0);
+        mSecretKeyRingBlock = settings.getString("privateKey", null);
         mPassword = password;
     }
 

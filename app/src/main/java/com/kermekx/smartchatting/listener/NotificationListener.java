@@ -23,13 +23,9 @@ public class NotificationListener extends DataListener {
     private static final String MESSAGE_DATA = "MESSAGE";
 
     private final Context mContext;
-    private final String secretKeyRingBlock;
 
     public NotificationListener(Context context) {
         mContext = context;
-
-        SharedPreferences settings = mContext.getSharedPreferences(mContext.getString(R.string.preference_file_session), 0);
-        secretKeyRingBlock = settings.getString("privateKey", null);
     }
 
     @Override
@@ -41,11 +37,10 @@ public class NotificationListener extends DataListener {
             String message = data.get(2);
 
             if (ServerService.getPassword() != null) {
-                new NotificationTask(mContext, user, message, secretKeyRingBlock, ServerService.getPassword()).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                new NotificationTask(mContext, user, message, ServerService.getPassword()).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
             }
 
             MessagesData.insertMessage(mContext, user, "false", message);
         }
     }
-
 }
