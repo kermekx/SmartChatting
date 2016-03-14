@@ -7,6 +7,7 @@ import android.os.Build;
 import android.support.v4.app.NotificationCompat;
 
 import com.kermekx.smartchatting.R;
+import com.kermekx.smartchatting.datas.MessagesData;
 import com.kermekx.smartchatting.services.ServerService;
 
 import java.util.List;
@@ -43,6 +44,7 @@ public class NotificationListener extends DataListener {
 
             mNotificationManager.notify("SMART_CHATTING_MESSAGE_KEY".hashCode(), builder.build());
 
+            MessagesData.insertMessage(mContext, user, "false", message);
         }
     }
 
