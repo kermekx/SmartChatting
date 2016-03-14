@@ -71,7 +71,7 @@ public class MainActivity extends AppCompatActivity
 
     private AdView mAdView;
 
-    String secretKeyRingBlock;
+    private String secretKeyRingBlock;
 
     private static final String ADD_CONTACT_RECEIVER = "ADD_CONTACT_RECEIVER";
     private BroadcastReceiver addContactReceiver;
@@ -166,7 +166,6 @@ public class MainActivity extends AppCompatActivity
 
             mListView.setAdapter(fragment.getMessageAdapter());
             setListViewHeightBasedOnChildren(mListView);
-
             mListView.setOnItemClickListener(selectConversation);
         } else if (menuId == R.id.nav_contact && fragment.getContactAdapter() != null) {
             setTitle(getString(R.string.title_activity_main_contact));
@@ -264,7 +263,7 @@ public class MainActivity extends AppCompatActivity
             if (fragment.getMessageAdapter() != null) {
                 mListView.setAdapter(fragment.getMessageAdapter());
                 setListViewHeightBasedOnChildren(mListView);
-                fragment.getMessageAdapter().setSwipeActionListener(mMessageSwipeActionListener);
+                fragment.getMessageAdapter().setSwipeActionListener(mSwipeActionListener);
                 menuId = id;
 
                 mListView.setOnItemClickListener(selectConversation);
@@ -277,7 +276,7 @@ public class MainActivity extends AppCompatActivity
             if (fragment.getContactAdapter() != null) {
                 mListView.setAdapter(fragment.getContactAdapter());
                 setListViewHeightBasedOnChildren(mListView);
-                fragment.getContactAdapter().setSwipeActionListener(mContactSwipeActionListener);
+                fragment.getContactAdapter().setSwipeActionListener(mSwipeActionListener);
                 menuId = id;
 
                 mListView.setOnItemClickListener(selectContact);
@@ -404,7 +403,7 @@ public class MainActivity extends AppCompatActivity
                 mMessageAdapter.addBackground(SwipeDirection.DIRECTION_NORMAL_LEFT, R.layout.row_bg_delete)
                         .addBackground(SwipeDirection.DIRECTION_NORMAL_RIGHT, R.layout.row_bg_chat);
 
-                mMessageAdapter.setSwipeActionListener(mMessageSwipeActionListener);
+                mMessageAdapter.setSwipeActionListener(mSwipeActionListener);
 
                 fragment.setMessageAdapter(mMessageAdapter);
 
@@ -449,7 +448,7 @@ public class MainActivity extends AppCompatActivity
                 mContactAdapter.addBackground(SwipeDirection.DIRECTION_NORMAL_LEFT, R.layout.row_bg_delete)
                         .addBackground(SwipeDirection.DIRECTION_NORMAL_RIGHT, R.layout.row_bg_chat);
 
-                mContactAdapter.setSwipeActionListener(mContactSwipeActionListener);
+                mContactAdapter.setSwipeActionListener(mSwipeActionListener);
 
                 fragment.setContactAdapter(mContactAdapter);
 
@@ -600,10 +599,11 @@ public class MainActivity extends AppCompatActivity
         }
     };
 
-    SwipeActionAdapter.SwipeActionListener mMessageSwipeActionListener = new SwipeActionAdapter.SwipeActionListener() {
+    SwipeActionAdapter.SwipeActionListener mSwipeActionListener = new SwipeActionAdapter.SwipeActionListener() {
         @Override
         public boolean hasActions(int i, SwipeDirection swipeDirection) {
             mRefresh.setEnabled(false);
+
             if (swipeDirection.isLeft())
                 return true;
 
@@ -622,77 +622,55 @@ public class MainActivity extends AppCompatActivity
         public void onSwipe(int[] positions, SwipeDirection[] swipeDirections) {
             mRefresh.setEnabled(true);
 
-            for (int i = 0; i < positions.length; i++) {
-                SwipeDirection direction = swipeDirections[i];
-                int position = positions[i];
+            if (menuId == R.id.nav_contact) {
+                for (int i = 0; i < positions.length; i++) {
+                    SwipeDirection direction = swipeDirections[i];
+                    int position = positions[i];
 
-                String username = ((Message) fragment.getMessageAdapter().getItem(position)).getUsername();
+                    String username = ((Contact) fragment.getContactAdapter().getItem(position)).getUsername();
+                    String email = ((Contact) fragment.getContactAdapter().getItem(position)).getEmail();
+                    String publicKey = ((Contact) fragment.getContactAdapter().getItem(position)).getPublicKey();
 
-                if (direction == SwipeDirection.DIRECTION_FAR_LEFT) {
-                    Snackbar.make(mListView, "Delete message not implemented", Snackbar.LENGTH_LONG)
-                            .setAction("Action", null).show();
-                } else if (direction.isRight()) {
-                    Intent conversationActivity = new Intent(MainActivity.this, ConversationActivity.class);
-                    Bundle extra = new Bundle();
-                    extra.putString("username", username);
-                    conversationActivity.putExtras(extra);
-                    MainActivity.this.startActivity(conversationActivity);
+                    if (direction == SwipeDirection.DIRECTION_FAR_LEFT) {
+                        mRefresh.setRefreshing(true);
+
+                        Bundle extras = new Bundle();
+
+                        extras.putString("header", HEADER_REMOVE_CONTACT);
+                        extras.putString("filter", REMOVE_CONTACT_RECEIVER);
+                        extras.putString("username", username);
+
+                        Intent service = new Intent(ServerService.SERVER_RECEIVER);
+                        service.putExtras(extras);
+
+                        sendBroadcast(service);
+                    } else if (direction.isRight()) {
+                        Intent conversationActivity = new Intent(MainActivity.this, ConversationActivity.class);
+                        Bundle extra = new Bundle();
+                        extra.putString("username", username);
+                        extra.putString("email", email);
+                        extra.putString("publicKey", publicKey);
+                        conversationActivity.putExtras(extra);
+                        MainActivity.this.startActivity(conversationActivity);
+                    }
                 }
-            }
-        }
-    };
+            } else if (menuId == R.id.nav_message) {
+                for (int i = 0; i < positions.length; i++) {
+                    SwipeDirection direction = swipeDirections[i];
+                    int position = positions[i];
 
-    SwipeActionAdapter.SwipeActionListener mContactSwipeActionListener = new SwipeActionAdapter.SwipeActionListener() {
-        @Override
-        public boolean hasActions(int i, SwipeDirection swipeDirection) {
-            mRefresh.setEnabled(false);
-            if (swipeDirection.isLeft())
-                return true;
+                    String username = ((Message) fragment.getMessageAdapter().getItem(position)).getUsername();
 
-            if (swipeDirection.isRight())
-                return true;
-
-            return false;
-        }
-
-        @Override
-        public boolean shouldDismiss(int i, SwipeDirection swipeDirection) {
-            return swipeDirection == SwipeDirection.DIRECTION_FAR_LEFT;
-        }
-
-        @Override
-        public void onSwipe(int[] positions, SwipeDirection[] swipeDirections) {
-            mRefresh.setEnabled(true);
-
-            for (int i = 0; i < positions.length; i++) {
-                SwipeDirection direction = swipeDirections[i];
-                int position = positions[i];
-
-                String username = ((Contact) fragment.getContactAdapter().getItem(position)).getUsername();
-                String email = ((Contact) fragment.getContactAdapter().getItem(position)).getEmail();
-                String publicKey = ((Contact) fragment.getContactAdapter().getItem(position)).getPublicKey();
-
-                if (direction == SwipeDirection.DIRECTION_FAR_LEFT) {
-                    mRefresh.setRefreshing(true);
-
-                    Bundle extras = new Bundle();
-
-                    extras.putString("header", HEADER_REMOVE_CONTACT);
-                    extras.putString("filter", REMOVE_CONTACT_RECEIVER);
-                    extras.putString("username", username);
-
-                    Intent service = new Intent(ServerService.SERVER_RECEIVER);
-                    service.putExtras(extras);
-
-                    sendBroadcast(service);
-                } else if (direction.isRight()) {
-                    Intent conversationActivity = new Intent(MainActivity.this, ConversationActivity.class);
-                    Bundle extra = new Bundle();
-                    extra.putString("username", username);
-                    extra.putString("email", email);
-                    extra.putString("publicKey", publicKey);
-                    conversationActivity.putExtras(extra);
-                    MainActivity.this.startActivity(conversationActivity);
+                    if (direction == SwipeDirection.DIRECTION_FAR_LEFT) {
+                        Snackbar.make(mListView, "Delete message not implemented", Snackbar.LENGTH_LONG)
+                                .setAction("Action", null).show();
+                    } else if (direction.isRight()) {
+                        Intent conversationActivity = new Intent(MainActivity.this, ConversationActivity.class);
+                        Bundle extra = new Bundle();
+                        extra.putString("username", username);
+                        conversationActivity.putExtras(extra);
+                        MainActivity.this.startActivity(conversationActivity);
+                    }
                 }
             }
         }
