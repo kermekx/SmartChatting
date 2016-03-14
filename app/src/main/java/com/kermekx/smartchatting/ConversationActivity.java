@@ -14,6 +14,7 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -27,6 +28,7 @@ import android.support.v4.app.NavUtils;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
+import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -279,7 +281,15 @@ public class ConversationActivity extends AppCompatActivity {
                     bitmap = BitmapFactory.decodeFile(f.getAbsolutePath(),
                             bitmapOptions);
 
-                    mImageView.setImageBitmap(bitmap);
+                    Bitmap resize = bitmap;
+
+                    if(resize != null){
+                        float px = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, mImageView.getHeight(), getApplicationContext().getResources().getDisplayMetrics());
+                        Bitmap bitmapResized = Bitmap.createScaledBitmap(resize, (int) px, (int) px, false);
+                        Drawable drawable = new BitmapDrawable(getApplicationContext().getResources(), bitmapResized);
+                    }
+
+                    mImageView.setImageBitmap(resize);
 
                     String path = android.os.Environment
                             .getExternalStorageDirectory()
