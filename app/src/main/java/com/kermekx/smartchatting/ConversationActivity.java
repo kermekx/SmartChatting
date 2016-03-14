@@ -247,9 +247,17 @@ public class ConversationActivity extends AppCompatActivity {
 
     private void openCamera() {
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        f = new File(android.os.Environment.getExternalStorageDirectory(), "temp.jpg");
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(f));
-        startActivityForResult(intent, 1);
+
+        if (Build.VERSION.SDK_INT >= 23) {
+            String permission = android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
+            if (checkSelfPermission(permission) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(ConversationActivity.this, new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE_ASK_PERMISSIONS);
+            } else {
+                f = new File(android.os.Environment.getExternalStorageDirectory(), "temp.jpg");
+                intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(f));
+                startActivityForResult(intent, 1);
+            }
+        }
     }
 
     @Override
