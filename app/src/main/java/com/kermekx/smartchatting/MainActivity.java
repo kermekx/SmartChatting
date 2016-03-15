@@ -409,7 +409,7 @@ public class MainActivity extends AppCompatActivity
                         android.os.Process.setThreadPriority(Process.THREAD_PRIORITY_MORE_FAVORABLE);
                         PGPSecretKeyRing secretKeyRing = KeyManager.readSecreteKeyRing(secretKeyRingBlock);
 
-                        for (int i = 0; i < mMessages.size(); i++) {
+                        for (int i = mMessages.size() - 1; i >= 0; i--) {
                             ByteArrayOutputStream data = new ByteArrayOutputStream();
 
                             KeyManager.decode(secretKeyRing, ServerService.getPassword(), mMessages.get(i), data);
