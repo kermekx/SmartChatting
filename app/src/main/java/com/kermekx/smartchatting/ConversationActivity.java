@@ -1,6 +1,5 @@
 package com.kermekx.smartchatting;
 
-import android.annotation.TargetApi;
 import android.app.FragmentManager;
 import android.content.BroadcastReceiver;
 import android.content.ClipData;
@@ -9,7 +8,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -25,7 +23,6 @@ import android.provider.MediaStore;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NavUtils;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.TypedValue;
@@ -44,10 +41,7 @@ import com.kermekx.smartchatting.conversation.Conversation;
 import com.kermekx.smartchatting.conversation.ConversationAdapter;
 import com.kermekx.smartchatting.fragment.ConversationFragment;
 import com.kermekx.smartchatting.listener.TaskListener;
-import com.kermekx.smartchatting.pgp.KeyManager;
 import com.kermekx.smartchatting.services.ServerService;
-
-import org.bouncycastle.openpgp.PGPPublicKey;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -58,7 +52,6 @@ import java.security.Key;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.jar.Manifest;
 
 public class ConversationActivity extends AppCompatActivity {
 
@@ -281,15 +274,20 @@ public class ConversationActivity extends AppCompatActivity {
                     bitmap = BitmapFactory.decodeFile(f.getAbsolutePath(),
                             bitmapOptions);
 
-                    Bitmap resize = bitmap;
-
-                    if(resize != null){
-                        float px = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, mImageView.getHeight(), getApplicationContext().getResources().getDisplayMetrics());
-                        Bitmap bitmapResized = Bitmap.createScaledBitmap(resize, (int) px, (int) px, false);
-                        Drawable drawable = new BitmapDrawable(getApplicationContext().getResources(), bitmapResized);
+                    if (mImageView != null) {
+                        float px = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, mImageView.getHeight(), getResources().getDisplayMetrics());
+                        Bitmap bitmapResized;
+                        if (bitmap.getWidth() > bitmap.getHeight()) {
+                            float ratio = (float) bitmap.getWidth() / (float) bitmap.getHeight();
+                            bitmapResized = Bitmap.createScaledBitmap(bitmap, (int) px, (int) (px * ratio), false);
+                        } else {
+                            float ratio = (float) bitmap.getHeight() / (float) bitmap.getWidth();
+                            bitmapResized = Bitmap.createScaledBitmap(bitmap, (int) (px * ratio), (int) px, false);
+                        }
+                        mImageView.setImageBitmap(bitmapResized);
+                        //Drawable drawable = new BitmapDrawable(getResources(), bitmapResized);
+                        //mImageView.setImageDrawable(drawable);
                     }
-
-                    mImageView.setImageBitmap(resize);
 
                     String path = android.os.Environment
                             .getExternalStorageDirectory()
