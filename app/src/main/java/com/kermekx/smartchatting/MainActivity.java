@@ -51,6 +51,7 @@ import org.bouncycastle.openpgp.PGPSecretKeyRing;
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Handler;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -407,7 +408,7 @@ public class MainActivity extends AppCompatActivity
                     public void run() {
                         PGPSecretKeyRing secretKeyRing = KeyManager.readSecreteKeyRing(secretKeyRingBlock);
 
-                        for (int i = mMessages.size() - 1; i >= 0; i--) {
+                        for (int i = 0; i < mMessages.size(); i++) {
                             ByteArrayOutputStream data = new ByteArrayOutputStream();
 
                             KeyManager.decode(secretKeyRing, ServerService.getPassword(), mMessages.get(i), data);
