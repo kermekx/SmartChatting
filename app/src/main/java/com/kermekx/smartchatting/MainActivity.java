@@ -379,21 +379,14 @@ public class MainActivity extends AppCompatActivity
         @Override
         public void onPostExecute(Boolean success) {
             if (success) {
-                List<Message> messages = new ArrayList<>();
-
-                PGPSecretKeyRing secretKeyRing = KeyManager.readSecreteKeyRing(secretKeyRingBlock);
+                final List<Message> messages = new ArrayList<>();
 
                 for (int i = mMessages.size() - 1; i >= 0; i--) {
-                    ByteArrayOutputStream data = new ByteArrayOutputStream();
-
-                    KeyManager.decode(secretKeyRing, ServerService.getPassword(), mMessages.get(i), data);
-
-                    Message message = new Message(mContacts.get(i), new String(data.toByteArray()));
-                    new LoadIconTask(MainActivity.this, new LoadIconTaskListener(message), mContacts.get(i), 48).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                    Message message = new Message(mContacts.get(i), getString(R.string.decrypting));
                     messages.add(message);
                 }
 
-                SwipeActionAdapter mMessageAdapter = new SwipeActionAdapter(new MessageAdapter(MainActivity.this, messages));
+                final SwipeActionAdapter mMessageAdapter = new SwipeActionAdapter(new MessageAdapter(MainActivity.this, messages));
                 mMessageAdapter.setListView(mListView);
 
                 mMessageAdapter.addBackground(SwipeDirection.DIRECTION_NORMAL_LEFT, R.layout.row_bg_delete)
@@ -408,6 +401,31 @@ public class MainActivity extends AppCompatActivity
                     setListViewHeightBasedOnChildren(mListView);
                     mListView.setOnItemClickListener(selectConversation);
                 }
+
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        PGPSecretKeyRing secretKeyRing = KeyManager.readSecreteKeyRing(secretKeyRingBlock);
+
+                        for (int i = mMessages.size() - 1; i >= 0; i--) {
+                            ByteArrayOutputStream data = new ByteArrayOutputStream();
+
+                            KeyManager.decode(secretKeyRing, ServerService.getPassword(), mMessages.get(i), data);
+
+                            byte[] mes = data.toByteArray();
+
+                            if (mes[0] == 'M') {
+                                messages.get(i).setLastMessage(new String(data.toByteArray(), 1, mes.length - 1));
+
+                                MainActivity.this.runOnUiThread(new Runnable() {
+                                    public void run() {
+                                        mMessageAdapter.notifyDataSetChanged();
+                                    }
+                                });
+                            }
+                        }
+                    }
+                }).start();
             }
 
             mRefresh.setRefreshing(false);
