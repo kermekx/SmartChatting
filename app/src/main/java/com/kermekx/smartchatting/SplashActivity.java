@@ -38,7 +38,6 @@ public class SplashActivity extends AppCompatActivity {
 
     private String mEmail;
     private String mPassword;
-    private String mPin;
 
     private BroadcastReceiver receiver;
 
@@ -78,7 +77,6 @@ public class SplashActivity extends AppCompatActivity {
 
         mEmail = settings.getString("email", null);
         mPassword = settings.getString("password", null);
-        mPin = settings.getString("pin", null);
 
         if (mEmail == null || mPassword == null) {
             Intent loginIntent = new Intent(SplashActivity.this, LoginActivity.class);
@@ -91,7 +89,7 @@ public class SplashActivity extends AppCompatActivity {
             extras.putString("filter", SPLASH_RECEIVER);
             extras.putString("email", mEmail);
             extras.putString("password", mPassword);
-            extras.putString("pin", mPin);
+            extras.putString("pin", null);
             extras.putBoolean("firstConnection", false);
 
             final Intent loginIntent = new Intent(ServerService.SERVER_RECEIVER);

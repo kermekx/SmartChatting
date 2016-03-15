@@ -129,10 +129,12 @@ public class ServerService extends Service {
 
                 String email = settings.getString("email", null);
                 String password = settings.getString("password", null);
-                String pin = settings.getString("pin", null);
 
-                if (email != null && password != null && pin != null) {
-                    new LoginTask(ServerService.this, null, new LoginListener(), socket, email, password, pin, false).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                Logger.getLogger(getClass().getName()).log(Level.SEVERE, "email : " + email);
+                Logger.getLogger(getClass().getName()).log(Level.SEVERE, "password : " + password);
+
+                if (email != null && password != null) {
+                    new LoginTask(ServerService.this, null, new LoginListener(), socket, email, password, null, false).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                 }
             }
 
