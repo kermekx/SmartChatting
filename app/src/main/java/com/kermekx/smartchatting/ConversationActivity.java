@@ -19,6 +19,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Looper;
 import android.provider.MediaStore;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
@@ -52,6 +53,8 @@ import java.security.Key;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class ConversationActivity extends AppCompatActivity {
 
@@ -268,26 +271,38 @@ public class ConversationActivity extends AppCompatActivity {
                     }
                 }
                 try {
-                    Bitmap bitmap;
-                    BitmapFactory.Options bitmapOptions = new BitmapFactory.Options();
-
-                    bitmap = BitmapFactory.decodeFile(f.getAbsolutePath(),
-                            bitmapOptions);
-
                     if (mImageView != null) {
-                        float px = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, mImageView.getHeight(), getResources().getDisplayMetrics());
-                        Bitmap bitmapResized;
-                        if (bitmap.getWidth() > bitmap.getHeight()) {
-                            float ratio = (float) bitmap.getWidth() / (float) bitmap.getHeight();
-                            bitmapResized = Bitmap.createScaledBitmap(bitmap, (int) px, (int) (px * ratio), false);
-                        } else {
-                            float ratio = (float) bitmap.getHeight() / (float) bitmap.getWidth();
-                            bitmapResized = Bitmap.createScaledBitmap(bitmap, (int) (px * ratio), (int) px, false);
+                        BitmapFactory.Options options = new BitmapFactory.Options();
+                        options.inJustDecodeBounds = true;
+
+                        BitmapFactory.decodeFile(f.getAbsolutePath(), options);
+                        int imageHeight = options.outHeight;
+                        int imageWidth = options.outWidth;
+                        Logger.getLogger(getClass().getName()).log(Level.INFO, "(" + imageWidth + "x" + imageHeight + ")");
+                        float reqSizes = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, mImageView.getHeight(), getResources().getDisplayMetrics());
+                        int inSampleSize = 1;
+
+                        Logger.getLogger(getClass().getName()).log(Level.INFO, "(" + reqSizes + "x" + reqSizes + ")");
+                        if (imageHeight > reqSizes || imageWidth > reqSizes) {
+                            while ((imageHeight / inSampleSize) > reqSizes
+                                    && (imageWidth / inSampleSize) > reqSizes) {
+                                inSampleSize *= 2;
+                            }
                         }
-                        mImageView.setImageBitmap(bitmapResized);
-                        //Drawable drawable = new BitmapDrawable(getResources(), bitmapResized);
-                        //mImageView.setImageDrawable(drawable);
+
+                        options = new BitmapFactory.Options();
+                        options.inSampleSize = inSampleSize;
+                        options.inJustDecodeBounds = false;
+
+                        mImageView.setImageBitmap(BitmapFactory.decodeFile(f.getAbsolutePath(), options));
+
+                        imageHeight = options.outHeight;
+                        imageWidth = options.outWidth;
+                        Logger.getLogger(getClass().getName()).log(Level.INFO, "(" + imageWidth + "x" + imageHeight + ")");
                     }
+
+                    BitmapFactory.Options options = new BitmapFactory.Options();
+                    Bitmap bitmap = BitmapFactory.decodeFile(f.getAbsolutePath(), options);
 
                     String path = android.os.Environment
                             .getExternalStorageDirectory()
