@@ -34,7 +34,6 @@ import com.kermekx.smartchatting.commandes.BaseTaskListener;
 import com.kermekx.smartchatting.commandes.GetContactsTask;
 import com.kermekx.smartchatting.commandes.GetMessagesTask;
 import com.kermekx.smartchatting.commandes.LoadIconTask;
-import com.kermekx.smartchatting.commandes.UpdateMessagesTask;
 import com.kermekx.smartchatting.contact.Contact;
 import com.kermekx.smartchatting.contact.ContactAdapter;
 import com.kermekx.smartchatting.dialog.AddContactDialog;
@@ -105,8 +104,7 @@ public class MainActivity extends AppCompatActivity
             public void onRefresh() {
                 if (menuId == R.id.nav_message) {
                     mRefresh.setRefreshing(true);
-                    SharedPreferences settings = getSharedPreferences(getString(R.string.preference_file_session), 0);
-                    new UpdateMessagesTask(MainActivity.this, new UpdateMessagesTaskListener(), settings.getString("email", ""), settings.getString("password", "")).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                    new GetMessagesTask(MainActivity.this, new GetMessagesTaskListener()).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                 } else if (menuId == R.id.nav_contact) {
                     mRefresh.setRefreshing(true);
 
@@ -268,8 +266,6 @@ public class MainActivity extends AppCompatActivity
 
                 mListView.setOnItemClickListener(selectConversation);
             }
-
-            updateMessages();
         } else if (id == R.id.nav_contact) {
             setTitle(getString(R.string.title_activity_main_contact));
 
@@ -413,6 +409,8 @@ public class MainActivity extends AppCompatActivity
                     mListView.setOnItemClickListener(selectConversation);
                 }
             }
+
+            mRefresh.setRefreshing(false);
         }
 
         @Override
@@ -460,50 +458,6 @@ public class MainActivity extends AppCompatActivity
 
                 for (LoadIconTask task : tasks)
                     task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-            }
-        }
-
-        @Override
-        public void onCancelled() {
-
-        }
-    }
-
-    public void updateMessages() {
-        SharedPreferences settings = getSharedPreferences(getString(R.string.preference_file_session), 0);
-        new UpdateMessagesTask(this, new UpdateMessagesTaskListener(), settings.getString("email", ""), settings.getString("password", "")).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-        mRefresh.setRefreshing(true);
-    }
-
-    public class UpdateMessagesTaskListener extends BaseTaskListener {
-
-        public UpdateMessagesTaskListener() {
-            Snackbar snackbar = Snackbar.make(mListView, getString(R.string.warning_load_messages_long), Snackbar.LENGTH_LONG)
-                    .setAction("Action", null);
-            View snackBarView = snackbar.getView();
-            snackBarView.setBackgroundColor(getResources().getColor(R.color.danger));
-            snackbar.show();
-        }
-
-        @Override
-        public void onError(int error) {
-
-        }
-
-        @Override
-        public void onData(Object... object) {
-
-        }
-
-        @Override
-        public void onPostExecute(Boolean success) {
-            if (success) {
-                new GetMessagesTask(MainActivity.this, new GetMessagesTaskListener());
-                mRefresh.setRefreshing(false);
-            } else {
-                Snackbar.make(mListView, getString(R.string.error_connection_server), Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-                mRefresh.setRefreshing(false);
             }
         }
 

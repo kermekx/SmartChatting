@@ -12,14 +12,12 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Looper;
 import android.provider.MediaStore;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
@@ -278,11 +276,9 @@ public class ConversationActivity extends AppCompatActivity {
                         BitmapFactory.decodeFile(f.getAbsolutePath(), options);
                         int imageHeight = options.outHeight;
                         int imageWidth = options.outWidth;
-                        Logger.getLogger(getClass().getName()).log(Level.INFO, "(" + imageWidth + "x" + imageHeight + ")");
                         float reqSizes = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, mImageView.getHeight(), getResources().getDisplayMetrics());
                         int inSampleSize = 1;
 
-                        Logger.getLogger(getClass().getName()).log(Level.INFO, "(" + reqSizes + "x" + reqSizes + ")");
                         if (imageHeight > reqSizes || imageWidth > reqSizes) {
                             while ((imageHeight / inSampleSize) > reqSizes
                                     && (imageWidth / inSampleSize) > reqSizes) {
@@ -298,36 +294,16 @@ public class ConversationActivity extends AppCompatActivity {
 
                         imageHeight = options.outHeight;
                         imageWidth = options.outWidth;
-                        Logger.getLogger(getClass().getName()).log(Level.INFO, "(" + imageWidth + "x" + imageHeight + ")");
                     }
 
                     BitmapFactory.Options options = new BitmapFactory.Options();
                     Bitmap bitmap = BitmapFactory.decodeFile(f.getAbsolutePath(), options);
 
-                    String path = android.os.Environment
-                            .getExternalStorageDirectory()
-                            + File.separator
-                            + "Phoenix" + File.separator + "default";
                     f.delete();
-                    OutputStream outFile = null;
-                    File file = new File(path, String.valueOf(System.currentTimeMillis()) + ".jpg");
-                    try {
-                        outFile = new FileOutputStream(file);
-                        bitmap.compress(Bitmap.CompressFormat.JPEG, 85, outFile);
-                        outFile.flush();
-                        outFile.close();
-                    } catch (FileNotFoundException e) {
-                        e.printStackTrace();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             } else if (requestCode == 2) {
-
                 Uri selectedImage = data.getData();
                 String[] filePath = {MediaStore.Images.Media.DATA};
                 Cursor c = getContentResolver().query(selectedImage, filePath, null, null, null);
@@ -336,7 +312,6 @@ public class ConversationActivity extends AppCompatActivity {
                 String picturePath = c.getString(columnIndex);
                 c.close();
                 Bitmap thumbnail = (BitmapFactory.decodeFile(picturePath));
-                //Log.w("path of image from gallery", picturePath+"");
                 mImageView.setImageBitmap(thumbnail);
             }
         }
