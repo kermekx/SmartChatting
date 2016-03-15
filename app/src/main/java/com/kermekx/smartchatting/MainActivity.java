@@ -633,6 +633,8 @@ public class MainActivity extends AppCompatActivity
                     int position = positions[i];
 
                     String username = ((Message) fragment.getMessageAdapter().getItem(position)).getUsername();
+                    String email = ((Contact) fragment.getContactAdapter().getItem(position)).getEmail();
+                    String publicKey = ((Contact) fragment.getContactAdapter().getItem(position)).getPublicKey();
 
                     if (direction == SwipeDirection.DIRECTION_FAR_LEFT) {
                         Snackbar.make(mListView, "Delete message not implemented", Snackbar.LENGTH_LONG)
@@ -641,6 +643,8 @@ public class MainActivity extends AppCompatActivity
                         Intent conversationActivity = new Intent(MainActivity.this, ConversationActivity.class);
                         Bundle extra = new Bundle();
                         extra.putString("username", username);
+                        extra.putString("email", email);
+                        extra.putString("publicKey", publicKey);
                         conversationActivity.putExtras(extra);
                         MainActivity.this.startActivity(conversationActivity);
                     }
