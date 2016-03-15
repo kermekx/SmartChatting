@@ -32,10 +32,6 @@ import com.kermekx.smartchatting.listener.RemoveContactListener;
 import com.kermekx.smartchatting.listener.SendMessageListener;
 import com.kermekx.smartchatting.listener.TaskListener;
 
-import org.bouncycastle.openpgp.PGPPublicKey;
-import org.bouncycastle.openpgp.PGPSecretKeyRing;
-
-import java.security.Key;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -110,10 +106,34 @@ public class ServerService extends Service {
         public void onPostExecute(Boolean success) {
             if (!success) {
                 connected = false;
+
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            Thread.sleep(60000);
+                        } catch (InterruptedException e) {
+
+                        }
+
+                        stopService(new Intent(ServerService.this, ServerService.class));
+                        startService(new Intent(ServerService.this, ServerService.class));
+                    }
+                }).start();
             } else {
                 connected = true;
                 dataListeners.add(new NotificationListener(ServerService.this));
                 new SocketListenerTask(new SocketListener(), socket).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
+                SharedPreferences settings = ServerService.this.getSharedPreferences(ServerService.this.getString(R.string.preference_file_session), 0);
+
+                String email = settings.getString("email", null);
+                String password = settings.getString("password", null);
+                String pin = settings.getString("pin", null);
+
+                if (email != null && password != null && pin != null) {
+                    new LoginTask(ServerService.this, null, null, socket, email, password, pin, false).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                }
             }
 
             synchronized (ready) {
