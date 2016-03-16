@@ -49,8 +49,8 @@ public class Conversation implements Comparable<Conversation> {
         this.message = message;
     }
 
-    public void decrypt(Key key) {
-        /**setMessage(RSA.decrypt(cryptedMessage, key))*/
+    public String getCryptedMessage() {
+        return cryptedMessage;
     }
 
     @Override

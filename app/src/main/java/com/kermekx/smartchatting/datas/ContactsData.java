@@ -71,7 +71,7 @@ public class ContactsData {
 
         Cursor cursor = db.query(ContactEntry.TABLE_NAME, projections, query, values, null, null, null, null);
 
-        if (cursor == null && !cursor.moveToFirst())
+        if (cursor == null || !cursor.moveToFirst())
             return null;
 
         //0 : contact ID

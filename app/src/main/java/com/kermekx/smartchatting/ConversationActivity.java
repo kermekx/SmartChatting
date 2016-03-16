@@ -14,10 +14,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.AsyncTask;
-import android.os.Build;
-import android.os.Bundle;
-import android.os.Environment;
+import android.os.*;
 import android.provider.MediaStore;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
@@ -35,13 +32,18 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.kermekx.smartchatting.commandes.BaseTaskListener;
+import com.kermekx.smartchatting.commandes.GetMessagesTask;
 import com.kermekx.smartchatting.commandes.LoadIconTask;
 import com.kermekx.smartchatting.conversation.Conversation;
 import com.kermekx.smartchatting.conversation.ConversationAdapter;
 import com.kermekx.smartchatting.fragment.ConversationFragment;
 import com.kermekx.smartchatting.listener.TaskListener;
+import com.kermekx.smartchatting.pgp.KeyManager;
 import com.kermekx.smartchatting.services.ServerService;
 
+import org.bouncycastle.openpgp.PGPSecretKeyRing;
+
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -66,6 +68,8 @@ public class ConversationActivity extends AppCompatActivity {
     private ListView mMessagesView;
     private ImageView sendView;
     private ImageView mImageView;
+
+    private String secretKeyRingBlock;
 
     private ConversationFragment fragment;
 
@@ -95,6 +99,9 @@ public class ConversationActivity extends AppCompatActivity {
         mImageView = (ImageView) findViewById(R.id.viewImage);
 
         sendView = (ImageView) findViewById(R.id.send_message);
+
+        SharedPreferences settings = getSharedPreferences(getString(R.string.preference_file_session), 0);
+        secretKeyRingBlock = settings.getString("privateKey", null);
 
         sendView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -150,12 +157,7 @@ public class ConversationActivity extends AppCompatActivity {
             fragment = new ConversationFragment();
             fm.beginTransaction().add(fragment, "ConversationFragment").commit();
 
-            /**
-             TaskListener listener = new GetMessagesTaskListener();
-             AsyncTask<Void, Void, Boolean> task = new GetMessagesTask(ConversationActivity.this, listener);
-             new GetPrivateKeyTask(ConversationActivity.this, new GetPrivateKeyTaskListener(task, listener), settings.getString("email", ""), settings.getString("password", "")).execute();
-             */
-
+            new GetMessagesTask(this, new GetMessagesTaskListener()).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         } else if (fragment.getConversationAdapter() != null) {
             mMessagesView.setAdapter(fragment.getConversationAdapter());
 
@@ -429,9 +431,6 @@ public class ConversationActivity extends AppCompatActivity {
         @Override
         public void onPostExecute(Boolean success) {
             if (success) {
-                List<LoadIconTask> tasks = new ArrayList<>();
-                Collections.sort(conversations);
-
                 fragment.setConversationAdapter(new ConversationAdapter(ConversationActivity.this, conversations));
                 mMessagesView.setAdapter(fragment.getConversationAdapter());
 
@@ -439,16 +438,31 @@ public class ConversationActivity extends AppCompatActivity {
                     mMessagesView.setSelection(mMessagesView.getCount() - 1);
                 }
 
-                SharedPreferences settings = getSharedPreferences(getString(R.string.preference_file_session), 0);
-                String user = settings.getString("username", "");
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_MORE_FAVORABLE);
+                        PGPSecretKeyRing secretKeyRing = KeyManager.readSecreteKeyRing(secretKeyRingBlock);
 
-                for (Conversation conversation : conversations)
-                    tasks.add(0, new LoadIconTask(ConversationActivity.this, new LoadIconTaskListener(conversation, mKey), conversation.isSent() ? user : username, 48));
+                        for (int i = conversations.size() - 1; i >= 0; i--) {
+                            ByteArrayOutputStream data = new ByteArrayOutputStream();
 
-                for (LoadIconTask task : tasks)
-                    task.execute();
+                            KeyManager.decode(secretKeyRing, ServerService.getPassword(), conversations.get(i).getCryptedMessage(), data);
 
-                mTasks = tasks;
+                            byte[] mes = data.toByteArray();
+
+                            if (mes[0] == 'M') {
+                                conversations.get(i).setMessage(new String(data.toByteArray(), 1, mes.length - 1));
+
+                                ConversationActivity.this.runOnUiThread(new Runnable() {
+                                    public void run() {
+                                        fragment.getConversationAdapter().notifyDataSetChanged();
+                                    }
+                                });
+                            }
+                        }
+                    }
+                }).start();
             }
         }
 
@@ -491,41 +505,6 @@ public class ConversationActivity extends AppCompatActivity {
         @Override
         public void onPostExecute(Boolean success) {
             fragment.getConversationAdapter().notifyDataSetChanged();
-        }
-
-        @Override
-        public void onCancelled() {
-
-        }
-    }
-
-    private class GetPrivateKeyTaskListener extends BaseTaskListener {
-
-        private final AsyncTask<Void, Void, Boolean> mTask;
-        private final TaskListener mListener;
-
-        public GetPrivateKeyTaskListener(AsyncTask<Void, Void, Boolean> task, TaskListener listener) {
-            mTask = task;
-            mListener = listener;
-        }
-
-        @Override
-        public void onError(int error) {
-
-        }
-
-        @Override
-        public void onData(Object... object) {
-            mListener.onData(object);
-            mTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-        }
-
-        @Override
-        public void onPostExecute(Boolean success) {
-            if (!success) {
-                Snackbar.make(mMessagesView, getString(R.string.error_connection_server), Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
         }
 
         @Override
