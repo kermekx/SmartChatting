@@ -11,11 +11,15 @@ public class Message {
 
     private String username;
     private String lastMessage;
+    private String email;
+    private String publicKey;
     private Drawable icon;
 
-    public Message(String pseudo, String lastMessage) {
+    public Message(String pseudo, String lastMessage, String email, String publicKey) {
         this.username = pseudo;
         this.lastMessage = lastMessage;
+        this.email = email;
+        this.publicKey = publicKey;
     }
 
     public String getUsername() {
@@ -32,6 +36,22 @@ public class Message {
 
     public void setLastMessage(String lastMessage) {
         this.lastMessage = lastMessage;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getPublicKey() {
+        return publicKey;
+    }
+
+    public void setPublicKey(String publicKey) {
+        this.publicKey = publicKey;
     }
 
     public Drawable getIcon() {

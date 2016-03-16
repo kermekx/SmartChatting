@@ -8,7 +8,7 @@ import android.provider.BaseColumns;
 
 /**
  * Created by kermex on 23/02/2016.
- *
+ * <p/>
  * Contacts data to use in the internal database
  */
 public class ContactsData {
@@ -23,7 +23,7 @@ public class ContactsData {
                     ContactEntry.COLUMN_NAME_CONTACT_USERNAME + TEXT_TYPE + COMMA_SEP +
                     ContactEntry.COLUMN_NAME_CONTACT_EMAIL + TEXT_TYPE + COMMA_SEP +
                     ContactEntry.COLUMN_NAME_CONTACT_PUBLIC_KEY + TEXT_TYPE +
-            " )";
+                    " )";
 
     public static final String SQL_DELETE_CONTACTS =
             "DROP TABLE IF EXISTS " + ContactEntry.TABLE_NAME;
@@ -56,6 +56,36 @@ public class ContactsData {
         return db.query(ContactEntry.TABLE_NAME, projections, null, null, null, null, sortOrder);
     }
 
+    public static String[] getContact(Context context, String username) {
+        SQLiteDatabase db = SmartChattingBdHelper.getInstance(context).getReadableDatabase();
+
+        String query = ContactEntry.COLUMN_NAME_CONTACT_USERNAME + "=?";
+        String[] values = new String[]{username};
+
+        String[] projections = {
+                ContactEntry.COLUMN_NAME_CONTACT_ID,
+                ContactEntry.COLUMN_NAME_CONTACT_USERNAME,
+                ContactEntry.COLUMN_NAME_CONTACT_EMAIL,
+                ContactEntry.COLUMN_NAME_CONTACT_PUBLIC_KEY
+        };
+
+        Cursor cursor = db.query(ContactEntry.TABLE_NAME, projections, query, values, null, null, null, null);
+
+        if (cursor == null && !cursor.moveToFirst())
+            return null;
+
+        //0 : contact ID
+        //1 : username
+        //2 : email
+        //3 : publicKey
+        return new String[]{
+                cursor.getString(0),
+                cursor.getString(1),
+                cursor.getString(2),
+                cursor.getString(3)
+        };
+    }
+
     public static void removeContacts(Context context) {
         SQLiteDatabase db = SmartChattingBdHelper.getInstance(context).getWritableDatabase();
 
@@ -65,7 +95,7 @@ public class ContactsData {
     public static void removeContact(Context context, String username) {
         SQLiteDatabase db = SmartChattingBdHelper.getInstance(context).getWritableDatabase();
 
-        db.delete(ContactEntry.TABLE_NAME, ContactEntry.COLUMN_NAME_CONTACT_USERNAME + " = ?", new String[] {username});
+        db.delete(ContactEntry.TABLE_NAME, ContactEntry.COLUMN_NAME_CONTACT_USERNAME + " = ?", new String[]{username});
     }
 
     public static abstract class ContactEntry implements BaseColumns {

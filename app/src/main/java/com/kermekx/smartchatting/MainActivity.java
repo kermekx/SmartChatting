@@ -37,6 +37,7 @@ import com.kermekx.smartchatting.commandes.GetMessagesTask;
 import com.kermekx.smartchatting.commandes.LoadIconTask;
 import com.kermekx.smartchatting.contact.Contact;
 import com.kermekx.smartchatting.contact.ContactAdapter;
+import com.kermekx.smartchatting.datas.ContactsData;
 import com.kermekx.smartchatting.dialog.AddContactDialog;
 import com.kermekx.smartchatting.dialog.ConfirmLogoutDialog;
 import com.kermekx.smartchatting.fragment.MainActivityFragment;
@@ -383,7 +384,15 @@ public class MainActivity extends AppCompatActivity
                 final List<Message> messages = new ArrayList<>();
 
                 for (int i = mMessages.size() - 1; i >= 0; i--) {
-                    Message message = new Message(mContacts.get(i), getString(R.string.decrypting));
+                    String[] infos = ContactsData.getContact(MainActivity.this, mContacts.get(i));
+
+                    Message message;
+                    if (infos != null) {
+                        message = new Message(mContacts.get(i), getString(R.string.decrypting), infos[2], infos[3]);
+                    } else {
+                        message = new Message(mContacts.get(i), getString(R.string.decrypting), null, null);
+                    }
+
                     messages.add(message);
                 }
 
@@ -581,7 +590,7 @@ public class MainActivity extends AppCompatActivity
             if (swipeDirection.isLeft())
                 return true;
 
-            if (swipeDirection.isRight())
+            if (swipeDirection.isRight() && (menuId == R.id.nav_contact || (menuId == R.id.nav_message && ((Message) fragment.getMessageAdapter().getItem(i)).getPublicKey() != null)))
                 return true;
 
             return false;
@@ -634,9 +643,8 @@ public class MainActivity extends AppCompatActivity
                     int position = positions[i];
 
                     String username = ((Message) fragment.getMessageAdapter().getItem(position)).getUsername();
-                    //TODO : Mauvaises données
-                    //String email = ((Contact) fragment.getContactAdapter().getItem(position)).getEmail();
-                    //String publicKey = ((Contact) fragment.getContactAdapter().getItem(position)).getPublicKey();
+                    String email = ((Message) fragment.getMessageAdapter().getItem(position)).getEmail();
+                    String publicKey = ((Message) fragment.getMessageAdapter().getItem(position)).getPublicKey();
 
                     if (direction == SwipeDirection.DIRECTION_FAR_LEFT) {
                         Snackbar.make(mListView, "Delete message not implemented", Snackbar.LENGTH_LONG)
@@ -645,8 +653,8 @@ public class MainActivity extends AppCompatActivity
                         Intent conversationActivity = new Intent(MainActivity.this, ConversationActivity.class);
                         Bundle extra = new Bundle();
                         extra.putString("username", username);
-                        //extra.putString("email", email);
-                        //extra.putString("publicKey", publicKey);
+                        extra.putString("email", email);
+                        extra.putString("publicKey", publicKey);
                         conversationActivity.putExtras(extra);
                         MainActivity.this.startActivity(conversationActivity);
                     }
