@@ -47,6 +47,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 public class ConversationActivity extends AppCompatActivity {
 
@@ -71,6 +72,9 @@ public class ConversationActivity extends AppCompatActivity {
 
     private static final String SEND_MESSAGE_RECEIVER = "SEND_MESSAGE_RECEIVER";
     private BroadcastReceiver sendMessageReceiver;
+
+    public static final String MESSAGE_RECEIVER = "MESSAGE_RECEIVER_";
+    private BroadcastReceiver messageReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -128,6 +132,7 @@ public class ConversationActivity extends AppCompatActivity {
         fragment.setState(mMessagesView.onSaveInstanceState());
 
         unregisterReceiver(sendMessageReceiver);
+        unregisterReceiver(messageReceiver);
 
         super.onPause();
     }
@@ -156,6 +161,9 @@ public class ConversationActivity extends AppCompatActivity {
 
         sendMessageReceiver = new SendMessageReceiver();
         registerReceiver(sendMessageReceiver, new IntentFilter(SEND_MESSAGE_RECEIVER));
+
+        messageReceiver = new MessageReceiver();
+        registerReceiver(messageReceiver, new IntentFilter(MESSAGE_RECEIVER + username));
 
         senderPublicKeyBlock = settings.getString("publicKey", "");
     }
@@ -439,6 +447,21 @@ public class ConversationActivity extends AppCompatActivity {
                 Snackbar.make(mMessagesView, getString(R.string.error_connection_server), Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
             }
+        }
+    }
+
+    public class MessageReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            fragment.getConversationAdapter().add(new Conversation(0, false, null, intent.getExtras().getString("message").substring(1), null));
+            fragment.getConversationAdapter().notifyDataSetChanged();
+
+            Snackbar.make(mMessagesView, "New message", Snackbar.LENGTH_LONG).setAction("Show", new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mMessagesView.setSelection(mMessagesView.getCount() - 1);
+                }
+            }).show();
         }
     }
 }

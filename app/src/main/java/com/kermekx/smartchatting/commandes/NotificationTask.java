@@ -3,13 +3,18 @@ package com.kermekx.smartchatting.commandes;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 
+import com.kermekx.smartchatting.ConversationActivity;
 import com.kermekx.smartchatting.R;
+import com.kermekx.smartchatting.conversation.Conversation;
 import com.kermekx.smartchatting.pgp.KeyManager;
+import com.kermekx.smartchatting.services.ServerService;
 
 import java.io.ByteArrayOutputStream;
 
@@ -40,6 +45,14 @@ public class NotificationTask extends AsyncTask<Void, Void, Boolean> {
         KeyManager.decode(KeyManager.readSecreteKeyRing(mSecretKeyRingBlock), mPassword, mMessage, data);
 
         String message = new String(data.toByteArray());
+
+        Bundle extras = new Bundle();
+        extras.putString("message", message);
+
+        Intent service = new Intent(ConversationActivity.MESSAGE_RECEIVER + mUsername);
+        service.putExtras(extras);
+
+        mContext.sendBroadcast(service);
 
         NotificationManager mNotificationManager =
                 (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
