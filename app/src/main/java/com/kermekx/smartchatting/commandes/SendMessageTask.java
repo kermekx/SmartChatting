@@ -110,10 +110,13 @@ public class SendMessageTask extends AsyncTask<Void, Void, Boolean> {
 
     @Override
     protected void onPostExecute(final Boolean success) {
-
+        if (mListener != null)
+            mListener.onPostExecute(success);
     }
 
     @Override
     protected void onCancelled() {
+        if (mListener != null)
+            mListener.onCancelled();
     }
 }

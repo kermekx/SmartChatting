@@ -12,9 +12,11 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.*;
+import android.os.AsyncTask;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
@@ -33,11 +35,9 @@ import android.widget.Toast;
 
 import com.kermekx.smartchatting.commandes.BaseTaskListener;
 import com.kermekx.smartchatting.commandes.GetMessagesTask;
-import com.kermekx.smartchatting.commandes.LoadIconTask;
 import com.kermekx.smartchatting.conversation.Conversation;
 import com.kermekx.smartchatting.conversation.ConversationAdapter;
 import com.kermekx.smartchatting.fragment.ConversationFragment;
-import com.kermekx.smartchatting.listener.TaskListener;
 import com.kermekx.smartchatting.pgp.KeyManager;
 import com.kermekx.smartchatting.services.ServerService;
 
@@ -45,16 +45,8 @@ import org.bouncycastle.openpgp.PGPSecretKeyRing;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.security.Key;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class ConversationActivity extends AppCompatActivity {
 
@@ -72,8 +64,6 @@ public class ConversationActivity extends AppCompatActivity {
     private String secretKeyRingBlock;
 
     private ConversationFragment fragment;
-
-    private List<LoadIconTask> mTasks = new ArrayList<>();
 
     private File f;
 
@@ -173,9 +163,6 @@ public class ConversationActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-
-        for (LoadIconTask task : mTasks)
-            task.cancel(true);
     }
 
     @Override
@@ -294,13 +281,7 @@ public class ConversationActivity extends AppCompatActivity {
 
                         mImageView.setImageBitmap(BitmapFactory.decodeFile(f.getAbsolutePath(), options));
 
-                        imageHeight = options.outHeight;
-                        imageWidth = options.outWidth;
                     }
-
-                    BitmapFactory.Options options = new BitmapFactory.Options();
-                    Bitmap bitmap = BitmapFactory.decodeFile(f.getAbsolutePath(), options);
-
                     f.delete();
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -353,61 +334,8 @@ public class ConversationActivity extends AppCompatActivity {
         }
     }
 
-    private class UpdateMessagesTaskListener extends BaseTaskListener {
-
-        private Key mKey;
-
-        private List<Conversation> conversations = new ArrayList<>();
-        private List<LoadIconTask> tasks = new ArrayList<>();
-
-        @Override
-        public void onError(int error) {
-
-        }
-
-        @Override
-        public void onData(Object... object) {
-            if (object[0] instanceof Key) {
-                mKey = (Key) object[0];
-            } else {
-                String[] data = (String[]) object;
-                if (data[1].equals(username)) {
-                    Conversation conversation = new Conversation(Integer.parseInt(data[0]), Boolean.parseBoolean(data[2]), null, getString(R.string.decrypting), data[3]);
-                    conversations.add(conversation);
-                    tasks.add(new LoadIconTask(ConversationActivity.this, new LoadIconTaskListener(conversation, mKey), data[1], 48));
-                }
-            }
-        }
-
-        @Override
-        public void onPostExecute(Boolean success) {
-            if (success && conversations.size() > 0) {
-                for (Conversation conversation : conversations) {
-                    fragment.getConversationAdapter().add(conversation);
-                }
-
-                for (LoadIconTask task : tasks) {
-                    task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-                }
-
-                fragment.getConversationAdapter().notifyDataSetChanged();
-
-                if (mMessagesView.getCount() > 0) {
-                    mMessagesView.setSelection(mMessagesView.getCount() - 1);
-                }
-            }
-        }
-
-        @Override
-        public void onCancelled() {
-
-        }
-    }
-
     private class GetMessagesTaskListener extends BaseTaskListener {
 
-        private Key mKey;
-
         private List<Conversation> conversations = new ArrayList<>();
 
         @Override
@@ -417,14 +345,10 @@ public class ConversationActivity extends AppCompatActivity {
 
         @Override
         public void onData(Object... object) {
-            if (object[0] instanceof Key) {
-                mKey = (Key) object[0];
-            } else {
-                String[] data = (String[]) object;
-                if (data[1].equals(username)) {
-                    Conversation conversation = new Conversation(Integer.parseInt(data[0]), Boolean.parseBoolean(data[2]), null, getString(R.string.decrypting), data[3]);
-                    conversations.add(conversation);
-                }
+            String[] data = (String[]) object;
+            if (data[1].equals(username)) {
+                Conversation conversation = new Conversation(Integer.parseInt(data[0]), Boolean.parseBoolean(data[2]), null, getString(R.string.decrypting), data[3]);
+                conversations.add(conversation);
             }
         }
 
@@ -433,10 +357,6 @@ public class ConversationActivity extends AppCompatActivity {
             if (success) {
                 fragment.setConversationAdapter(new ConversationAdapter(ConversationActivity.this, conversations));
                 mMessagesView.setAdapter(fragment.getConversationAdapter());
-
-                if (mMessagesView.getCount() > 0) {
-                    mMessagesView.setSelection(mMessagesView.getCount() - 1);
-                }
 
                 new Thread(new Runnable() {
                     @Override
@@ -464,47 +384,10 @@ public class ConversationActivity extends AppCompatActivity {
                     }
                 }).start();
             }
-        }
 
-        @Override
-        public void onCancelled() {
-
-        }
-    }
-
-    private class LoadIconTaskListener extends BaseTaskListener {
-
-        private final Object mItem;
-        private final Key mKey;
-
-        public LoadIconTaskListener(Object item, Key key) {
-            mItem = item;
-            mKey = key;
-        }
-
-        @Override
-        public void onError(int error) {
-
-        }
-
-        @Override
-        public void onData(Object... object) {
-            if (object instanceof Drawable[]) {
-                Drawable drawable = (Drawable) object[0];
-                if (mItem instanceof Conversation) {
-                    ((Conversation) mItem).setIcon(drawable);
-                    //((Conversation) mItem).decrypt(mKey);
-                }
-            } else {
-                if (mItem instanceof Conversation) {
-                    //((Conversation) mItem).decrypt(mKey);
-                }
+            if (conversations.size() > 0) {
+                mMessagesView.setSelection(mMessagesView.getCount() - 1);
             }
-        }
-
-        @Override
-        public void onPostExecute(Boolean success) {
-            fragment.getConversationAdapter().notifyDataSetChanged();
         }
 
         @Override
@@ -527,7 +410,9 @@ public class ConversationActivity extends AppCompatActivity {
                 Boolean success = intent.getExtras().getBoolean("success");
 
                 if (success) {
-
+                    fragment.getConversationAdapter().add(new Conversation(0, true, null, intent.getExtras().getString("message").substring(1), null));
+                    fragment.getConversationAdapter().notifyDataSetChanged();
+                    mMessagesView.setSelection(mMessagesView.getCount() - 1);
                 } else {
                     ArrayList<String> errors = intent.getExtras().getStringArrayList("errors");
 
