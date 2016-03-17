@@ -8,7 +8,7 @@ import com.kermekx.smartchatting.R;
 import com.kermekx.smartchatting.hash.Hasher;
 import com.kermekx.smartchatting.listeners.RegisterListener;
 import com.kermekx.smartchatting.listeners.TaskListener;
-import com.kermekx.smartchatting.pgp.KeyManager;
+import com.kermekx.smartchatting.pgp.PGPManager;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -18,7 +18,7 @@ import javax.net.ssl.SSLSocket;
 
 /**
  * Created by kermekx on 22/02/2016.
- *
+ * <p/>
  * This task is used to register into the server
  */
 public class RegisterTask extends AsyncTask<Void, Void, Boolean> {
@@ -58,7 +58,7 @@ public class RegisterTask extends AsyncTask<Void, Void, Boolean> {
         ByteArrayOutputStream publicKey = new ByteArrayOutputStream(2048);
         ByteArrayOutputStream privateKey = new ByteArrayOutputStream(4096);
 
-        KeyManager.generateKeys(mEmail, mPassword, mPin, publicKey, privateKey);
+        PGPManager.generateKeys(mEmail, mPassword, mPin, publicKey, privateKey);
 
         mPublicKey = new String(publicKey.toByteArray());
         mPrivateKey = new String(privateKey.toByteArray());
@@ -78,7 +78,7 @@ public class RegisterTask extends AsyncTask<Void, Void, Boolean> {
 
             if (mDataListener.data.size() == 0) {
                 try {
-                    synchronized(mDataListener.data) {
+                    synchronized (mDataListener.data) {
                         mDataListener.data.wait();
                     }
                 } catch (InterruptedException e) {
@@ -106,8 +106,8 @@ public class RegisterTask extends AsyncTask<Void, Void, Boolean> {
                 editor.commit();
 
                 return true;
-            } else if (mDataListener.data.get(0).equals(REGISTER_ERROR_DATA)){
-                for (int i = 1; i < mDataListener.data.size(); i ++) {
+            } else if (mDataListener.data.get(0).equals(REGISTER_ERROR_DATA)) {
+                for (int i = 1; i < mDataListener.data.size(); i++) {
                     if (mListener != null)
                         mListener.onError(mDataListener.data.get(i));
                 }

@@ -8,7 +8,7 @@ import com.kermekx.smartchatting.R;
 import com.kermekx.smartchatting.hash.Hasher;
 import com.kermekx.smartchatting.listeners.LoginListener;
 import com.kermekx.smartchatting.listeners.TaskListener;
-import com.kermekx.smartchatting.pgp.KeyManager;
+import com.kermekx.smartchatting.pgp.PGPManager;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -83,7 +83,7 @@ public class LoginTask extends AsyncTask<Void, Void, Boolean> {
 
                 if (mFirstConnection) {
 
-                    if (KeyManager.readPrivateKey(mDataListener.data.get(3), Hasher.md5Byte(mPassword), Hasher.sha256Byte(mPin)) == null) {
+                    if (PGPManager.readPrivateKey(mDataListener.data.get(3), Hasher.md5Byte(mPassword), Hasher.sha256Byte(mPin)) == null) {
                         if (mListener != null)
                             mListener.onError(INCORRECT_PIN);
 
