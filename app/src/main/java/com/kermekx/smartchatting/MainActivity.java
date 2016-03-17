@@ -43,7 +43,7 @@ import com.kermekx.smartchatting.dialog.ConfirmLogoutDialog;
 import com.kermekx.smartchatting.fragment.MainActivityFragment;
 import com.kermekx.smartchatting.message.Message;
 import com.kermekx.smartchatting.message.MessageAdapter;
-import com.kermekx.smartchatting.pgp.KeyManager;
+import com.kermekx.smartchatting.pgp.PGPManager;
 import com.kermekx.smartchatting.services.ServerService;
 import com.wdullaer.swipeactionadapter.SwipeActionAdapter;
 import com.wdullaer.swipeactionadapter.SwipeDirection;
@@ -416,12 +416,12 @@ public class MainActivity extends AppCompatActivity
                     @Override
                     public void run() {
                         android.os.Process.setThreadPriority(Process.THREAD_PRIORITY_MORE_FAVORABLE);
-                        PGPSecretKeyRing secretKeyRing = KeyManager.readSecreteKeyRing(secretKeyRingBlock);
+                        PGPSecretKeyRing secretKeyRing = PGPManager.readSecreteKeyRing(secretKeyRingBlock);
 
                         for (int i = mMessages.size() - 1; i >= 0; i--) {
                             ByteArrayOutputStream data = new ByteArrayOutputStream();
 
-                            KeyManager.decode(secretKeyRing, ServerService.getPassword(), mMessages.get(i), data);
+                            PGPManager.decode(secretKeyRing, ServerService.getPassword(), mMessages.get(i), data);
 
                             byte[] mes = data.toByteArray();
 

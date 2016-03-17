@@ -6,11 +6,8 @@ import android.os.AsyncTask;
 import com.kermekx.smartchatting.datas.MessagesData;
 import com.kermekx.smartchatting.listener.SendMessageListener;
 import com.kermekx.smartchatting.listener.TaskListener;
-import com.kermekx.smartchatting.pgp.KeyManager;
+import com.kermekx.smartchatting.pgp.PGPManager;
 
-import org.bouncycastle.openpgp.PGPPublicKey;
-
-import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
 import java.util.logging.Level;
@@ -56,7 +53,7 @@ public class SendMessageTask extends AsyncTask<Void, Void, Boolean> {
             ByteArrayOutputStream data = new ByteArrayOutputStream();
             ByteArrayOutputStream backupData = new ByteArrayOutputStream();
 
-            if (!KeyManager.encode(mReceiverPublicKey, mMessage, data) || !KeyManager.encode(mSenderPublicKey, mMessage, backupData)) {
+            if (!PGPManager.encode(mReceiverPublicKey, mMessage, data) || !PGPManager.encode(mSenderPublicKey, mMessage, backupData)) {
                 return false;
             }
 

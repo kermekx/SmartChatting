@@ -59,7 +59,7 @@ import java.util.Iterator;
  * Created by kermekx on 03/03/2016.
  * s
  */
-public class KeyManager {
+public class PGPManager {
 
     public static boolean generateKeys(String id, String password, String pin, ByteArrayOutputStream publicKey, ByteArrayOutputStream privateKey) {
         byte[] pass = new BigInteger(Hasher.md5Byte(password)).multiply(new BigInteger(Hasher.sha256Byte(pin))).toByteArray();

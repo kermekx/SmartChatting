@@ -12,9 +12,7 @@ import android.support.v4.app.NotificationCompat;
 
 import com.kermekx.smartchatting.ConversationActivity;
 import com.kermekx.smartchatting.R;
-import com.kermekx.smartchatting.conversation.Conversation;
-import com.kermekx.smartchatting.pgp.KeyManager;
-import com.kermekx.smartchatting.services.ServerService;
+import com.kermekx.smartchatting.pgp.PGPManager;
 
 import java.io.ByteArrayOutputStream;
 
@@ -42,7 +40,7 @@ public class NotificationTask extends AsyncTask<Void, Void, Boolean> {
     protected Boolean doInBackground(Void... params) {
         ByteArrayOutputStream data = new ByteArrayOutputStream();
 
-        KeyManager.decode(KeyManager.readSecreteKeyRing(mSecretKeyRingBlock), mPassword, mMessage, data);
+        PGPManager.decode(PGPManager.readSecreteKeyRing(mSecretKeyRingBlock), mPassword, mMessage, data);
 
         String message = new String(data.toByteArray());
 

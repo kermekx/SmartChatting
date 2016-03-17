@@ -1,6 +1,5 @@
 package com.kermekx.smartchatting;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -13,11 +12,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.kermekx.smartchatting.hash.Hasher;
-import com.kermekx.smartchatting.pgp.KeyManager;
+import com.kermekx.smartchatting.pgp.PGPManager;
 import com.kermekx.smartchatting.services.ServerService;
-
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class PinActivity extends AppCompatActivity {
 
@@ -67,7 +63,7 @@ public class PinActivity extends AppCompatActivity {
         mPinView.setError(null);
 
         if (Hasher.md5(pin).equals(pinBackup)) {
-            ServerService.setPassword(KeyManager.generateKeyPassword(Hasher.hexStringToByteArray(settings.getString("secure", "")), Hasher.sha256Byte(pin)));
+            ServerService.setPassword(PGPManager.generateKeyPassword(Hasher.hexStringToByteArray(settings.getString("secure", "")), Hasher.sha256Byte(pin)));
 
             Intent mainActivity = new Intent(PinActivity.this, MainActivity.class);
             PinActivity.this.startActivity(mainActivity);
