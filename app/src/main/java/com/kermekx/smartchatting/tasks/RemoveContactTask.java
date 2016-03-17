@@ -1,12 +1,11 @@
-package com.kermekx.smartchatting.commandes;
+package com.kermekx.smartchatting.tasks;
 
 import android.content.Context;
 import android.os.AsyncTask;
 
 import com.kermekx.smartchatting.datas.ContactsData;
-import com.kermekx.smartchatting.listener.AddContactListener;
-import com.kermekx.smartchatting.listener.RemoveContactListener;
-import com.kermekx.smartchatting.listener.TaskListener;
+import com.kermekx.smartchatting.listeners.RemoveContactListener;
+import com.kermekx.smartchatting.listeners.TaskListener;
 
 import java.io.IOException;
 import java.io.PrintWriter;

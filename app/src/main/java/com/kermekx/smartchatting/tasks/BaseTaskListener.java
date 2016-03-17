@@ -1,6 +1,6 @@
-package com.kermekx.smartchatting.commandes;
+package com.kermekx.smartchatting.tasks;
 
-import com.kermekx.smartchatting.listener.TaskListener;
+import com.kermekx.smartchatting.listeners.TaskListener;
 
 /**
  * Created by Le Dragon on 03/03/2016.

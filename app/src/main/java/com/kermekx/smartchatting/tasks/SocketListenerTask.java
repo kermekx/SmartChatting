@@ -1,8 +1,8 @@
-package com.kermekx.smartchatting.commandes;
+package com.kermekx.smartchatting.tasks;
 
 import android.os.AsyncTask;
 
-import com.kermekx.smartchatting.listener.TaskListener;
+import com.kermekx.smartchatting.listeners.TaskListener;
 
 import java.io.BufferedReader;
 import java.io.IOException;

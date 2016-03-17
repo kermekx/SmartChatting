@@ -1,4 +1,4 @@
-package com.kermekx.smartchatting.listener;
+package com.kermekx.smartchatting.listeners;
 
 import java.util.ArrayList;
 import java.util.List;

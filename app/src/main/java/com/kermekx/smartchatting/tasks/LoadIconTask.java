@@ -1,4 +1,4 @@
-package com.kermekx.smartchatting.commandes;
+package com.kermekx.smartchatting.tasks;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -8,7 +8,7 @@ import android.os.AsyncTask;
 import android.util.TypedValue;
 
 import com.kermekx.smartchatting.icon.IconManager;
-import com.kermekx.smartchatting.listener.TaskListener;
+import com.kermekx.smartchatting.listeners.TaskListener;
 
 /**
  * Created by kermekx on 23/02/2016.

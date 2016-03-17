@@ -1,4 +1,4 @@
-package com.kermekx.smartchatting.commandes;
+package com.kermekx.smartchatting.tasks;
 
 import android.content.Context;
 import android.content.SharedPreferences;

@@ -1,4 +1,4 @@
-package com.kermekx.smartchatting.listener;
+package com.kermekx.smartchatting.listeners;
 
 /**
  * Created by kermekx on 22/02/2016.

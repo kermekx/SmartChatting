@@ -1,15 +1,15 @@
-package com.kermekx.smartchatting.listener;
+package com.kermekx.smartchatting.listeners;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by kermekx on 10/03/2016.
+ * Created by kermex on 05/03/2016.
  */
-public class RemoveContactListener extends DataListener {
+public class LoginListener extends DataListener {
 
-    private static final String CONTACT_REMOVED_DATA = "CONTACT REMOVED";
-    private static final String REMOVE_CONTACT_ERROR_DATA = "REMOVE CONTACT ERROR";
+    private static final String CONNECTED_DATA = "CONNECTED";
+    private static final String CONNECTION_ERROR_DATA = "CONNECTION ERROR";
 
     public volatile List<String> data = new ArrayList<>();
 
@@ -17,7 +17,7 @@ public class RemoveContactListener extends DataListener {
     public void onData(Object... object) {
         List<String> data = (List<String>) object[0];
 
-        if (data.get(0).equals(CONTACT_REMOVED_DATA) || data.get(0).equals(REMOVE_CONTACT_ERROR_DATA)) {
+        if (data.get(0).equals(CONNECTION_ERROR_DATA) || data.get(0).equals(CONNECTED_DATA)) {
             synchronized(this.data) {
                 for (String d : data)
                     this.data.add(d);

@@ -1,4 +1,4 @@
-package com.kermekx.smartchatting.commandes;
+package com.kermekx.smartchatting.tasks;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -7,7 +7,7 @@ import android.os.AsyncTask;
 import com.kermekx.smartchatting.R;
 import com.kermekx.smartchatting.hash.Hasher;
 import com.kermekx.smartchatting.json.JsonManager;
-import com.kermekx.smartchatting.listener.TaskListener;
+import com.kermekx.smartchatting.listeners.TaskListener;
 
 import org.json.JSONObject;
 

@@ -4,7 +4,7 @@ import android.app.Fragment;
 import android.os.Bundle;
 import android.os.Parcelable;
 
-import com.kermekx.smartchatting.commandes.LoadIconTask;
+import com.kermekx.smartchatting.tasks.LoadIconTask;
 import com.kermekx.smartchatting.conversation.ConversationAdapter;
 
 import java.util.ArrayList;

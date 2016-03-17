@@ -16,7 +16,7 @@ import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.kermekx.smartchatting.commandes.ActivationTask;
+import com.kermekx.smartchatting.tasks.ActivationTask;
 import com.kermekx.smartchatting.services.ServerService;
 
 import java.util.ArrayList;

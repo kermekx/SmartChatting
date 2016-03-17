@@ -1,15 +1,9 @@
-package com.kermekx.smartchatting.listener;
+package com.kermekx.smartchatting.listeners;
 
-import android.app.Notification;
-import android.app.NotificationManager;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.AsyncTask;
-import android.os.Build;
-import android.support.v4.app.NotificationCompat;
 
-import com.kermekx.smartchatting.R;
-import com.kermekx.smartchatting.commandes.NotificationTask;
+import com.kermekx.smartchatting.tasks.NotificationTask;
 import com.kermekx.smartchatting.datas.MessagesData;
 import com.kermekx.smartchatting.services.ServerService;
 

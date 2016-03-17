@@ -1,11 +1,11 @@
-package com.kermekx.smartchatting.commandes;
+package com.kermekx.smartchatting.tasks;
 
 import android.content.Context;
 import android.database.Cursor;
 import android.os.AsyncTask;
 
 import com.kermekx.smartchatting.datas.ContactsData;
-import com.kermekx.smartchatting.listener.TaskListener;
+import com.kermekx.smartchatting.listeners.TaskListener;
 
 /**
  * Created by kermekx on 23/02/2016.

@@ -1,23 +1,14 @@
-package com.kermekx.smartchatting.commandes;
+package com.kermekx.smartchatting.tasks;
 
 import android.content.Context;
 import android.os.AsyncTask;
 
-import com.kermekx.smartchatting.R;
 import com.kermekx.smartchatting.datas.ContactsData;
-import com.kermekx.smartchatting.json.JsonManager;
-import com.kermekx.smartchatting.listener.GetContactsListener;
-import com.kermekx.smartchatting.listener.TaskListener;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
+import com.kermekx.smartchatting.listeners.GetContactsListener;
+import com.kermekx.smartchatting.listeners.TaskListener;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.net.ssl.SSLSocket;
 

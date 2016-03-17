@@ -19,12 +19,10 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.kermekx.smartchatting.commandes.LoginTask;
+import com.kermekx.smartchatting.tasks.LoginTask;
 import com.kermekx.smartchatting.services.ServerService;
 
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class LoginActivity extends AppCompatActivity {
 

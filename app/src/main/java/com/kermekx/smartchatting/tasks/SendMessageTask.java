@@ -1,16 +1,13 @@
-package com.kermekx.smartchatting.commandes;
+package com.kermekx.smartchatting.tasks;
 
 import android.content.Context;
 import android.os.AsyncTask;
 
 import com.kermekx.smartchatting.datas.MessagesData;
-import com.kermekx.smartchatting.listener.SendMessageListener;
-import com.kermekx.smartchatting.listener.TaskListener;
+import com.kermekx.smartchatting.listeners.SendMessageListener;
+import com.kermekx.smartchatting.listeners.TaskListener;
 import com.kermekx.smartchatting.pgp.KeyManager;
 
-import org.bouncycastle.openpgp.PGPPublicKey;
-
-import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
 import java.util.logging.Level;
@@ -101,6 +98,9 @@ public class SendMessageTask extends AsyncTask<Void, Void, Boolean> {
 
                 return false;
             }
+            if (mListener != null)
+                mListener.onError(CONNECTION_ERROR_DATA);
+
             return false;
         } catch (Exception e) {
             Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, e);

@@ -33,8 +33,8 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import com.kermekx.smartchatting.commandes.BaseTaskListener;
-import com.kermekx.smartchatting.commandes.GetMessagesTask;
+import com.kermekx.smartchatting.tasks.BaseTaskListener;
+import com.kermekx.smartchatting.tasks.GetMessagesTask;
 import com.kermekx.smartchatting.conversation.Conversation;
 import com.kermekx.smartchatting.conversation.ConversationAdapter;
 import com.kermekx.smartchatting.fragment.ConversationFragment;
@@ -47,7 +47,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
 
 public class ConversationActivity extends AppCompatActivity {
 

@@ -1,6 +1,6 @@
-package com.kermekx.smartchatting.listener;
+package com.kermekx.smartchatting.listeners;
 
-import com.kermekx.smartchatting.commandes.BaseTaskListener;
+import com.kermekx.smartchatting.tasks.BaseTaskListener;
 
 import java.util.ArrayList;
 import java.util.List;

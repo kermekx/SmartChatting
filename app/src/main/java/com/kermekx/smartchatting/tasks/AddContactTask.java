@@ -1,28 +1,19 @@
-package com.kermekx.smartchatting.commandes;
+package com.kermekx.smartchatting.tasks;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.AsyncTask;
 
-import com.kermekx.smartchatting.R;
-import com.kermekx.smartchatting.hash.Hasher;
-import com.kermekx.smartchatting.json.JsonManager;
-import com.kermekx.smartchatting.listener.AddContactListener;
-import com.kermekx.smartchatting.listener.RegisterListener;
-import com.kermekx.smartchatting.listener.TaskListener;
-
-import org.json.JSONObject;
+import com.kermekx.smartchatting.listeners.AddContactListener;
+import com.kermekx.smartchatting.listeners.TaskListener;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.net.ssl.SSLSocket;
 
 /**
  * Created by kermekx on 25/02/2016.
- *
+ * <p/>
  * This task is used to add a new contact
  */
 public class AddContactTask extends AsyncTask<Void, Void, Boolean> {
@@ -63,7 +54,7 @@ public class AddContactTask extends AsyncTask<Void, Void, Boolean> {
 
             if (mDataListener.data.size() == 0) {
                 try {
-                    synchronized(mDataListener.data) {
+                    synchronized (mDataListener.data) {
                         mDataListener.data.wait();
                     }
                 } catch (InterruptedException e) {
@@ -79,8 +70,8 @@ public class AddContactTask extends AsyncTask<Void, Void, Boolean> {
 
             if (mDataListener.data.get(0).equals(CONTACT_ADDED_DATA)) {
                 return true;
-            } else if (mDataListener.data.get(0).equals(ADD_CONTACT_ERROR_DATA)){
-                for (int i = 1; i < mDataListener.data.size(); i ++) {
+            } else if (mDataListener.data.get(0).equals(ADD_CONTACT_ERROR_DATA)) {
+                for (int i = 1; i < mDataListener.data.size(); i++) {
                     if (mListener != null)
                         mListener.onError(mDataListener.data.get(i));
                 }

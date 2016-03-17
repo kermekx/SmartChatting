@@ -31,10 +31,10 @@ import android.widget.TextView;
 
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
-import com.kermekx.smartchatting.commandes.BaseTaskListener;
-import com.kermekx.smartchatting.commandes.GetContactsTask;
-import com.kermekx.smartchatting.commandes.GetMessagesTask;
-import com.kermekx.smartchatting.commandes.LoadIconTask;
+import com.kermekx.smartchatting.tasks.BaseTaskListener;
+import com.kermekx.smartchatting.tasks.GetContactsTask;
+import com.kermekx.smartchatting.tasks.GetMessagesTask;
+import com.kermekx.smartchatting.tasks.LoadIconTask;
 import com.kermekx.smartchatting.contact.Contact;
 import com.kermekx.smartchatting.contact.ContactAdapter;
 import com.kermekx.smartchatting.datas.ContactsData;

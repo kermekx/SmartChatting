@@ -1,4 +1,4 @@
-package com.kermekx.smartchatting.commandes;
+package com.kermekx.smartchatting.tasks;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -12,9 +12,7 @@ import android.support.v4.app.NotificationCompat;
 
 import com.kermekx.smartchatting.ConversationActivity;
 import com.kermekx.smartchatting.R;
-import com.kermekx.smartchatting.conversation.Conversation;
 import com.kermekx.smartchatting.pgp.KeyManager;
-import com.kermekx.smartchatting.services.ServerService;
 
 import java.io.ByteArrayOutputStream;
 
