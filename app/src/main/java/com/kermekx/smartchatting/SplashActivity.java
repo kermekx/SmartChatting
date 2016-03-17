@@ -51,20 +51,6 @@ public class SplashActivity extends AppCompatActivity {
 
         mProgressView = (ProgressBar) findViewById(R.id.login_progress);
         mErrorView = (TextView) findViewById(R.id.error);
-
-        Intent intent = getIntent();
-        String action = intent.getAction();
-        Uri data = intent.getData();
-
-        if (Intent.ACTION_VIEW.equals(action) && data != null) {
-
-            String user = data.getQueryParameter("user");
-            String key = data.getQueryParameter("key");
-
-            if (user != null && key != null) {
-                new ActivationTask(this, user, key).execute();
-            }
-        }
     }
 
     @Override
